@@ -108,7 +108,7 @@ workspace 'StudyBox_CV'
                 'opencv_imgcodecs',
                 'boost_system',
                 'boost_unit_test_framework',
-
+                'pthread'
             }
 
             if os.execute('sudo stat /usr/local/lib/libopencv_core.so.3.1.0 > /dev/null 2>&1') ~= 0 then
