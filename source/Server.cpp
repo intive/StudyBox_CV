@@ -220,6 +220,11 @@ Http::RequestParser::RequestParser() : state(MethodStart)
 {
 }
 
+void Http::RequestParser::reset()
+{
+    state = MethodStart;
+}
+
 int Http::RequestParser::contentLength(const Request& request)
 {
     auto sizeFound = std::find_if(request.headerCollection.begin(), 
@@ -765,6 +770,17 @@ Http::ConnectionPool::ConnectionPool(std::size_t maxThreads, std::size_t maxLoad
                 }
             }
         );
+}
+
+Http::ConnectionPool::~ConnectionPool()
+{
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        stop = true;
+    }
+    condition.notify_all();
+    for (std::thread &worker : workers)
+        worker.join();
 }
 
 bool Http::ConnectionPool::add(RequestHandler handler)

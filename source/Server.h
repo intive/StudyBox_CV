@@ -219,6 +219,8 @@ public:
         return false;
     }
 
+    void reset();
+
 private:
     /// Zwraca d³ugoœæ cia³a dla zapytania HTTP.
     static int contentLength(const Request& request);
@@ -386,6 +388,8 @@ public:
     ConnectionPool(std::size_t maxLoad = 500);
     /// Tworzy nowy obiekt o okreœlonych parametrach.
     ConnectionPool(std::size_t maxThreads, std::size_t maxLoad = 500);
+
+    ~ConnectionPool();
 
     /// dodaje zadanie do rozdzielenia.
     /**
