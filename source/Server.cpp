@@ -83,66 +83,50 @@ void Http::Connection::stop()
 
 void Http::Connection::read()
 {
-    socket.asyncReadSome(Tcp::MakeBuffer(buffer),
-        [this](int ec, std::size_t bytes)
+    std::size_t bytes = socket.readSome(Tcp::MakeBuffer(buffer));
+    int ec = bytes <= 0;
+    if (!ec) // Nie wykryto b³êdu.
+    {
+        RequestParser::Result result;
+        auto it = buffer.begin();
+        std::tie(result, it) = parser.parse(buffer.begin(), buffer.begin() + bytes, request);
+        if (result == RequestParser::Result::Good) // Zapytanie sparsowane poprawnie.
         {
-            if (!ec) // Nie wykryto b³êdu.
+            if (parser.fill(it, buffer.begin() + bytes, request)) // Zacznij czytaæ cia³o.
             {
-                RequestParser::Result result;
-                auto it = buffer.begin();
-                std::tie(result, it) = parser.parse(buffer.begin(), buffer.begin() + bytes, request);
-                if (result == RequestParser::Result::Good) // Zapytanie sparsowane poprawnie.
-                {
-                    if (parser.fill(it, buffer.begin() + bytes, request)) // Zacznij czytaæ cia³o.
-                    {
-                        write(); // Je¿eli cia³o nie zosta³o wykryte, przejdŸ do odpowiedzi.
-                    }
-                    else
-                    {
-                        readBody(); // W przeciwnym wypadku wywo³aj kolejne asynchroniczne czytanie cia³a.
-                    }
-                }
-                else if (result == RequestParser::Result::Bad) // Zapytanie sparsowane niepoprawnie.
-                {
-                    globalHandler.respond(socket, Response::Status::BadRequest); // Od razu odpowiedz klientowi.
-                    globalHandler.stop(shared_from_this());
-                    //socket.shutdown(); // Zamknij gniazdo - kolejne wywo³anie tej funkcji bêdzie z ustawion¹ flag¹ b³edu.
-                }
-                else
-                {
-                    read(); // Czytaj dalej.
-                }
+                write(); // Je¿eli cia³o nie zosta³o wykryte, przejdŸ do odpowiedzi.
             }
             else
             {
-                globalHandler.stop(shared_from_this()); // Usuñ obiekt z listy mened¿era, tym samym koñcz¹c ¿ywot.
+                readBody(); // W przeciwnym wypadku wywo³aj kolejne asynchroniczne czytanie cia³a.
             }
         }
-    );
+        else if (result == RequestParser::Result::Bad) // Zapytanie sparsowane niepoprawnie.
+        {
+            globalHandler.respond(socket, Response::Status::BadRequest); // Od razu odpowiedz klientowi.
+        }
+        else
+        {
+            read(); // Czytaj dalej.
+        }
+    }
 }
 
 void Http::Connection::readBody()
 {
-    socket.asyncReadSome(Tcp::MakeBuffer(buffer),
-        [this](int ec, std::size_t bytes)
+    std::size_t bytes = socket.readSome(Tcp::MakeBuffer(buffer));
+    int ec = bytes > 0;
+    if (!ec)
+    {
+        if (parser.fill(buffer.begin(), buffer.begin() + bytes, request))
         {
-            if (!ec)
-            {
-                if (parser.fill(buffer.begin(), buffer.begin() + bytes, request))
-                {
-                    write();
-                }
-                else
-                {
-                    readBody();
-                }
-            }
-            else
-            {
-                globalHandler.stop(shared_from_this());
-            }
+            write();
         }
-    );
+        else
+        {
+            readBody();
+        }
+    }
 }
 
 void Http::Connection::write()
@@ -151,7 +135,6 @@ void Http::Connection::write()
         [this](HandlerStrategy::RequestHandler handler)
         {
             socket.write(Tcp::MakeBuffer(handler(request).raw()));
-            globalHandler.stop(shared_from_this());
         }
     );
 }
@@ -162,13 +145,7 @@ Http::ThreadedHandlerStrategy::ThreadedHandlerStrategy(RequestHandler handler) :
 
 void Http::ThreadedHandlerStrategy::handle(ConnectionResponse response)
 {
-    if (!pool.add(std::bind(response, handler)))
-    {
-        response([](const Request&)
-        {
-            return Response(Response::Status::InternalServerError, "", "");
-        });
-    }
+    response(handler);
 }
 
 void Http::ThreadedHandlerStrategy::respond(Tcp::Socket& socket, Response::Status stockResponse)
@@ -178,13 +155,14 @@ void Http::ThreadedHandlerStrategy::respond(Tcp::Socket& socket, Response::Statu
 
 void Http::ThreadedHandlerStrategy::start(ConnectionPtr connection)
 {
-    connections.insert(connection);
-    connection->start();
+    pool.add([connection]
+    {
+        connection->start();
+    });
 }
 
 void Http::ThreadedHandlerStrategy::stop(ConnectionPtr connection)
 {
-    connections.erase(connection);
 }
 
 Http::Response::Response(Status code, const BodyType & content, const MediaType & mediaType) : responseStatus(code), response(content)
@@ -717,7 +695,6 @@ Http::Server::Server(const std::string& host, const std::string& port, ServicePt
     acceptor.setOption(Tcp::Option::ReuseAddress(true));
     acceptor.bind(endpoint.address());
     acceptor.listen(50);
-    accept();
 }
 
 Http::Server::Server(const std::string & host, const std::string & port, RequestHandler handler, ServicePtr service) : Server(host, port, std::move(service), std::unique_ptr<HandlerStrategy>(new ThreadedHandlerStrategy(std::move(handler))))
@@ -726,17 +703,23 @@ Http::Server::Server(const std::string & host, const std::string & port, Request
 
 int Http::Server::run()
 {
-    return service->run();
+    try
+    {
+        for (;;)
+            accept();
+    }
+    catch (const Tcp::AcceptError&)
+    {
+        return 0;
+    }
 }
 
 void Http::Server::accept()
 {
-    acceptor.asyncAccept([this](Tcp::Socket socket)
+    auto socket = acceptor.accept();
     {
         globalHandler->start(std::make_shared<Connection>(std::move(socket), *globalHandler));
-        accept();
     }
-    );
 }
 
 
@@ -785,7 +768,6 @@ bool Http::ConnectionPool::add(RequestHandler handler)
 {
     {
         std::unique_lock<std::mutex> lock(mutex);
-
         if (stop)
             throw std::runtime_error("attempted to add to stopped pool");
 
