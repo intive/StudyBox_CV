@@ -83,9 +83,8 @@ void Http::Connection::stop()
 
 void Http::Connection::read()
 {
-    auto self = shared_from_this();
     socket.asyncReadSome(Tcp::MakeBuffer(buffer),
-        [this, self](int ec, std::size_t bytes)
+        [this](int ec, std::size_t bytes)
         {
             if (!ec) // Nie wykryto b³êdu.
             {
@@ -106,7 +105,8 @@ void Http::Connection::read()
                 else if (result == RequestParser::Result::Bad) // Zapytanie sparsowane niepoprawnie.
                 {
                     globalHandler.respond(socket, Response::Status::BadRequest); // Od razu odpowiedz klientowi.
-                    socket.shutdown(); // Zamknij gniazdo - kolejne wywo³anie tej funkcji bêdzie z ustawion¹ flag¹ b³edu.
+                    globalHandler.stop(shared_from_this());
+                    //socket.shutdown(); // Zamknij gniazdo - kolejne wywo³anie tej funkcji bêdzie z ustawion¹ flag¹ b³edu.
                 }
                 else
                 {
@@ -123,9 +123,8 @@ void Http::Connection::read()
 
 void Http::Connection::readBody()
 {
-    auto self = shared_from_this();
     socket.asyncReadSome(Tcp::MakeBuffer(buffer),
-        [this, self](int ec, std::size_t bytes)
+        [this](int ec, std::size_t bytes)
         {
             if (!ec)
             {
@@ -148,9 +147,8 @@ void Http::Connection::readBody()
 
 void Http::Connection::write()
 {
-    auto self = shared_from_this();
     globalHandler.handle(
-        [this, self](HandlerStrategy::RequestHandler handler)
+        [this](HandlerStrategy::RequestHandler handler)
         {
             socket.write(Tcp::MakeBuffer(handler(request).raw()));
             globalHandler.stop(shared_from_this());
