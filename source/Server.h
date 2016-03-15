@@ -363,6 +363,7 @@ private:
     void read();
     /// Dokonuje odczytu cia³a zapytania HTTP.
     void readBody();
+    void write();
 
     BufferType buffer;
 
@@ -372,54 +373,11 @@ private:
     Request request;
 };
 
-
-
-/// Klasa odpowiadaj¹ca za asynchroniczne wykonywanie zapisów.
-/**
- * Wykorzystanie jej pozwala na efektywne wykorzystanie czasu
- * odpowiedzi serwera oraz jego przepustowoœci.
- */
-class WriteThread
-{
-public:
-    /// Funkcja odpowiedzialna za udzielenie odpowiedzi.
-    /**
-     * Zapytanie (Request) jest wewn¹trz obiektu funkcyjnego.
-     */
-    typedef std::function<Response()> RequestHandler;
-
-    /// Tworzy nowy obiekt, w którym uruchamiany jest nowy w¹tek.
-    WriteThread();
-    /// Blokuje do czasu zakoñczenia pracy w¹tku.
-    ~WriteThread();
-
-    /// Zatrzymuje dzia³anie w¹tku.
-    void stop();
-    /// Dodaje zadanie do kolejki.
-    void add(Tcp::Socket& socket, RequestHandler handler);
-    /// Zwraca obecny wskaŸnik zapracowania obiektu.
-    std::size_t workload() const;
-
-private:
-    /// Funkcja wykonywana przez w¹tek.
-    void run();
-
-    mutable std::mutex mutex;
-    std::atomic_flag running;
-    std::condition_variable ready;
-    /// Kolejka funkcji do wykonania.
-    std::queue<std::pair<Tcp::Socket*, RequestHandler>> work;
-    std::thread thread;
-};
-
-
-
 /// Klasa odpowiedzialna za rozdzia³ zadañ do odpowiednich w¹tków.
 class ConnectionPool
 {
 public:
-    typedef WriteThread::RequestHandler RequestHandler;
-    typedef WriteThread Job;
+    typedef std::function<void()> RequestHandler;
 
     /// Tworzy nowy obiekt o okreœlonym maksymalnym obci¹¿eniu.
     /**
@@ -430,11 +388,19 @@ public:
     ConnectionPool(std::size_t maxThreads, std::size_t maxLoadPerThread = 500);
 
     /// dodaje zadanie do rozdzielenia.
-    void add(Tcp::Socket& socket, RequestHandler handler, HandlerStrategy& manager);
+    bool add(RequestHandler handler);
 
 private:
-    std::size_t maxThreads, maxLoad;
-    std::list<Job> threads;
+    std::size_t maxThreads;
+    std::size_t maxLoad;
+
+    std::vector<std::thread> workers;
+    std::queue<std::function<void()>> jobs;
+
+    // synchronization
+    std::mutex mutex;
+    std::condition_variable condition;
+    bool stop;
 };
 
 
@@ -448,6 +414,7 @@ class HandlerStrategy
 {
 public:
     typedef std::function<Response(Request)> RequestHandler;
+    typedef std::function<void(RequestHandler)> ConnectionResponse;
 
     virtual ~HandlerStrategy() = default;
 
@@ -455,7 +422,7 @@ public:
     /**
      * Sposób wywo³ania funkcji le¿y po stronie implementacji.
      */
-    virtual void handle(Tcp::Socket& connection, const Request& request) = 0;
+    virtual void handle(ConnectionResponse response) = 0;
     /// Bezpoœrednio wysy³a odpowiedŸ do gniazda.
     virtual void respond(Tcp::Socket& socket, Response::Status stockResponse) = 0;
 
@@ -471,10 +438,11 @@ public:
 class ThreadedHandlerStrategy : public HandlerStrategy
 {
 public:
+
     ThreadedHandlerStrategy(RequestHandler handler);
 
     /// Przekazuje zadanie do oddzielnego w¹tku.
-    void handle(Tcp::Socket& connection, const Request& request) override;
+    void handle(ConnectionResponse response) override;
     /// Odpowiada na g³ównym w¹tku.
     void respond(Tcp::Socket& socket, Response::Status stockResponse) override;
 

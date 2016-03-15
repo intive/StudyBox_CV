@@ -4,7 +4,6 @@
 #include <string>
 #include <algorithm>
 
-
 namespace {
 
     const std::string Ok =
@@ -84,8 +83,9 @@ void Http::Connection::stop()
 
 void Http::Connection::read()
 {
+    auto self = shared_from_this();
     socket.asyncReadSome(Tcp::MakeBuffer(buffer),
-        [this](int ec, std::size_t bytes)
+        [this, self](int ec, std::size_t bytes)
         {
             if (!ec) // Nie wykryto b³êdu.
             {
@@ -96,7 +96,7 @@ void Http::Connection::read()
                 {
                     if (parser.fill(it, buffer.begin() + bytes, request)) // Zacznij czytaæ cia³o.
                     {
-                        globalHandler.handle(socket, request); // Je¿eli cia³o nie zosta³o wykryte przeka¿ do mened¿era.
+                        write(); // Je¿eli cia³o nie zosta³o wykryte, przejdŸ do odpowiedzi.
                     }
                     else
                     {
@@ -123,15 +123,15 @@ void Http::Connection::read()
 
 void Http::Connection::readBody()
 {
+    auto self = shared_from_this();
     socket.asyncReadSome(Tcp::MakeBuffer(buffer),
-        [this](int ec, std::size_t bytes)
+        [this, self](int ec, std::size_t bytes)
         {
             if (!ec)
             {
                 if (parser.fill(buffer.begin(), buffer.begin() + bytes, request))
                 {
-                    globalHandler.handle(socket, request);
-                    //socket.shutdown();
+                    write();
                 }
                 else
                 {
@@ -146,13 +146,31 @@ void Http::Connection::readBody()
     );
 }
 
+void Http::Connection::write()
+{
+    auto self = shared_from_this();
+    globalHandler.handle(
+        [this, self](HandlerStrategy::RequestHandler handler)
+        {
+            socket.write(Tcp::MakeBuffer(handler(request).raw()));
+            globalHandler.stop(shared_from_this());
+        }
+    );
+}
+
 Http::ThreadedHandlerStrategy::ThreadedHandlerStrategy(RequestHandler handler) : handler(handler)
 {
 }
 
-void Http::ThreadedHandlerStrategy::handle(Tcp::Socket& socket, const Request& request)
+void Http::ThreadedHandlerStrategy::handle(ConnectionResponse response)
 {
-    pool.add(socket, std::bind(handler, request), *this);
+    if (!pool.add(std::bind(response, handler)))
+    {
+        response([](const Request&)
+        {
+            return Response(Response::Status::InternalServerError, "", "");
+        });
+    }
 }
 
 void Http::ThreadedHandlerStrategy::respond(Tcp::Socket& socket, Response::Status stockResponse)
@@ -718,81 +736,51 @@ void Http::Server::accept()
     );
 }
 
-Http::WriteThread::WriteThread()
+
+Http::ConnectionPool::ConnectionPool(std::size_t maxLoadPerThread) : ConnectionPool(std::thread::hardware_concurrency(), maxLoadPerThread)
 {
-    running.test_and_set(); // Inicjalizacja na true.
-    thread = std::thread(&WriteThread::run, this);
 }
 
-Http::WriteThread::~WriteThread()
+Http::ConnectionPool::ConnectionPool(std::size_t maxThreads, std::size_t maxLoadPerThread) : maxThreads(maxThreads), maxLoad(maxLoadPerThread), stop(false)
 {
-    stop();
-    ready.notify_all();
-    thread.join();
+    for (size_t i = 0; i < maxThreads; ++i)
+        workers.emplace_back(
+            [this]
+            {
+                for (;;)
+                {
+                    std::function<void()> work;
+
+                    {
+                        std::unique_lock<std::mutex> lock(mutex);
+                        condition.wait(lock,
+                            [this] { return stop || !jobs.empty(); });
+                        if (stop && jobs.empty())
+                            return;
+                        work = std::move(jobs.front());
+                        jobs.pop();
+                    }
+
+                    work();
+                }
+            }
+        );
 }
-void Http::WriteThread::run()
+
+bool Http::ConnectionPool::add(RequestHandler handler)
 {
-    while (running.test_and_set())
     {
         std::unique_lock<std::mutex> lock(mutex);
-        ready.wait(lock, [&] { return !work.empty() || !running.test_and_set(); });
-        
-        if (work.empty()) return;
 
-        work.front().first->write(Tcp::MakeBuffer(work.front().second().raw())); // wykonaj zadanie.
-        work.front().first->shutdown(); // zamknij gniazdo.
-        work.pop(); // usuñ z kolejki
+        if (stop)
+            throw std::runtime_error("attempted to add to stopped pool");
+
+        if (jobs.size() > maxLoad)
+            return false;
+
+        jobs.emplace(std::move(handler));
     }
-}
+    condition.notify_one();
 
-void Http::WriteThread::stop()
-{
-    running.clear(); // Wyzeruj zmienn¹.
-    ready.notify_one(); // Zasygnalizuj w¹tek.
-}
-
-void Http::WriteThread::add(Tcp::Socket& socket, RequestHandler handler)
-{
-    //std::unique_lock<std::mutex> lock(mutex);
-    work.push(std::make_pair(&socket, std::move(handler))); // Mo¿liwy wyœcig?
-    //lock.unlock();
-    ready.notify_one();
-}
-
-std::size_t Http::WriteThread::workload() const
-{
-    //std::lock_guard<std::mutex> lock(mutex);
-    return work.size();
-}
-
-Http::ConnectionPool::ConnectionPool(std::size_t maxLoadPerThread) : maxLoad(maxLoadPerThread)
-{
-    maxThreads = std::thread::hardware_concurrency();
-}
-
-Http::ConnectionPool::ConnectionPool(std::size_t maxThreads, std::size_t maxLoadPerThread) : maxThreads(maxThreads), maxLoad(maxLoadPerThread)
-{
-}
-
-
-#include <iostream>
-
-void Http::ConnectionPool::add(Tcp::Socket& socket, RequestHandler handler, HandlerStrategy& manager)
-{
-    auto result = std::min_element(threads.begin(), threads.end(),
-        [](const Job& lhs, const Job& rhs) { return lhs.workload() < rhs.workload(); });
-    // Decyzja czy utworzyæ nowy w¹tek czy wykorzystaæ ju¿ istniej¹cy.
-
-    if (threads.size() >= maxThreads || (result != threads.end() && result->workload() == 0))
-    {
-        if (result->workload() < maxLoad) // Zignoruj nowe po³¹czenia, je¿eli kolejka jest zape³niona.
-            result->add(socket, std::move(handler));
-        else
-            manager.respond(socket, Response::Status::InternalServerError);
-    }
-    else
-    {
-        threads.emplace_back();
-        threads.back().add(socket, std::move(handler));
-    }
+    return true;
 }

@@ -3,7 +3,6 @@
 #include <cassert>
 
 #include <sstream>
-#include <iostream>
 
 #include "Predef.h"
 
@@ -259,6 +258,8 @@ int Tcp::SocketService::readReady()
     if (readHandlers.empty()) return 0;
 
     int s = implementation.readSome(readHandlers.front().first);
+    if (s == 0)
+        shut = true;
     readHandlers.front().second(shut, s);
 
     if (shut)
