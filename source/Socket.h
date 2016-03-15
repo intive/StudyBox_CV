@@ -47,7 +47,8 @@ class errorName : public baseClass \
 public: \
 using baseClass::baseClass; \
 }
-
+// B³¹d zwi¹zany ze specyficzn¹ platform¹
+DEFINE_ERROR(PlatformError, TcpError);
 // B³¹d zwi¹zany z gniazdami.
 DEFINE_ERROR(SocketError, TcpError);
 // B³¹d zwi¹zany z i/o gniazd.
@@ -169,7 +170,7 @@ class Service
 public:
     typedef int HandleType;
 
-    // gwarantuje dostêp do uchwytu.
+    // Gwarantuje dostêp do uchwytu.
     HandleType getHandle() const;
     void setHandle(HandleType handle);
 
@@ -197,6 +198,9 @@ public:
     virtual ~SignalServiceInterface() = default;
 
     /// W celu sprawdzenia jaki sygna³ zosta³ wywo³any.
+    /**
+     * @return wartoœæ sygna³u je¿eli ten zosta³ wywo³any.
+     */
     virtual int get() const = 0;
     /// W celu sprawdzenia czy sygna³ zosta³ wywo³any.
     virtual bool received() const = 0;
@@ -371,7 +375,9 @@ public:
     /// Tworzy obiekt o danej implementacji, zawieraj¹cej ju¿ informacje szczegó³owe.
     Endpoint(std::unique_ptr<EndpointInterface> implementation);
 
+    /// Przekierowuje do implementacji.
     AddressType address() const;
+    /// Przekierowuje do implementacji.
     ProtocolType protocol() const;
 
 private:
@@ -446,10 +452,14 @@ public:
     virtual ~SocketInterface() = default;
 
     /// Blokuje, dopóki nie odczyta okreœlonej liczby bajtów.
+    /**
+     * @return iloœæ odczytanych bajtów - powinna wynosiæ rozmiar bufora.
+     */
     virtual int read(BufferType& buffer) = 0;
     /// Odczytuje dostêpn¹ w tej chwili liczbê bajtów.
     /**
      * Mo¿e blokowaæ, je¿eli w danej chwili bufor gniazda jest pusty.
+     * @return iloœæ odczytanych bajtów - powinna byæ równa iloœci dostêpnych bajtów na gnieŸdzie.
      */
     virtual int readSome(BufferType& buffer) = 0;
     /// Oznacza asynchroniczne wywo³anie funkcji ReadHandler.
@@ -458,8 +468,14 @@ public:
      */
     void asyncReadSome(BufferType buffer, ReadHandler handler);
     /// Odpowiednik read dla zapisu.
+    /**
+     * @return iloœæ faktycznie zapisanych bajtów - powinna wynosiæ rozmiar bufora.
+     */
     virtual int write(const ConstBufferType& buffer) = 0;
     /// Odpowiednik readSome dla zapisu.
+    /**
+     * @return iloœæ faktycznie zapisanych bajtów.
+     */
     virtual int writeSome(const ConstBufferType& buffer) = 0;
     /// Odpowiednik asyncReadSome dla zapisu.
     void asyncWriteSome(const ConstBufferType& buffer, WriteHandler handler);
@@ -621,7 +637,7 @@ public:
     /// Tworzy nowy obiekt z okreœlon¹ implementacj¹.
     Socket(std::unique_ptr<SocketInterface> implementation);
 
-    /// Przekierowuje do implementacji.
+    /// Przekierowuje wywo³anie do implementacji.
     int read(BufferType& buffer);
     int readSome(BufferType& buffer);
     void asyncReadSome(BufferType buffer, ReadHandler handler);
@@ -702,7 +718,6 @@ class SocketImplementation : public SocketInterface
 {
 public:
     typedef SocketService::HandleType HandleType;
-
     typedef SocketService::ReadHandler ReadHandler;
     typedef SocketService::WriteHandler WriteHandler;
     typedef SocketService::BufferType BufferType;
@@ -726,4 +741,5 @@ private:
 };
 
 } // namespace Tcp
+
 #endif // PATR_SOCKET_H

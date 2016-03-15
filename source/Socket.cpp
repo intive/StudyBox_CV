@@ -35,7 +35,7 @@ Tcp::StreamService::StreamServicePimpl::StreamServicePimpl() : readFdsMaster()
 #if defined(PATR_OS_WINDOWS)
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
-        // TODO: error handling throw server_wsa_startup_error();
+        throw PlatformError("WSA failed to initialize");
     }
 #endif
 }
@@ -76,7 +76,7 @@ int Tcp::StreamService::run()
         {
             if (signal->received())
                 break;
-            throw ServiceError("select failed");// TODO: error handling
+            throw ServiceError("select failed");
         }
     
         if (result == 0)
@@ -120,7 +120,6 @@ int Tcp::StreamService::run()
 
 void Tcp::StreamService::add(SocketService* service)
 {
-//    sockets.insert(service);
     StreamServiceInterface::add(service);
     FD_SET(service->getHandle(), &pimpl->readFdsMaster);
 }
@@ -130,16 +129,6 @@ void Tcp::StreamService::remove(SocketService * service)
     StreamServiceInterface::remove(service);
     FD_CLR(service->getHandle(), &pimpl->readFdsMaster);
 }
-
-//void StreamService::add(AcceptorService* service)
-//{
-//    acceptors.insert(service);
-//}
-//
-//void StreamService::add(SignalService* service)
-//{
-//    signal = service;
-//}
 
 std::unique_ptr<Tcp::ServiceFactory> Tcp::StreamService::getFactory()
 {
@@ -226,7 +215,7 @@ int Tcp::SocketImplementation::write(const ConstBufferType & buffer)
         bytesleft -= n;
     }
 
-    return total; // return -1 on failure, 0 on success
+    return total;
 }
 
 int Tcp::SocketImplementation::writeSome(const ConstBufferType & buffer)
@@ -304,10 +293,6 @@ void Tcp::SocketService::shutdown()
 {
     shut = true;
 }
-
-//Socket::Socket(StreamService& service, HandleType handle) : implementation(new SocketImplementation(service, handle))
-//{
-//}
 
 Tcp::Socket::Socket(std::unique_ptr<SocketInterface> implementation) : implementation(std::move(implementation))
 {

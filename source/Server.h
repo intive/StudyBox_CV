@@ -383,11 +383,14 @@ public:
     /**
      * Liczba w¹tków dedukowana jest na podstawie wykrytej liczby procesorów.
      */
-    ConnectionPool(std::size_t maxLoadPerThread = 500);
+    ConnectionPool(std::size_t maxLoad = 500);
     /// Tworzy nowy obiekt o okreœlonych parametrach.
-    ConnectionPool(std::size_t maxThreads, std::size_t maxLoadPerThread = 500);
+    ConnectionPool(std::size_t maxThreads, std::size_t maxLoad = 500);
 
     /// dodaje zadanie do rozdzielenia.
+    /**
+     * @return czy zadanie zosta³o dodane do kolejki czy nie.
+     */
     bool add(RequestHandler handler);
 
 private:
