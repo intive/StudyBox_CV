@@ -26,3 +26,7 @@
 *.exe
 *.out
 *.app
+
+# Premake5
+bin/
+build/
