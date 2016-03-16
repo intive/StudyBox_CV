@@ -6,7 +6,7 @@
 
 namespace {
 
-    std::unordered_map<Http::Response::Status, std::string> StockResponse = {
+    std::map<Http::Response::Status, std::string> StockResponse = {
     { Http::Response::Status::Ok, "HTTP/1.0 200 OK\r\n" },
     { Http::Response::Status::Created, "HTTP/1.0 201 Created\r\n" },
     { Http::Response::Status::Accepted, "HTTP/1.0 202 Accepted\r\n" },
@@ -48,7 +48,8 @@ void Http::Connection::stop()
 
 void Http::Connection::read()
 {
-    std::size_t bytes = socket.readSome(Tcp::MakeBuffer(buffer));
+    auto mbuffer = Tcp::MakeBuffer(buffer);
+    std::size_t bytes = socket.readSome(mbuffer);
     int ec = bytes <= 0;
     if (!ec) // Nie wykryto b³êdu.
     {
@@ -79,7 +80,8 @@ void Http::Connection::read()
 
 void Http::Connection::readBody()
 {
-    std::size_t bytes = socket.readSome(Tcp::MakeBuffer(buffer));
+    auto mbuffer = Tcp::MakeBuffer(buffer);
+    std::size_t bytes = socket.readSome(mbuffer);
     int ec = bytes > 0;
     if (!ec)
     {
