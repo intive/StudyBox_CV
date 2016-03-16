@@ -41,37 +41,89 @@ public:
     using std::runtime_error::runtime_error;
 };
 
-#define DEFINE_ERROR(errorName, baseClass) \
-class errorName : public baseClass \
-{ \
-public: \
-using baseClass::baseClass; \
-}
 // B³¹d zwi¹zany ze specyficzn¹ platform¹
-DEFINE_ERROR(PlatformError, TcpError);
+class PlatformError : public TcpError
+{
+public:
+    using TcpError::TcpError;
+};
+
 // B³¹d zwi¹zany z gniazdami.
-DEFINE_ERROR(SocketError, TcpError);
+class SocketError : public TcpError
+{
+public:
+    using TcpError::TcpError;
+};
+
 // B³¹d zwi¹zany z i/o gniazd.
-DEFINE_ERROR(StreamError, SocketError);
+class StreamError : public SocketError
+{
+public:
+    using SocketError::SocketError;
+};
+
 // B³¹d wyjœcia gniazda.
-DEFINE_ERROR(SendError, StreamError);
+class SendError : public StreamError
+{
+public:
+    using StreamError::StreamError;
+};
+
 // B³¹d wejœcia gniazda.
-DEFINE_ERROR(ReceiveError, StreamError);
+class ReceiveError : public StreamError
+{
+public:
+    using StreamError::StreamError;
+};
+
 // B³¹d w nas³uchiwaniu po³¹czeñ.
-DEFINE_ERROR(AcceptorError, SocketError);
+class AcceptorError : public SocketError
+{
+public:
+    using SocketError::SocketError;
+};
+
 // B³¹d w zwi¹zaniu gniazda z adresem.
-DEFINE_ERROR(BindError, AcceptorError);
+class BindError : public AcceptorError
+{
+public:
+    using AcceptorError::AcceptorError;
+};
+
 // B³¹d w przygotowaniu gniazda do nas³uchiwania.
-DEFINE_ERROR(ListenError, AcceptorError);
+class ListenError : public AcceptorError
+{
+public:
+    using AcceptorError::AcceptorError;
+};
+
 // B³¹d otwarcia po³¹czenia.
-DEFINE_ERROR(AcceptError, AcceptorError);
+class AcceptError : public AcceptorError
+{
+public:
+    using AcceptorError::AcceptorError;
+};
+
 // B³¹d demultipleksacji / asynchronicznego wywo³ania.
-DEFINE_ERROR(ServiceError, TcpError);
+class ServiceError : public TcpError
+{
+public:
+    using TcpError::TcpError;
+};
+
 // B³¹d gniazda wyjœciowego.
-DEFINE_ERROR(EndpointError, TcpError);
+class EndpointError : public TcpError
+{
+public:
+    using TcpError::TcpError;
+};
+
 // B³¹d ustawienia opcji gniazda.
-DEFINE_ERROR(SocketOptionError, SocketError);
-#undef DEFINE_ERROR
+class SocketOptionError : public SocketError
+{
+public:
+    using SocketError::SocketError;
+};
 
 // Typ wykorzystywany do przesy³u informacji przez gniazda.
 typedef std::pair<char* /* data */, int /* size */> Buffer;
@@ -87,13 +139,14 @@ typedef std::pair<const char* /* data */, int /* size */> ConstBuffer;
  * Nie nale¿y usuwaæ obiektów przez wskaŸnik do tej klasy ze wzglêdu
  * na brak konstruktora.
  */
-struct NonCopyable
+class NonCopyable
 {
+public:
     NonCopyable() = default;
     NonCopyable(NonCopyable&&) = default;
+    NonCopyable& operator =(NonCopyable&&) = default;
     NonCopyable(const NonCopyable&) = delete;
     NonCopyable& operator =(const NonCopyable&) = delete;
-    NonCopyable& operator =(NonCopyable&&) = delete;
 };
 
 

@@ -98,16 +98,14 @@ typedef std::string MediaType;
 /// Posiada dostêpne domyœlne metody HTTP.
 namespace RequestMethod
 {
-#define MAKE_HTTP_METHOD(methodName) constexpr auto methodName = #methodName
-    MAKE_HTTP_METHOD(OPTIONS);
-    MAKE_HTTP_METHOD(GET);
-    MAKE_HTTP_METHOD(HEAD);
-    MAKE_HTTP_METHOD(POST);
-    MAKE_HTTP_METHOD(PUT);
-    MAKE_HTTP_METHOD(TRACE);
-    MAKE_HTTP_METHOD(CONNECT);
-    constexpr auto DELETE = "DELETE"; //< Ze wzglêdu na ekspansjê makra DELETE.
-#undef MAKE_HTTP_METHOD
+    constexpr auto OPTIONS = "OPTIONS";
+    constexpr auto GET = "GET";
+    constexpr auto HEAD = "HEAD";
+    constexpr auto POST = "POST";
+    constexpr auto PUT = "PUT";
+    constexpr auto TRACE = "TRACE";
+    constexpr auto CONNECT = "CONNECT";
+    constexpr auto DELETE = "DELETE";
 }
 
 
@@ -268,7 +266,8 @@ public:
 
         /* Success */
         Ok = 200,
-        Accepted = 201,
+        Created = 201,
+        Accepted = 202,
         NonAuthoritativeInformation =  203,
         NoContent = 204,
         ResetContent = 205,
@@ -385,9 +384,9 @@ public:
     /**
      * Liczba w¹tków dedukowana jest na podstawie wykrytej liczby procesorów.
      */
-    ConnectionPool(std::size_t maxLoad = 500);
+    ConnectionPool(std::size_t maxLoad = 5000);
     /// Tworzy nowy obiekt o okreœlonych parametrach.
-    ConnectionPool(std::size_t maxThreads, std::size_t maxLoad = 500);
+    ConnectionPool(std::size_t maxThreads, std::size_t maxLoad = 5000);
 
     ~ConnectionPool();
 

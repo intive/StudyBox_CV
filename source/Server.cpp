@@ -6,63 +6,28 @@
 
 namespace {
 
-    const std::string Ok =
-        "HTTP/1.0 200 OK\r\n";
-    const std::string Created =
-        "HTTP/1.0 201 Created\r\n";
-    const std::string Accepted =
-        "HTTP/1.0 202 Accepted\r\n";
-    const std::string NoContent =
-        "HTTP/1.0 204 No Content\r\n";
-    const std::string MultipleChoices =
-        "HTTP/1.0 300 Multiple Choices\r\n";
-    const std::string MovedPermanently =
-        "HTTP/1.0 301 Moved Permanently\r\n";
-    const std::string MovedTemporarily =
-        "HTTP/1.0 302 Moved Temporarily\r\n";
-    const std::string NotModified =
-        "HTTP/1.0 304 Not Modified\r\n";
-    const std::string BadRequest =
-        "HTTP/1.0 400 Bad request\r\n";
-    const std::string Unauthorized =
-        "HTTP/1.0 401 Unauthorized\r\n";
-    const std::string Forbidden =
-        "HTTP/1.0 403 Forbidden\r\n";
-    const std::string NotFound =
-        "HTTP/1.0 404 Not Found\r\n";
-    const std::string InternalServerError =
-        "HTTP/1.0 500 Internal Server Error\r\n";
-    const std::string NotImplemented =
-        "HTTP/1.0 501 Not Implemented\r\n";
-    const std::string BadGateway =
-        "HTTP/1.0 502 Bad Gateway\r\n";
-    const std::string ServiceUnavailable =
-        "HTTP/1.0 503 Service Unavailable\r\n";
+    std::unordered_map<Http::Response::Status, std::string> StockResponse = {
+    { Http::Response::Status::Ok, "HTTP/1.0 200 OK\r\n" },
+    { Http::Response::Status::Created, "HTTP/1.0 201 Created\r\n" },
+    { Http::Response::Status::Accepted, "HTTP/1.0 202 Accepted\r\n" },
+    { Http::Response::Status::NoContent, "HTTP/1.0 204 No Content\r\n" },
+    { Http::Response::Status::MultipleChoices, "HTTP/1.0 300 Multiple Choices\r\n" },
+    { Http::Response::Status::MovedPermanently, "HTTP/1.0 301 Moved Permanently\r\n" },
+    { Http::Response::Status::Found, "HTTP/1.0 302 Found\r\n" },
+    { Http::Response::Status::NotModified, "HTTP/1.0 304 Not Modified\r\n" },
+    { Http::Response::Status::BadRequest, "HTTP/1.0 400 Bad request\r\n" },
+    { Http::Response::Status::Unauthorized, "HTTP/1.0 401 Unauthorized\r\n" },
+    { Http::Response::Status::Forbidden, "HTTP/1.0 403 Forbidden\r\n" },
+    { Http::Response::Status::NotFound, "HTTP/1.0 404 Not Found\r\n" },
+    { Http::Response::Status::InternalServerError, "HTTP/1.0 500 Internal Server Error\r\n" },
+    { Http::Response::Status::NotImplemented, "HTTP/1.0 501 Not Implemented\r\n" },
+    { Http::Response::Status::BadGateway, "HTTP/1.0 502 Bad Gateway\r\n" },
+    { Http::Response::Status::ServiceUnavailable, "HTTP/1.0 503 Service Unavailable\r\n" }
+    };
 
     Tcp::ConstBuffer MakeBuffer(Http::Response::Status status)
     {
-        switch (status)
-        {
-#define CASE_BUFFER(name) \
-case Http::Response::Status::name: return Tcp::MakeBuffer(name)
-            CASE_BUFFER(Ok);
-            CASE_BUFFER(Accepted);
-            CASE_BUFFER(NoContent);
-            CASE_BUFFER(MultipleChoices);
-            CASE_BUFFER(MovedPermanently);
-            CASE_BUFFER(NotModified);
-            CASE_BUFFER(BadRequest);
-            CASE_BUFFER(Unauthorized);
-            CASE_BUFFER(Forbidden);
-            CASE_BUFFER(NotFound);
-            CASE_BUFFER(InternalServerError);
-            CASE_BUFFER(NotImplemented);
-            CASE_BUFFER(BadGateway);
-            CASE_BUFFER(ServiceUnavailable);
-        default:
-            return Tcp::MakeBuffer(InternalServerError);
-#undef CASE_BUFFER
-        }
+        return Tcp::MakeBuffer(const_cast<const std::string&>(StockResponse[status]));
     }
 }
 
@@ -231,10 +196,25 @@ namespace {
     {
         switch (c)
         {
-        case '(': case ')': case '<': case '>': case '@':
-        case ',': case ';': case ':': case '\\': case '"':
-        case '/': case '[': case ']': case '?': case '=':
-        case '{': case '}': case ' ': case '\t':
+        case '(':
+        case ')':
+        case '<':
+        case '>':
+        case '@':
+        case ',':
+        case ';':
+        case ':':
+        case '\\':
+        case '"':
+        case '/':
+        case '[':
+        case ']':
+        case '?':
+        case '=':
+        case '{':
+        case '}':
+        case ' ':
+        case '\t':
             return true;
         default:
             return false;
