@@ -482,6 +482,7 @@ public:
     Server(const std::string& host, const std::string& port, ServicePtr service, StrategyPtr globalHandler);
     /// Tworzy nowy obiekt z zadan¹ funkcj¹ odpowiadaj¹c¹ na zapytania.
     /**
+     * @param handler funkcja lub obiekt funkcyjny obs³uguj¹cy argument Http::Request i zwracaj¹cy Http::Response.
      * Obiekt wykorzystuje domyœln¹ strategiê ThreadedHandlerStrategy.
      */
     Server(const std::string& host, const std::string& port, RequestHandler handler, ServicePtr service = ServicePtr(new Tcp::StreamService()));
@@ -489,7 +490,7 @@ public:
     /// Uruchamia serwer.
     /**
      * Serwer bêdzie dzia³aæ do czasu otrzymania sygna³u przerwania systemowego.
-     * Zwrócona wartoœæ to wartoœæ sygna³u.
+     * Zwraca 0 w przypadku z³apania wyj¹tku, w przeciwnym razie nie wraca.
      */
     int run();
 

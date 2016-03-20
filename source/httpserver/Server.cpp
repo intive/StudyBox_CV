@@ -19,6 +19,7 @@ namespace {
     { Http::Response::Status::Unauthorized, "HTTP/1.0 401 Unauthorized\r\n" },
     { Http::Response::Status::Forbidden, "HTTP/1.0 403 Forbidden\r\n" },
     { Http::Response::Status::NotFound, "HTTP/1.0 404 Not Found\r\n" },
+    { Http::Response::Status::RequestTimeout, "HTTP/1.0 408 Request Timeout\r\n" },
     { Http::Response::Status::InternalServerError, "HTTP/1.0 500 Internal Server Error\r\n" },
     { Http::Response::Status::NotImplemented, "HTTP/1.0 501 Not Implemented\r\n" },
     { Http::Response::Status::BadGateway, "HTTP/1.0 502 Bad Gateway\r\n" },
@@ -49,9 +50,9 @@ void Http::Connection::stop()
 void Http::Connection::read()
 {
     auto mbuffer = Tcp::MakeBuffer(buffer);
-    std::size_t bytes = socket.readSome(mbuffer);
-    int ec = bytes <= 0;
-    if (!ec) // Nie wykryto b³êdu.
+    int bytes = socket.readSome(mbuffer);
+    bool ec = bytes <= 0;
+    while (!ec) // Nie wykryto b³êdu.
     {
         RequestParser::Result result;
         auto it = buffer.begin();
@@ -61,20 +62,28 @@ void Http::Connection::read()
             if (parser.fill(it, buffer.begin() + bytes, request)) // Zacznij czytaæ cia³o.
             {
                 write(); // Je¿eli cia³o nie zosta³o wykryte, przejdŸ do odpowiedzi.
+                return;
             }
             else
             {
                 readBody(); // W przeciwnym wypadku wywo³aj kolejne asynchroniczne czytanie cia³a.
+                return;
             }
         }
         else if (result == RequestParser::Result::Bad) // Zapytanie sparsowane niepoprawnie.
         {
             globalHandler.respond(socket, Response::Status::BadRequest); // Od razu odpowiedz klientowi.
+            return;
         }
-        else
-        {
-            read(); // Czytaj dalej.
-        }
+        bytes = socket.readSome(mbuffer);
+    }
+    try
+    {
+        globalHandler.respond(socket, Response::Status::RequestTimeout);
+    }
+    catch (const Tcp::SendError&)
+    {
+        // klient zakoñczy³ po³¹czenie
     }
 }
 
@@ -83,16 +92,14 @@ void Http::Connection::readBody()
     auto mbuffer = Tcp::MakeBuffer(buffer);
     std::size_t bytes = socket.readSome(mbuffer);
     int ec = bytes > 0;
-    if (!ec)
+    while (!ec)
     {
         if (parser.fill(buffer.begin(), buffer.begin() + bytes, request))
         {
             write();
+            return;
         }
-        else
-        {
-            readBody();
-        }
+        bytes = socket.readSome(mbuffer);
     }
 }
 
