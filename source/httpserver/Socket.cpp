@@ -1,7 +1,7 @@
 #include "Socket.h"
 #include <csignal>
 #include <cassert>
-
+#include <errno.h>
 #include <sstream>
 
 #include "Predef.h"
@@ -167,6 +167,15 @@ bool Tcp::Service::operator>(const Service& other) const
 
 Tcp::SocketImplementation::SocketImplementation(StreamServiceInterface& service, HandleType handle) : SocketInterface(service, handle)
 {
+#if defined(PATR_OS_WINDOWS)
+    DWORD timeout = 1000;
+#elif defined(PATR_OS_UNIX)
+    timeval timeout;
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;
+#endif
+    if (setsockopt(handle, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof timeout) < 0)
+        throw SocketOptionError("setsockopt for recv timeout failed");
 }
 
 Tcp::SocketImplementation::~SocketImplementation()
@@ -197,7 +206,15 @@ int Tcp::SocketImplementation::readSome(BufferType & buffer)
     auto result = ::recv(handle(), buffer.first, buffer.second, 0);
     if (result == -1)
     {
-        throw ReceiveError("recv failed");
+#if defined(PATR_OS_UNIX)
+        auto val = errno;
+        if (val != EWOULDBLOCK && val != ECONNREFUSED)
+            throw ReceiveError("recv failed");
+#elif defined(PATR_OS_WINDOWS)
+        auto val = WSAGetLastError();
+        if (val != WSAETIMEDOUT && val != WSAEINPROGRESS)
+            throw ReceiveError("recv failed");
+#endif
     }
     return result;
 }
