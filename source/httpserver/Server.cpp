@@ -49,68 +49,108 @@ void Http::Connection::stop()
 
 void Http::Connection::read()
 {
-    auto mbuffer = Tcp::MakeBuffer(buffer);
-    int bytes = socket.readSome(mbuffer);
-    bool ec = bytes <= 0;
-    while (!ec) // Nie wykryto b³êdu.
+    auto self = shared_from_this();
+    socket.asyncReadSome(Tcp::MakeBuffer(buffer),
+        [this, self](int ec, std::size_t bytes)
     {
-        RequestParser::Result result;
-        auto it = buffer.begin();
-        std::tie(result, it) = parser.parse(buffer.begin(), buffer.begin() + bytes, request);
-        if (result == RequestParser::Result::Good) // Zapytanie sparsowane poprawnie.
+        if (!ec) // Nie wykryto b³êdu.
         {
-            if (parser.fill(it, buffer.begin() + bytes, request)) // Zacznij czytaæ cia³o.
+            RequestParser::Result result;
+            auto it = buffer.begin();
+            std::tie(result, it) = parser.parse(buffer.begin(), buffer.begin() + bytes, request);
+            if (result == RequestParser::Result::Good) // Zapytanie sparsowane poprawnie.
             {
-                write(); // Je¿eli cia³o nie zosta³o wykryte, przejdŸ do odpowiedzi.
-                return;
+                if (parser.fill(it, buffer.begin() + bytes, request)) // Zacznij czyta? cia?o.
+                {
+                    write(); // Je¿eli cia³o nie zosta³o wykryte, przejdŸ do odpowiedzi.
+                }
+                else
+                {
+                    readBody(); // W przeciwnym wypadku wywo³aj kolejne asynchroniczne czytanie cia³a.
+                }
+            }
+            else if (result == RequestParser::Result::Bad) // Zapytanie sparsowane niepoprawnie.
+            {
+                globalHandler.respond(socket, Response::Status::BadRequest); // Od razu odpowiedz klientowi.
+                socket.shutdown();
+                socket.close(); // Zamknij gniazdo.
+                globalHandler.stop(shared_from_this());
             }
             else
             {
-                readBody(); // W przeciwnym wypadku wywo³aj kolejne asynchroniczne czytanie cia³a.
-                return;
+                read(); // Czytaj dalej.
             }
         }
-        else if (result == RequestParser::Result::Bad) // Zapytanie sparsowane niepoprawnie.
+        else
         {
-            globalHandler.respond(socket, Response::Status::BadRequest); // Od razu odpowiedz klientowi.
-            return;
+            try
+            {
+                if (ec > 1)
+                    globalHandler.respond(socket, Response::Status::RequestTimeout);
+            }
+            catch (const Tcp::SendError&)
+            {
+
+            }
+            socket.shutdown();
+            globalHandler.stop(shared_from_this());
         }
-        bytes = socket.readSome(mbuffer);
     }
-    try
-    {
-        globalHandler.respond(socket, Response::Status::RequestTimeout);
-    }
-    catch (const Tcp::SendError&)
-    {
-        // klient zakoñczy³ po³¹czenie
-    }
+    );
 }
 
 void Http::Connection::readBody()
 {
-    auto mbuffer = Tcp::MakeBuffer(buffer);
-    std::size_t bytes = socket.readSome(mbuffer);
-    int ec = bytes > 0;
-    while (!ec)
+    auto self = shared_from_this();
+    socket.asyncReadSome(Tcp::MakeBuffer(buffer),
+        [this, self](int ec, std::size_t bytes)
     {
-        if (parser.fill(buffer.begin(), buffer.begin() + bytes, request))
+        if (!ec)
         {
-            write();
-            return;
+            if (parser.fill(buffer.begin(), buffer.begin() + bytes, request))
+            {
+                write();
+            }
+            else
+            {
+                readBody();
+            }
         }
-        bytes = socket.readSome(mbuffer);
+        else
+        {
+            try
+            {
+                globalHandler.respond(socket, Response::Status::RequestTimeout);
+            }
+            catch (const Tcp::SendError&)
+            {
+
+            }
+            socket.shutdown();
+            globalHandler.stop(shared_from_this());
+        }
     }
+    );
 }
 
 void Http::Connection::write()
 {
+    auto self = shared_from_this();
     globalHandler.handle(
-        [this](HandlerStrategy::RequestHandler handler)
+        [this, self](HandlerStrategy::RequestHandler handler)
         {
-            socket.write(Tcp::MakeBuffer(handler(request).raw()));
+            try
+            {
+                socket.write(Tcp::MakeBuffer(handler(request).raw()));
+            }
+            catch (const Tcp::SendError&)
+            {
+                return;
+            }
         }
     );
+    socket.shutdown();
+    globalHandler.stop(shared_from_this());
 }
 
 Http::ThreadedHandlerStrategy::ThreadedHandlerStrategy(RequestHandler handler) : handler(handler)
@@ -119,7 +159,13 @@ Http::ThreadedHandlerStrategy::ThreadedHandlerStrategy(RequestHandler handler) :
 
 void Http::ThreadedHandlerStrategy::handle(ConnectionResponse response)
 {
-    response(handler);
+    if (!pool.add(std::bind(response, handler)))
+    {
+        response([](const Request&)
+        {
+            return Response(Response::Status::InternalServerError, "", "");
+        });
+    }
 }
 
 void Http::ThreadedHandlerStrategy::respond(Tcp::Socket& socket, Response::Status stockResponse)
@@ -129,14 +175,13 @@ void Http::ThreadedHandlerStrategy::respond(Tcp::Socket& socket, Response::Statu
 
 void Http::ThreadedHandlerStrategy::start(ConnectionPtr connection)
 {
-    pool.add([connection]
-    {
-        connection->start();
-    });
+    connections.insert(connection);
+    connection->start();
 }
 
 void Http::ThreadedHandlerStrategy::stop(ConnectionPtr connection)
 {
+    connections.erase(connection);
 }
 
 Http::Response::Response(Status code, const BodyType & content, const MediaType & mediaType) : responseStatus(code), response(content)
@@ -684,31 +729,26 @@ Http::Server::Server(const std::string& host, const std::string& port, ServicePt
     acceptor.setOption(Tcp::Option::ReuseAddress(true));
     acceptor.bind(endpoint.address());
     acceptor.listen(50);
+    accept();
 }
 
-Http::Server::Server(const std::string & host, const std::string & port, RequestHandler handler, ServicePtr service) : Server(host, port, std::move(service), std::unique_ptr<HandlerStrategy>(new ThreadedHandlerStrategy(std::move(handler))))
+Http::Server::Server(const std::string & host, const std::string & port, RequestHandler handler, ServicePtr service)
+    : Server(host, port, std::move(service), StrategyPtr(new ThreadedHandlerStrategy(std::move(handler))))
 {
 }
 
 int Http::Server::run()
 {
-    try
-    {
-        for (;;)
-            accept();
-    }
-    catch (const Tcp::AcceptError&)
-    {
-        return 0;
-    }
+    return service->run();
 }
 
 void Http::Server::accept()
 {
-    auto socket = acceptor.accept();
+    acceptor.asyncAccept([this](Tcp::Socket socket)
     {
         globalHandler->start(std::make_shared<Connection>(std::move(socket), *globalHandler));
-    }
+        accept();
+    });
 }
 
 
@@ -750,7 +790,7 @@ Http::ConnectionPool::~ConnectionPool()
     }
     condition.notify_all();
     for (std::thread &worker : workers)
-        worker.join();
+            worker.join();
 }
 
 bool Http::ConnectionPool::add(RequestHandler handler)

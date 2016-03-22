@@ -18,7 +18,6 @@
 #include "Socket.h"
 
 
-
 /// Przestrzeñ klas i funkcji oraz sta³ych zwi¹zanych z dzia³aniem serwera HTTP.
 /**
  * Pozostaj¹ w du¿ym zwi¹zku z przestrzeni¹ TCP - komunikacja przebiega za pomoc¹ gniazd
@@ -334,12 +333,11 @@ private:
 
 class HandlerStrategy;
 
-
 /// Klasa enkapsuluj¹ca po³¹czenie z klientem.
 /**
  * Odpowiedzialna za odczytanie zapytania i wywo³anie odpowiedzi.
  */
-class Connection// : public std::enable_shared_from_this<Connection>
+class Connection : public std::enable_shared_from_this<Connection>
 {
 public:
     typedef std::array<char, 8192> BufferType;
@@ -457,7 +455,7 @@ public:
     void stop(ConnectionPtr connection) override;
 
 private:
-    //std::unordered_set<ConnectionPtr> connections;
+    std::unordered_set<ConnectionPtr> connections;
     RequestHandler handler;
     ConnectionPool pool;
 };
