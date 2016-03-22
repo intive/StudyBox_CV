@@ -18,7 +18,6 @@
 #include "Socket.h"
 
 
-
 /// Przestrzeñ klas i funkcji oraz sta³ych zwi¹zanych z dzia³aniem serwera HTTP.
 /**
  * Pozostaj¹ w du¿ym zwi¹zku z przestrzeni¹ TCP - komunikacja przebiega za pomoc¹ gniazd
@@ -334,12 +333,11 @@ private:
 
 class HandlerStrategy;
 
-
 /// Klasa enkapsuluj¹ca po³¹czenie z klientem.
 /**
  * Odpowiedzialna za odczytanie zapytania i wywo³anie odpowiedzi.
  */
-class Connection// : public std::enable_shared_from_this<Connection>
+class Connection : public std::enable_shared_from_this<Connection>
 {
 public:
     typedef std::array<char, 8192> BufferType;
@@ -457,7 +455,7 @@ public:
     void stop(ConnectionPtr connection) override;
 
 private:
-    //std::unordered_set<ConnectionPtr> connections;
+    std::unordered_set<ConnectionPtr> connections;
     RequestHandler handler;
     ConnectionPool pool;
 };
@@ -482,6 +480,7 @@ public:
     Server(const std::string& host, const std::string& port, ServicePtr service, StrategyPtr globalHandler);
     /// Tworzy nowy obiekt z zadan¹ funkcj¹ odpowiadaj¹c¹ na zapytania.
     /**
+     * @param handler funkcja lub obiekt funkcyjny obs³uguj¹cy argument Http::Request i zwracaj¹cy Http::Response.
      * Obiekt wykorzystuje domyœln¹ strategiê ThreadedHandlerStrategy.
      */
     Server(const std::string& host, const std::string& port, RequestHandler handler, ServicePtr service = ServicePtr(new Tcp::StreamService()));
@@ -489,7 +488,7 @@ public:
     /// Uruchamia serwer.
     /**
      * Serwer bêdzie dzia³aæ do czasu otrzymania sygna³u przerwania systemowego.
-     * Zwrócona wartoœæ to wartoœæ sygna³u.
+     * Zwraca 0 w przypadku z³apania wyj¹tku, w przeciwnym razie nie wraca.
      */
     int run();
 
