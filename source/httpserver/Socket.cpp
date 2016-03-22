@@ -22,12 +22,24 @@
 #    error "Unrecognised OS"
 #endif
 
+namespace {
+    int GetLastSocketError()
+    {
+#if defined(PATR_OS_WINDOWS)
+        return WSAGetLastError();
+#elif defined(PATR_OS_UNIX)
+        return errno;
+#endif
+    }
+}
+
 struct Tcp::StreamService::StreamServicePimpl
 {
     StreamServicePimpl();
     ~StreamServicePimpl();
 
     fd_set readFdsMaster;
+    fd_set readFds;
 };
 
 Tcp::StreamService::StreamServicePimpl::StreamServicePimpl() : readFdsMaster()
@@ -67,38 +79,32 @@ int Tcp::StreamService::run()
 
     while (!signal || !signal->received())
     {
-        fd_set readFds = readFdsMaster;
-        int result = (*acceptors.rbegin())->getHandle();
-        if (!sockets.empty())
-            result = (std::max)((*sockets.rbegin())->getHandle(), result);
-        result = ::select(result + 1, &readFds, nullptr, nullptr, nullptr);
-        if (result < 0)
-        {
-            if (signal->received())
-                break;
-            throw ServiceError("select failed");
-        }
-    
-        if (result == 0)
-        {
-            ; // time-out;
-        }
+        auto start = std::chrono::high_resolution_clock::now();
+        int timeSinceLastUpdate = 0;
 
-        for (auto& socket : sockets)
+        fd_set& readFds = pimpl->readFds;
+
+        auto result = select(start, timeSinceLastUpdate);
+        if (result < 0)
+            break;
+
+
+        if (signal->received())
+            break;
+
+        for (auto socket = sockets.begin(); socket != sockets.end();)
         {
-            if (FD_ISSET(socket->getHandle(), &readFds))
+            auto next = socket;
+            ++next;
+            if (FD_ISSET((*socket)->getHandle(), &readFds))
             {
-                int result = const_cast<SocketService*>(socket)->readReady();
-                if (result == 0)
-                {
-                    FD_CLR(socket->getHandle(), &readFdsMaster);
-                }
-                else if (result < 0)
-                {
-                    // error
-                    FD_CLR(socket->getHandle(), &readFdsMaster);
-                }
+                const_cast<SocketService*>(*socket)->readReady();
             }
+            else
+            {
+                const_cast<SocketService*>(*socket)->updateRemainingTime(timeSinceLastUpdate);
+            }
+            socket = next;
         }
 
         for (auto& acceptor : acceptors)
@@ -132,7 +138,59 @@ void Tcp::StreamService::remove(SocketService * service)
 
 std::unique_ptr<Tcp::ServiceFactory> Tcp::StreamService::getFactory()
 {
-    return std::unique_ptr<ServiceFactory>(new StreamServiceFactory(*this));//std::unique_ptr<AcceptorInterface>(new AcceptorImplementation(*this));
+    return std::unique_ptr<ServiceFactory>(new StreamServiceFactory(*this));
+}
+
+int Tcp::StreamService::select(const std::chrono::high_resolution_clock::time_point& start, int& timeSinceLastUpdate)
+{
+    for (;;)
+    {
+        auto& readFds = pimpl->readFds;
+        readFds = pimpl->readFdsMaster;
+        int result = (*acceptors.rbegin())->getHandle();
+
+        if (!sockets.empty())
+            result = (std::max)((*sockets.rbegin())->getHandle(), result);
+
+        auto comp = [](const SocketService* left, const SocketService* right) { return left->remainingTime() < right->remainingTime(); };
+
+        std::set<SocketService*, decltype(comp)> timevals(comp);
+        timevals.insert(sockets.begin(), sockets.end());
+
+        while (!timevals.empty() && (*timevals.begin())->remainingTime() <= 0)
+            timevals.erase(timevals.begin());
+
+        auto remainingTime = timevals.empty() ? 0 : (*timevals.begin())->remainingTime() - timeSinceLastUpdate;
+        auto timeout = timeval();
+        timeout.tv_sec = remainingTime / 1000;
+        timeout.tv_usec = (remainingTime * 1000) % 1000000;
+
+        int retval = 0;
+
+        if (remainingTime > 0)
+            retval = ::select(result + 1, &readFds, nullptr, nullptr, &timeout);
+        else
+            retval = ::select(result + 1, &readFds, nullptr, nullptr, nullptr); // w przypadku braku oczekuj¹cych gniazd, blokuj bez przerwy.
+
+        if (retval < 0)
+        {
+            if (signal->received())
+                return retval;
+            throw ServiceError("select failed");
+        }
+
+        auto stop = std::chrono::high_resolution_clock::now();
+        timeSinceLastUpdate += (int)std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
+
+        if (retval != 0)
+            return retval; // nie zosta³ przekroczony czas oczekiwania.
+
+        while (!timevals.empty() && (*timevals.begin())->remainingTime() <= timeSinceLastUpdate)
+        {
+            (*timevals.begin())->updateRemainingTime(timeSinceLastUpdate); // gniazdo przekroczy³o swój czas oczekiwania.
+            timevals.erase(timevals.begin());
+        }
+    }
 }
 
 Tcp::Service::HandleType Tcp::Service::getHandle() const
@@ -165,17 +223,8 @@ bool Tcp::Service::operator>(const Service& other) const
     return handle > other.handle;
 }
 
-Tcp::SocketImplementation::SocketImplementation(StreamServiceInterface& service, HandleType handle) : SocketInterface(service, handle)
+Tcp::SocketImplementation::SocketImplementation(StreamServiceInterface& service, HandleType handle) : SocketInterface(service, handle), closed(false)
 {
-#if defined(PATR_OS_WINDOWS)
-    DWORD timeout = 1000;
-#elif defined(PATR_OS_UNIX)
-    timeval timeout;
-    timeout.tv_sec = 1;
-    timeout.tv_usec = 0;
-#endif
-    if (setsockopt(handle, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof timeout) < 0)
-        throw SocketOptionError("setsockopt for recv timeout failed");
 }
 
 Tcp::SocketImplementation::~SocketImplementation()
@@ -208,11 +257,11 @@ int Tcp::SocketImplementation::readSome(BufferType & buffer)
     {
 #if defined(PATR_OS_UNIX)
         auto val = errno;
-        if (val != EWOULDBLOCK && val != ECONNREFUSED)
+        if (val != EWOULDBLOCK && val != ECONNREFUSED && val != EWOULDBLOCK && val != EAGAIN)
             throw ReceiveError("recv failed");
 #elif defined(PATR_OS_WINDOWS)
         auto val = WSAGetLastError();
-        if (val != WSAETIMEDOUT && val != WSAEINPROGRESS)
+        if (val != WSAETIMEDOUT && val != WSAEINPROGRESS && val != WSAEWOULDBLOCK)
             throw ReceiveError("recv failed");
 #endif
     }
@@ -254,27 +303,25 @@ void Tcp::SocketImplementation::close()
 #endif
 }
 
-Tcp::SocketService::SocketService(StreamServiceInterface& service, SocketInterface& implementation, HandleType handle) : shut(false), implementation(implementation), service(service)
+Tcp::SocketService::SocketService(StreamServiceInterface& service, SocketInterface& implementation, HandleType handle) : shut(0), implementation(implementation), service(service)
 {
     this->handle = handle;
+    currentTime = 0;
+    timeout = 30000; // 30 sekund
 }
 
 int Tcp::SocketService::readReady()
 {
+    currentTime = 0;
     if (readHandlers.empty()) return 0;
-
-    int s = implementation.readSome(readHandlers.front().first);
-    if (s == 0)
-        shut = true;
-    readHandlers.front().second(shut, s);
-
-    if (shut)
-    {
-        service.remove(this);
-        readHandlers.front().second(shut, -1);
-        return 0;
-    }
+    int s = 0;
+    if (!shut)
+        s = implementation.readSome(readHandlers.front().first);
+    if (s <= 0)
+        shut += 1 - s;
+    auto copy = readHandlers.front().second;
     readHandlers.pop();
+    copy(shut, s);
 
     return s;
 }
@@ -306,9 +353,25 @@ void Tcp::SocketService::enqueue(const ConstBufferType& buffer, WriteHandler han
     writeHandlers.push(std::make_pair(buffer, std::move(handler)));
 }
 
+int Tcp::SocketService::remainingTime() const
+{
+    return timeout - currentTime;
+}
+
+void Tcp::SocketService::updateRemainingTime(int milliseconds)
+{
+    currentTime += milliseconds;
+    if (currentTime >= timeout)
+    {
+        shutdown();
+        readReady();
+    }
+}
+
 void Tcp::SocketService::shutdown()
 {
-    shut = true;
+    shut = 1;
+    service.remove(this);
 }
 
 Tcp::Socket::Socket(std::unique_ptr<SocketInterface> implementation) : implementation(std::move(implementation))
@@ -348,6 +411,7 @@ void Tcp::Socket::asyncWriteSome(const ConstBufferType & buffer, WriteHandler ha
 
 void Tcp::Socket::close()
 {
+    shutdown();
     implementation->close();
 }
 
@@ -377,7 +441,8 @@ void Tcp::AcceptorImplementation::bind(Endpoint::AddressType address)
 {
     if (::bind(handle(), address->ai_addr, static_cast<int>(address->ai_addrlen)) == -1)
     {
-        throw BindError("bind failed");
+
+        throw BindError("bind failed (" + std::to_string(GetLastSocketError()) + ')');
     }
 }
 
@@ -385,7 +450,7 @@ void Tcp::AcceptorImplementation::listen(int backlog)
 {
     if (::listen(handle(), backlog) == -1)
     {
-        throw ListenError("listen failed");
+        throw ListenError("listen failed (" + std::to_string(GetLastSocketError()) + ')');
     }
 }
 
@@ -394,7 +459,7 @@ Tcp::Socket Tcp::AcceptorImplementation::accept()
     auto result = ::accept(handle(), nullptr, nullptr);
     if (result == -1)
     {
-        throw AcceptError("accept failed");
+        throw AcceptError("accept failed (" + std::to_string(GetLastSocketError()) + ')');
     }
     return Socket(std::unique_ptr<SocketImplementation>(new SocketImplementation(streamService, static_cast<HandleType>(result))));
 }

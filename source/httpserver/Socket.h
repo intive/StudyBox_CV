@@ -10,6 +10,7 @@
 #include <unordered_set>
 
 #include <functional>
+#include <chrono>
 
 struct addrinfo;
 
@@ -349,6 +350,11 @@ public:
     /// S³u¿y wprowadzeniu nowych funkcji obs³uguj¹cych asynchroniczny zapis.
     void enqueue(const ConstBufferType& buffer, WriteHandler handler);
 
+    /// Zwraca pozosta³y czas, po up³ywie którego nast¹pi timeout w [ms].
+    int remainingTime() const;
+    /// Uaktualnia pozosta³y czas do timeoutu w [ms].
+    void updateRemainingTime(int milliseconds);
+
     /// Oznacza gniazdo jako gotowe do zamkniêcia.
     /**
      * Zamkniêcie mo¿e nie nast¹piæ natychmiast.
@@ -356,8 +362,9 @@ public:
     void shutdown();
 
 private:
-    bool shut;
-
+    int shut;
+    int timeout, currentTime;
+    std::chrono::high_resolution_clock::time_point begin;
     std::queue<std::pair<BufferType, ReadHandler>> readHandlers;
     std::queue<std::pair<ConstBufferType, WriteHandler>> writeHandlers;
     SocketInterface& implementation;
@@ -519,7 +526,7 @@ public:
     /**
      * Funkcja powinna wracaæ bez blokowania.
      */
-    void asyncReadSome(BufferType buffer, ReadHandler handler);
+    virtual void asyncReadSome(BufferType buffer, ReadHandler handler);
     /// Odpowiednik read dla zapisu.
     /**
      * @return iloœæ faktycznie zapisanych bajtów - powinna wynosiæ rozmiar bufora.
@@ -531,7 +538,7 @@ public:
      */
     virtual int writeSome(const ConstBufferType& buffer) = 0;
     /// Odpowiednik asyncReadSome dla zapisu.
-    void asyncWriteSome(const ConstBufferType& buffer, WriteHandler handler);
+    virtual void asyncWriteSome(const ConstBufferType& buffer, WriteHandler handler);
 
     /// Bezpoœrednio zamyka gniazdo.
     virtual void close() = 0;
@@ -638,6 +645,14 @@ public:
     std::unique_ptr<ServiceFactory> getFactory() override;
 
 private:
+    /// Wybiera mo¿liwe do odczytu gniazda.
+    /**
+     * Aktualizuje czas od ostatniego wywo³ania.
+     * Odpowiedzialna za timeout gniazd.
+     * @return liczba wybranych gniazd.
+     */
+    int select(const std::chrono::high_resolution_clock::time_point& start, int& timeSinceLastUpdate);
+
     struct StreamServicePimpl;
     std::unique_ptr<StreamServicePimpl> pimpl;
 };
