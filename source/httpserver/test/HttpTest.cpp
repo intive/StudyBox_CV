@@ -138,11 +138,20 @@ private:
     {
         if (closed)
             return 0;
-        return (int)reader.readsome(buffer.first, 5);
+        auto ret = (int)reader.readsome(buffer.first, 5);
+        if (!ret)
+            close();
+
+        return ret;
+    }
+    void asyncReadSome(BufferType buffer, ReadHandler handler) override
+    {
+        auto bytes = readSome(buffer);
+        handler(bytes <= 0, bytes);
     }
     int write(const ConstBufferType & buffer) override
     {
-        if (closed)
+        if (closed && !writer.str().empty())
             throw Tcp::SendError("");
         if (globalWriter)
             globalWriter->write(buffer.first, buffer.second);
@@ -150,6 +159,10 @@ private:
         return (int)buffer.second;
     }
     int writeSome(const ConstBufferType & buffer) override
+    {
+        throw Tcp::NotImplemented("");
+    }
+    void asyncWriteSome(const ConstBufferType& buffer, WriteHandler handler) override
     {
         throw Tcp::NotImplemented("");
     }
