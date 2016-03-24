@@ -3,16 +3,16 @@
 
 namespace {
 
-/// Sprawdza czy znak jest znakiem bia³ym w JSON.
+/// Sprawdza czy znak jest znakiem biaÅ‚ym w JSON.
 bool IsWhitespace(char c)
 {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
-/// Sprawdza czy znak jest znakiem kontrolnym (wystêpuj¹cym po '\').
+/// Sprawdza czy znak jest znakiem kontrolnym (wystÄ™pujÄ…cym po '\').
 /**
- * Nie zawiera przypadku \u, który sygnalizuje wartoœæ Unicode.
- * W chwili obecnej ta funkcjonalnoœæ nie jest wspierana.
+ * Nie zawiera przypadku \u, ktÃ³ry sygnalizuje wartoÅ›Ä‡ Unicode.
+ * W chwili obecnej ta funkcjonalnoÅ›Ä‡ nie jest wspierana.
  */
 bool IsControl(char c)
 {
@@ -32,7 +32,7 @@ bool IsControl(char c)
     }
 }
 
-/// Sprawdza czy znak jest znakiem interpunkcyjnym (rozdzielaj¹cym sk³adniê JSON).
+/// Sprawdza czy znak jest znakiem interpunkcyjnym (rozdzielajÄ…cym skÅ‚adniÄ™ JSON).
 bool IsPunctuation(char c)
 {
     switch (c)
@@ -46,9 +46,9 @@ bool IsPunctuation(char c)
     }
 }
 
-/// Czyta i usuwa ze strumienia znaki do napotkania znaku nie-bia³ego.
+/// Czyta i usuwa ze strumienia znaki do napotkania znaku nie-biaÅ‚ego.
 /**
- * Wartoœæ zwracana nie jest usuniêta ze strumienia.
+ * WartoÅ›Ä‡ zwracana nie jest usuniÄ™ta ze strumienia.
  */
 char TrimWhitespace(std::istream& stream)
 {
@@ -80,7 +80,7 @@ protected:
     ~JsonReader() = default;
 };
 
-/// Parser wartoœci JSON typu string.
+/// Parser wartoÅ›ci JSON typu string.
 class JsonStringReader : public JsonReader
 {
 public:
@@ -141,7 +141,7 @@ private:
 
 /// Dokonuje odczytu znaku ','.
 /**
- * @return false je¿eli znak nie zosta³ odnaleziony.
+ * @return false jeÅ¼eli znak nie zostaÅ‚ odnaleziony.
  */
 bool ReadJsonComma(std::istream& stream)
 {
@@ -156,7 +156,7 @@ bool ReadJsonComma(std::istream& stream)
 
 /// Dokonuje odczytu znaku ':'.
 /**
-* @return false je¿eli znak nie zosta³ odnaleziony.
+* @return false jeÅ¼eli znak nie zostaÅ‚ odnaleziony.
 */
 bool ReadJsonColon(std::istream& stream)
 {
@@ -260,7 +260,7 @@ private:
     } state;
 };
 
-/// Parser dla wartoœci true.
+/// Parser dla wartoÅ›ci true.
 class JsonTrueReader : public JsonReader
 {
 public:
@@ -324,7 +324,7 @@ private:
     } state;
 };
 
-/// Parser dla wartoœci false.
+/// Parser dla wartoÅ›ci false.
 class JsonFalseReader : public JsonReader
 {
 public:
@@ -397,7 +397,7 @@ private:
     } state;
 };
 
-/// Parser dla wartoœci null.
+/// Parser dla wartoÅ›ci null.
 class JsonNullReader : public JsonReader
 {
 public:
@@ -461,7 +461,7 @@ private:
     } state;
 };
 
-/// Dokonuje odczytu wartoœci JSON string.
+/// Dokonuje odczytu wartoÅ›ci JSON string.
 bool ReadJsonString(std::istream& stream, PropertyTree& tree, std::string& label)
 {
     std::string buffer;
@@ -483,7 +483,7 @@ bool ReadJsonString(std::istream& stream, PropertyTree& tree, std::string& label
     }
 }
 
-/// Dokonuje odczytu wartoœci JSON number.
+/// Dokonuje odczytu wartoÅ›ci JSON number.
 bool ReadJsonNumber(std::istream& stream, PropertyTree& tree, const std::string& label)
 {
     std::string buffer;
@@ -702,7 +702,7 @@ bool ReadJsonArray(std::istream& stream, PropertyTree& tree, const std::string& 
     return true;
 }
 
-/// Dokonuje odczytu wartoœci dla korzenia i JSON array.
+/// Dokonuje odczytu wartoÅ›ci dla korzenia i JSON array.
 bool ReadJsonImpl(std::istream& stream, PropertyTree& tree, const std::string& term, bool readValue)
 {
     char c = stream.peek();

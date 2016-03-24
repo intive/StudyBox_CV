@@ -7,7 +7,7 @@
 #include <typeinfo>
 #include <sstream>
 
-/// Type trait sprawdza czy typ jest ³añcuchem znaków
+/// Type trait sprawdza czy typ jest Å‚aÅ„cuchem znakÃ³w
 template <typename T>
 struct is_string
     : public std::integral_constant<bool,
@@ -19,8 +19,8 @@ struct is_string<std::string> : std::true_type {};
 
 /// Type trait sprawdza czy typ jest kontenerem.
 /**
- * ¯eby podlega³ klasyfikacji, musi zawieraæ metody begin i end
- * oraz zwraca³ const_iterator zdefiniowany jako typedef.
+ * Å»eby podlegaÅ‚ klasyfikacji, musi zawieraÄ‡ metody begin i end
+ * oraz zwracaÅ‚ const_iterator zdefiniowany jako typedef.
  */
 template <typename T>
 struct is_container
@@ -41,36 +41,36 @@ struct is_container
     enum { value = (1 == sizeof test<T>(0)) };
 };
 
-/// S³u¿y do konwersji PropertyTree na wartoœci typu T.
+/// SÅ‚uÅ¼y do konwersji PropertyTree na wartoÅ›ci typu T.
 template<typename T, typename = void>
 struct PropertyTreeInputConverter;
 
-/// S³u¿y do konwersji wartoœci typu T na PropertyTree.
+/// SÅ‚uÅ¼y do konwersji wartoÅ›ci typu T na PropertyTree.
 template<typename T, typename = void>
 struct PropertyTreeOutputConverter;
 
-/// Klasa opisuj¹ca drzewo parametrów.
+/// Klasa opisujÄ…ca drzewo parametrÃ³w.
 /**
- * Drzewo zawiera wektor poddrzew (ma potomków) albo wartoœæ zapisan¹ jako std::string (jest liœciem).
+ * Drzewo zawiera wektor poddrzew (ma potomkÃ³w) albo wartoÅ›Ä‡ zapisanÄ… jako std::string (jest liÅ›ciem).
  * Zawiera 3 metody:
- *   find() - zwraca poddrzewo odpowiadaj¹ce podanemu kluczowi.
- *   get<T>() - zwraca wartoœæ drzewa jako okreœlony typ.
- *   put() - wstawia wartoœæ do drzewa.
+ *   find() - zwraca poddrzewo odpowiadajÄ…ce podanemu kluczowi.
+ *   get<T>() - zwraca wartoÅ›Ä‡ drzewa jako okreÅ›lony typ.
+ *   put() - wstawia wartoÅ›Ä‡ do drzewa.
  *
- * Dostêp do elementów drzewa odbywa siê za pomoc¹ etykiet.
- * Etykieta to ci¹g znaków delimitowany znakiem '.', który oddziela
+ * DostÄ™p do elementÃ³w drzewa odbywa siÄ™ za pomocÄ… etykiet.
+ * Etykieta to ciÄ…g znakÃ³w delimitowany znakiem '.', ktÃ³ry oddziela
  * poziomy drzewa.
- * Na przyk³ad:
+ * Na przykÅ‚ad:
  *   "foo" powoduje wyszukanie poddrzewa o nazwie "foo".
  *   "foo.bar" powoduje wyszukanie poddrzewa o nazwie "foo" a w nim
  *   poddrzewa o nazwie "bar".
- *   Je¿eli drzewo jest typu Array dostêp do poszczególnych elementów uzyskany jest poprzez
- *   znak '.' na koñcu etykiety, np.: "foo.bar." oznacza element tablicy bar z poddrzewa foo.
- *   Dostêp do poszczególnych elementów tablic uzyskiwany jest za pomoc¹ wartoœci przekazywanych
- *   jako kolejne argumenty do funkcji wyszukuj¹cych.
+ *   JeÅ¼eli drzewo jest typu Array dostÄ™p do poszczegÃ³lnych elementÃ³w uzyskany jest poprzez
+ *   znak '.' na koÅ„cu etykiety, np.: "foo.bar." oznacza element tablicy bar z poddrzewa foo.
+ *   DostÄ™p do poszczegÃ³lnych elementÃ³w tablic uzyskiwany jest za pomocÄ… wartoÅ›ci przekazywanych
+ *   jako kolejne argumenty do funkcji wyszukujÄ…cych.
  * Kod:
- *   tree.find("foo.bar.baz.", 2, 3) // spowoduje zwrócenie 3. elementu tablicy "baz" bêd¹cej 2. elementem
- *   tablicy "bar", która z kolei jest elementem drzewa foo, który nie jest tablic¹, zatem indeksowanie
+ *   tree.find("foo.bar.baz.", 2, 3) // spowoduje zwrÃ³cenie 3. elementu tablicy "baz" bÄ™dÄ…cej 2. elementem
+ *   tablicy "bar", ktÃ³ra z kolei jest elementem drzewa foo, ktÃ³ry nie jest tablicÄ…, zatem indeksowanie
  *   nie ma mocy.
  */
 class PropertyTree
@@ -82,28 +82,28 @@ public:
     typedef Children::iterator Iterator;
     typedef Children::const_iterator ConstIterator;
     
-    /// Podstawowe rozró¿nialne typy.
+    /// Podstawowe rozrÃ³Å¼nialne typy.
     /**
-     * Domyœlnym typem jest Object.
-     * Za ustawianie typów odpowiedzialny jest u¿ytkownik lub
-     * klasa wykonuj¹ca konwersjê do drzewa.
+     * DomyÅ›lnym typem jest Object.
+     * Za ustawianie typÃ³w odpowiedzialny jest uÅ¼ytkownik lub
+     * klasa wykonujÄ…ca konwersjÄ™ do drzewa.
      */
     enum Type
     {
         Null,
         Boolean,
-        Value, // wartoœæ liczbowa.
+        Value, // wartoÅ›Ä‡ liczbowa.
         String,
         Array,
-        Object // wartoœæ domyœlna.
+        Object // wartoÅ›Ä‡ domyÅ›lna.
     };
 
-    /// Tworzy nowy obiekt z domyœlnym typem wartoœci.
+    /// Tworzy nowy obiekt z domyÅ›lnym typem wartoÅ›ci.
     PropertyTree() : valueType(Type::Object)
     {
     }
 
-    /// Zwraca wartoœæ liœcia lub pusty ³añcuch je¿eli nie jest liœciem.
+    /// Zwraca wartoÅ›Ä‡ liÅ›cia lub pusty Å‚aÅ„cuch jeÅ¼eli nie jest liÅ›ciem.
     const std::string& string() const
     {
         return data;
@@ -125,9 +125,9 @@ public:
         return valueType;
     }
 
-    /// Sprawdza, czy drzewo zawiera potomków.
+    /// Sprawdza, czy drzewo zawiera potomkÃ³w.
     /**
-     * @return true, je¿eli jest liœciem, false w przeciwnym wypadku.
+     * @return true, jeÅ¼eli jest liÅ›ciem, false w przeciwnym wypadku.
      */
     bool empty() const
     {
@@ -136,7 +136,7 @@ public:
         return begin() == end();
     }
 
-    /// Zwraca iterator do potomków.
+    /// Zwraca iterator do potomkÃ³w.
     Iterator begin()
     {
         return children.begin();
@@ -157,18 +157,18 @@ public:
         return children.end();
     }
 
-    /// Grupa metod odpowiedzialnych za pobranie wartoœci w okreœlonym typie.
+    /// Grupa metod odpowiedzialnych za pobranie wartoÅ›ci w okreÅ›lonym typie.
     /**
-     * Zwracaj¹ wartoœci otwrzymane od obiektu Converter dla danego typu.
-     * Domyœlnym typem obiektu Converter jest PropertyTreeInputConverter<T>,
-     * który zawiera podstawowe specjalizacje oraz posiada mo¿liwoœci rozbudowy przez u¿ytkownika.
-     * Dostêp do zagnie¿d¿onych elementów uzyskaæ mo¿na poprzez wykorzystanie etykiet (p. etykiety w opisie klasy).
+     * ZwracajÄ… wartoÅ›ci otwrzymane od obiektu Converter dla danego typu.
+     * DomyÅ›lnym typem obiektu Converter jest PropertyTreeInputConverter<T>,
+     * ktÃ³ry zawiera podstawowe specjalizacje oraz posiada moÅ¼liwoÅ›ci rozbudowy przez uÅ¼ytkownika.
+     * DostÄ™p do zagnieÅ¼dÅ¼onych elementÃ³w uzyskaÄ‡ moÅ¼na poprzez wykorzystanie etykiet (p. etykiety w opisie klasy).
      */
 
-    /// Zwraca wartoœæ typu std::string, je¿eli jest liœciem.
+    /// Zwraca wartoÅ›Ä‡ typu std::string, jeÅ¼eli jest liÅ›ciem.
     /**
-     * Metoda wywo³uje Converter::operator()(const std::string&).
-     * Je¿eli drzewo nie jest liœciem (albo nie ma wartoœci), rzuca wyj¹tek std::bad_cast.
+     * Metoda wywoÅ‚uje Converter::operator()(const std::string&).
+     * JeÅ¼eli drzewo nie jest liÅ›ciem (albo nie ma wartoÅ›ci), rzuca wyjÄ…tek std::bad_cast.
      */
     template<typename T = DataType, typename Converter = PropertyTreeInputConverter<T>, typename std::enable_if<std::is_same<T, KeyType>::value>::type* = nullptr>
     T get(Converter&& c = PropertyTreeInputConverter<T>()) const
@@ -183,9 +183,9 @@ public:
         }
     }
 
-    /// Zwraca wartoœæ typu T, gdzie T nie jest std::string.
+    /// Zwraca wartoÅ›Ä‡ typu T, gdzie T nie jest std::string.
     /**
-     * Metoda wywo³uje Converter::operator()(const PropertyTree&).
+     * Metoda wywoÅ‚uje Converter::operator()(const PropertyTree&).
      */
     template<typename T = DataType, typename Converter = PropertyTreeInputConverter<T>, typename std::enable_if<!std::is_same<T, KeyType>::value && !is_string<Converter>::value>::type* = nullptr>
     T get(Converter&& c = PropertyTreeInputConverter<T>()) const
@@ -193,10 +193,10 @@ public:
         return c(*this);
     }
 
-    /// Grupa metod odpowiedzialnych za zwrócenie poddrzewa zgodnie z zadanymi parametrami.
+    /// Grupa metod odpowiedzialnych za zwrÃ³cenie poddrzewa zgodnie z zadanymi parametrami.
     /**
      * Wykorzystanie funkcji jest analogiczne do metod get().
-     * Dostêp do zagnie¿d¿onych elementów uzyskaæ mo¿na poprzez wykorzystanie etykiet (p. etykiety w opisie klasy).
+     * DostÄ™p do zagnieÅ¼dÅ¼onych elementÃ³w uzyskaÄ‡ moÅ¼na poprzez wykorzystanie etykiet (p. etykiety w opisie klasy).
      */
 
     /// Zwraca poddrzewo dla podanej etykiety.
@@ -205,7 +205,7 @@ public:
         return find(label, 0);
     }
 
-    /// Zwraca poddrzewo dla podanej etykiety, zgodnie z zadanymi indeksami elementów. 
+    /// Zwraca poddrzewo dla podanej etykiety, zgodnie z zadanymi indeksami elementÃ³w. 
     template<typename... Indices>
     const PropertyTree& find(const KeyType& label, std::size_t index, Indices&&... indices) const
     {
@@ -217,18 +217,18 @@ public:
         return const_cast<PropertyTree&>(const_cast<const PropertyTree&>(*this).find(label, index));
     }
 
-    /// Grupa metod odpowiedzialnych za dodanie wartoœci do drzewa.
+    /// Grupa metod odpowiedzialnych za dodanie wartoÅ›ci do drzewa.
     /**
-    * Dodaj¹ wartoœci otwrzymane od obiektu Converter dla danego typu.
-    * Domyœlnym typem obiektu Converter jest PropertyTreeOutputConverter<T>,
-    * który zawiera podstawowe specjalizacje oraz posiada mo¿liwoœci rozbudowy przez u¿ytkownika.
-    * Converter jest obiektem spe³niaj¹cym std::is_function<U> przyjmuj¹cym wartoœæ T i zwracaj¹cym
+    * DodajÄ… wartoÅ›ci otwrzymane od obiektu Converter dla danego typu.
+    * DomyÅ›lnym typem obiektu Converter jest PropertyTreeOutputConverter<T>,
+    * ktÃ³ry zawiera podstawowe specjalizacje oraz posiada moÅ¼liwoÅ›ci rozbudowy przez uÅ¼ytkownika.
+    * Converter jest obiektem speÅ‚niajÄ…cym std::is_function<U> przyjmujÄ…cym wartoÅ›Ä‡ T i zwracajÄ…cym
     * drzewo PropertyTree.
     */
 
     /// Dodaje poddrzewo do drzewa.
     /**
-     * Operacja odbywa siê bez dodatkowych obiektów konwertuj¹cych.
+     * Operacja odbywa siÄ™ bez dodatkowych obiektÃ³w konwertujÄ…cych.
      */
     PropertyTree& put(const KeyType& key, const PropertyTree& tree)
     {
@@ -236,9 +236,9 @@ public:
         return *this;
     }
 
-    /// Dodaje wartoœæ typu std::string do drzewa.
+    /// Dodaje wartoÅ›Ä‡ typu std::string do drzewa.
     /**
-     * Tworzy now¹ parê "opis":"wartoœæ".
+     * Tworzy nowÄ… parÄ™ "opis":"wartoÅ›Ä‡".
      */
     PropertyTree& put(const KeyType& key, const DataType& value)
     {
@@ -248,9 +248,9 @@ public:
         return *this;
     }
 
-    /// Dodaje wartoœæ do drzewa.
+    /// Dodaje wartoÅ›Ä‡ do drzewa.
     /**
-     * Wartoœæ podlega konwersji poprzez obiekt typu Converter.
+     * WartoÅ›Ä‡ podlega konwersji poprzez obiekt typu Converter.
      */
     template<typename T, typename Converter = PropertyTreeOutputConverter<T>>
     PropertyTree& put(const KeyType& key, const T& value, Converter&& c = PropertyTreeOutputConverter<T>())
@@ -259,16 +259,16 @@ public:
         return *this;
     }
 
-    /// Dodaje poddrzewo do drzewa z pust¹ nazw¹.
+    /// Dodaje poddrzewo do drzewa z pustÄ… nazwÄ….
     PropertyTree& put(const PropertyTree& tree)
     {
         put("", tree);
         return *this;
     }
 
-    /// Podmienia drzewo na takie wynikaj¹ca z konwersji przez obiekt Converter.
+    /// Podmienia drzewo na takie wynikajÄ…ca z konwersji przez obiekt Converter.
     /**
-     * Istotna jest ró¿nica miêdzy put(PropertyTree) a put(T), poniewa¿ to pierwsze dodaje poddrzewo,
+     * Istotna jest rÃ³Å¼nica miÄ™dzy put(PropertyTree) a put(T), poniewaÅ¼ to pierwsze dodaje poddrzewo,
      * a drugie podmienia obecne drzewo.
      */
     template<typename T, typename Converter = PropertyTreeOutputConverter<T>, typename std::enable_if<std::is_function<Converter>::value>::type>
@@ -279,12 +279,12 @@ public:
         return *this;
     }
 
-    /// Ustawia wartoœæ drzewa na dany ³añcuch znaków.
+    /// Ustawia wartoÅ›Ä‡ drzewa na dany Å‚aÅ„cuch znakÃ³w.
     /**
-     * Istotna jest ró¿nica miêdzy innymi jednoargumentowyni funkcjami put() ze wzglêdu na to,
-     * ¿e ta powoduje podmianê charakterystyczn¹ dla liœci.
-     * Ró¿nice te wynikaj¹ z trzymania w jednym wêŸle danych o potomkach i danych w³asnych charakterystycznych
-     * dla liœci.
+     * Istotna jest rÃ³Å¼nica miÄ™dzy innymi jednoargumentowyni funkcjami put() ze wzglÄ™du na to,
+     * Å¼e ta powoduje podmianÄ™ charakterystycznÄ… dla liÅ›ci.
+     * RÃ³Å¼nice te wynikajÄ… z trzymania w jednym wÄ™Åºle danych o potomkach i danych wÅ‚asnych charakterystycznych
+     * dla liÅ›ci.
      */
     PropertyTree& put(const std::string& data)
     {
@@ -292,10 +292,10 @@ public:
         return *this;
     }
 
-    /// Ustawia wartoœæ drzewa na dany ³añcuch znaków.
+    /// Ustawia wartoÅ›Ä‡ drzewa na dany Å‚aÅ„cuch znakÃ³w.
     /**
      * p. put(std::string).
-     * Przeci¹¿enie potrzebne aby unikn¹æ niejednoznacznoœci w kompilacji.
+     * PrzeciÄ…Å¼enie potrzebne aby uniknÄ…Ä‡ niejednoznacznoÅ›ci w kompilacji.
      */
     PropertyTree& put(const char* data)
     {
@@ -305,15 +305,15 @@ public:
 
 private:
 
-    /// Wrapper do metody wyszukuj¹cej dla ignorowanych indeksów.
+    /// Wrapper do metody wyszukujÄ…cej dla ignorowanych indeksÃ³w.
     const PropertyTree& findImpl(const KeyType& label) const
     {
         return findImpl(label, 0);
     }
 
-    /// Implementacja metody wyszukuj¹cej.
+    /// Implementacja metody wyszukujÄ…cej.
     /**
-     * W przypadku wyjœcia poza zasiêg rzuca wyj¹tek std::out_of_range.
+     * W przypadku wyjÅ›cia poza zasiÄ™g rzuca wyjÄ…tek std::out_of_range.
      */
     template<typename... Indices>
     const PropertyTree& findImpl(const KeyType& label, std::size_t index, Indices&&... indices) const
@@ -354,7 +354,7 @@ private:
     Children children;
 };
 
-/// Type trait do sprawdzenia czy klasa zawiera metodê T::serialize.
+/// Type trait do sprawdzenia czy klasa zawiera metodÄ™ T::serialize.
 template<typename T>
 struct is_serializable
 {
@@ -368,7 +368,7 @@ public:
     enum { value = sizeof(test<T>(0)) == sizeof(char) };
 };
 
-/// Type trait do sprawdzenia czy klasa zawiera metodê T::deserialize.
+/// Type trait do sprawdzenia czy klasa zawiera metodÄ™ T::deserialize.
 template<typename T>
 struct is_deserializable
 {
@@ -382,11 +382,11 @@ public:
     enum { value = sizeof(test<T>(0)) == sizeof(char) };
 };
 
-/// Ogólna klasa do konwersji liœci drzew na typ T.
+/// OgÃ³lna klasa do konwersji liÅ›ci drzew na typ T.
 /**
  * Do konwersji wykorzystuje std::istringstream.
- * Aby typ by³ konwertowalny przez t¹ klasê (bez specjalizacji),
- * musi przeci¹¿aæ operator >>(std::istream&, T).
+ * Aby typ byÅ‚ konwertowalny przez tÄ… klasÄ™ (bez specjalizacji),
+ * musi przeciÄ…Å¼aÄ‡ operator >>(std::istream&, T).
  */
 template<typename T, typename>
 struct PropertyTreeInputConverter
@@ -408,10 +408,10 @@ struct PropertyTreeInputConverter
     }
 };
 
-/// Specjalizacja wykorzystuj¹ca metodê deserialize() typu T.
+/// Specjalizacja wykorzystujÄ…ca metodÄ™ deserialize() typu T.
 /**
- * Klasy w pe³ni specjalizuj¹ce klasê PropertyTreeInputConverter
- * maj¹ pierwszeñstwo przed t¹ specjalizacj¹.
+ * Klasy w peÅ‚ni specjalizujÄ…ce klasÄ™ PropertyTreeInputConverter
+ * majÄ… pierwszeÅ„stwo przed tÄ… specjalizacjÄ….
  */
 template<typename T>
 struct PropertyTreeInputConverter<T, typename std::enable_if<is_deserializable<T>::value>::type>
@@ -424,7 +424,7 @@ struct PropertyTreeInputConverter<T, typename std::enable_if<is_deserializable<T
     }
 };
 
-/// Specjalizacja dla ³añcuchów znakowych.
+/// Specjalizacja dla Å‚aÅ„cuchÃ³w znakowych.
 template<>
 struct PropertyTreeInputConverter<std::string>
 {
@@ -445,11 +445,11 @@ struct PropertyTreeInputConverter<std::string>
     }
 };
 
-/// Ogólna klasa do konwersji typów typ PropertyTree (liœæ).
+/// OgÃ³lna klasa do konwersji typÃ³w typ PropertyTree (liÅ›Ä‡).
 /**
 * Do konwersji wykorzystuje std::ostringstream.
-* Aby typ by³ konwertowalny przez t¹ klasê (bez specjalizacji),
-* musi przeci¹¿aæ operator <<(std::ostream&, T).
+* Aby typ byÅ‚ konwertowalny przez tÄ… klasÄ™ (bez specjalizacji),
+* musi przeciÄ…Å¼aÄ‡ operator <<(std::ostream&, T).
 */
 template<typename T, typename>
 struct PropertyTreeOutputConverter
@@ -465,10 +465,10 @@ struct PropertyTreeOutputConverter
     }
 };
 
-/// Specjalizacja wykorzystuj¹ca metodê serialize() typu T.
+/// Specjalizacja wykorzystujÄ…ca metodÄ™ serialize() typu T.
 /**
-* Klasy w pe³ni specjalizuj¹ce klasê PropertyTreeOutputConverter
-* maj¹ pierwszeñstwo przed t¹ specjalizacj¹.
+* Klasy w peÅ‚ni specjalizujÄ…ce klasÄ™ PropertyTreeOutputConverter
+* majÄ… pierwszeÅ„stwo przed tÄ… specjalizacjÄ….
 */
 template<typename T>
 struct PropertyTreeOutputConverter<T, typename std::enable_if<is_serializable<T>::value>::type>
@@ -494,7 +494,7 @@ struct PropertyTreeOutputConverter<T, typename std::enable_if<is_string<T>::valu
 
 /// Specjalizacja dla typu bool.
 /**
- * Ustawia typ wartoœci drzewa na PropertyTree::Type::Boolean.
+ * Ustawia typ wartoÅ›ci drzewa na PropertyTree::Type::Boolean.
  */
 template<>
 struct PropertyTreeOutputConverter<bool>
@@ -512,7 +512,7 @@ struct PropertyTreeOutputConverter<bool>
 
 /// Specjalizacja dla typu nullptr_t.
 /**
-* Ustawia typ wartoœci drzewa na PropertyTree::Type::Null.
+* Ustawia typ wartoÅ›ci drzewa na PropertyTree::Type::Null.
 */
 template<typename T>
 struct PropertyTreeOutputConverter<T, typename std::enable_if<std::is_null_pointer<T>::value>::type>
@@ -526,10 +526,10 @@ struct PropertyTreeOutputConverter<T, typename std::enable_if<std::is_null_point
     }
 };
 
-/// Specjalizacja dla kontenerów.
+/// Specjalizacja dla kontenerÃ³w.
 /**
  * p. definicja type trait is_container.
- * Konstruuje poddrzewo z wartoœciami kontenera.
+ * Konstruuje poddrzewo z wartoÅ›ciami kontenera.
  * Ustawia typ na PropertyTree::Type::Array.
  */
 template<typename T>

@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(JsonObjectInterop)
     auto& expectedOutput = t.inout;
 
     auto json = ToJsonObject(tree);
-    // Ze wzglêdu na brak zachowania kolejnoœci pól Json::Object, potrzebna jest ponowna serializacja do przejœcia testu.
+    // Ze wzglÄ™du na brak zachowania kolejnoÅ›ci pÃ³l Json::Object, potrzebna jest ponowna serializacja do przejÅ›cia testu.
     std::istringstream istr(json.serialize());
     tree = PropertyTree();
     ReadJson(tree, istr);

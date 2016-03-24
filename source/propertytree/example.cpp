@@ -42,7 +42,7 @@ struct PropertyTreeInputConverter<DataPlain>
 
 void example()
 {
-    // Rêczne wstawianie wartoœci do drzewa.
+    // RÄ™czne wstawianie wartoÅ›ci do drzewa.
     PropertyTree tree;
     tree.put("firstName", "John");
     tree.put("lastName", "Smith");
@@ -70,7 +70,7 @@ void example()
     // Zapisywanie drzewa w postaci JSON do strumienia.
     WriteJson(tree, std::cout);
 
-    // Powy¿sze drzewo zapisane w postaci JSON.
+    // PowyÅ¼sze drzewo zapisane w postaci JSON.
     std::string input = "{                                      \
                          \"firstName\":\"John\",                \
                          \"lastName\":\"Smith\",                \
@@ -101,7 +101,7 @@ void example()
     PropertyTree another;
     ReadJson(another, istr);
 
-    // Wartoœci obu drzew powinny byæ jednakowe.
+    // WartoÅ›ci obu drzew powinny byÄ‡ jednakowe.
     assert(tree == another);
 
     /// Konwersja z PropertyTree na Json::Object
@@ -109,9 +109,9 @@ void example()
     std::ostringstream output;
     WriteJson(another, output, false);
 
-    // Wartoœci std::string nie s¹ bezpoœrednio porównywalne, ze wzglêdu na to, ¿e Json::Object nie zachowuje kolejnoœci pól.
+    // WartoÅ›ci std::string nie sÄ… bezpoÅ›rednio porÃ³wnywalne, ze wzglÄ™du na to, Å¼e Json::Object nie zachowuje kolejnoÅ›ci pÃ³l.
     // assert(json.serialize() == output.str());
-    // Aby udowodniæ poprawnoœæ konwersji, odczyt nast¹pi bezpoœrenio z wartoœci json.serialize().
+    // Aby udowodniÄ‡ poprawnoÅ›Ä‡ konwersji, odczyt nastÄ…pi bezpoÅ›renio z wartoÅ›ci json.serialize().
     istr = std::istringstream(json.serialize());
     another = PropertyTree();
     ReadJson(another, istr);
@@ -121,10 +121,10 @@ void example()
     assert(json2.serialize() == output.str());
     assert(json.serialize() == output.str());
 
-    /// Przyk³ad zamiany struktury danych na drzewo.
+    /// PrzykÅ‚ad zamiany struktury danych na drzewo.
     /**
      * Przypadek zaimplementowanych funkcji serialize() i deserialize().
-     * Mo¿liwy przypadek u¿ycia, gdy serializowane wartoœci s¹ prywatne.
+     * MoÅ¼liwy przypadek uÅ¼ycia, gdy serializowane wartoÅ›ci sÄ… prywatne.
      */
     struct DataSerializable
     {
@@ -155,9 +155,9 @@ void example()
     auto otherSerializable = tree.find("data").get<DataSerializable>();
     assert(dataSerializable.x == otherSerializable.x && dataSerializable.y == otherSerializable.y);
 
-    /// Przypadek specjalizacji domyœlnego konwertera.
+    /// Przypadek specjalizacji domyÅ›lnego konwertera.
     /**
-     * W sytuacji, gdy serializowanej klasy nie da siê zmieniæ.
+     * W sytuacji, gdy serializowanej klasy nie da siÄ™ zmieniÄ‡.
      */
     DataPlain dataPlain;
     dataPlain.x = 1;
@@ -168,12 +168,12 @@ void example()
     auto otherPlain = tree.find("data").get<DataPlain>();
     assert(dataPlain.x == otherPlain.x && dataPlain.y == otherPlain.y);
 
-    /// Przypadek w³asnej funkcji konwertuj¹cej.
+    /// Przypadek wÅ‚asnej funkcji konwertujÄ…cej.
     tree = PropertyTree();
     tree.put("data", dataPlain, [](const DataPlain& data)
     {
         PropertyTree tree;
-        tree.put("x", data.x + 1); // w celu rozró¿nienia od specjalizacji implementacji domyœlnej.
+        tree.put("x", data.x + 1); // w celu rozrÃ³Å¼nienia od specjalizacji implementacji domyÅ›lnej.
         tree.put("y", data.y + 1);
         return tree;
     }

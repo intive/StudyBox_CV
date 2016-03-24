@@ -7,9 +7,9 @@ class PropertyTree;
 
 /// Dokonuje zapisu drzewa tree do strumienia stream.
 /**
- * @param whitespace true jeøeli przy tworzeniu reprezentacji JSON
- * dodawane majπ byÊ bia≥e znaki.
- * @throw std::range_error, jeøeli drzewo nie zawiera poprawnych wartoúci dla JSON.
+ * @param whitespace true je≈ºeli przy tworzeniu reprezentacji JSON
+ * dodawane majƒÖ byƒá bia≈Çe znaki.
+ * @throw std::range_error, je≈ºeli drzewo nie zawiera poprawnych warto≈õci dla JSON.
  */
 void WriteJson(const PropertyTree& tree, std::ostream& stream, bool whitespace = true);
 
@@ -20,8 +20,8 @@ namespace Json
 
 /// Dokonuje konwersji do obiektu Json::Object.
 /**
- * Moøe zostaÊ wykorzystana w specjalizacji PropertyTreeInputConverter<Json::Object>.
- * @throw std::range_error, jeøeli drzewo nie zawiera poprawnych wartoúci dla JSON.
+ * Mo≈ºe zostaƒá wykorzystana w specjalizacji PropertyTreeInputConverter<Json::Object>.
+ * @throw std::range_error, je≈ºeli drzewo nie zawiera poprawnych warto≈õci dla JSON.
  */
 Json::Object ToJsonObject(const PropertyTree& tree);
 

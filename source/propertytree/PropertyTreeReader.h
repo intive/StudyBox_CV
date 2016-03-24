@@ -9,7 +9,7 @@ class PropertyTree;
 /// Dokonuje odczytu drzewa do argumentu tree ze strumienia stream.
 /**
  * W chwili obecnej nie ma wsparcia dla Unicode.
- * @throw std::range_error, jeøeli strumieÒ nie zawiera poprawnego JSON.
+ * @throw std::range_error, je≈ºeli strumie≈Ñ nie zawiera poprawnego JSON.
  */
 void ReadJson(PropertyTree& tree, std::istream& stream);
 
