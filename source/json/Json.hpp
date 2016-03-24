@@ -39,7 +39,8 @@ public:
         Value(const double arg) : floating(arg) { }
         Value(const int64_t arg) : integer(arg) { }
         Value(const uint64_t arg) : uinteger(arg) { }
-        Value(const std::string& arg) : string(new std::string(arg)) { }
+        Value(const std::string& arg)
+            : string(new std::string(arg)) { }
         Value(const std::vector<Json>& arg)
             : array(new std::vector<Json>(arg)) { }
         Value(const std::map<std::string, Json>& arg)
@@ -71,10 +72,10 @@ public:
     // Konstruktor obiektów Boolowskich
     Json(bool arg);
 
-    // Konstruktor obiektów łancuchów znaków
+    // Konstruktor obiektów łańcuchów znaków
     Json(const std::string& arg);
 
-    // Konstruktor obiektów łancuchów znaków
+    // Konstruktor obiektów łańcuchów znaków
     template <typename T,
               typename = std::enable_if<
                   std::is_constructible<std::string, T>::value>::type>
@@ -104,7 +105,7 @@ public:
             std::is_integral<T>::value &&
             !std::is_same<T, bool>::value &&
             std::is_constructible<int64_t, T>::value, T>::type* = nullptr>
-        Json(const T arg)
+    Json(const T arg)
         : type(Type::Integer)
         , value(static_cast<int64_t>(arg))
     {
@@ -117,8 +118,8 @@ public:
             std::is_unsigned<T>::value &&
             std::is_integral<T>::value &&
             !std::is_same<T, bool>::value &&
-            std::is_constructible<int64_t, T>::value, T>::type* = nullptr>
-        Json(const T arg)
+            std::is_constructible<uint64_t, T>::value, T>::type* = nullptr>
+    Json(const T arg)
         : type(Type::Uinteger)
         , value(static_cast<uint64_t>(arg))
     {

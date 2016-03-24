@@ -71,7 +71,7 @@ Json::Json(bool arg)
 
 }
 
-// Konstruktor obiektów łancuchów znaków
+// Konstruktor obiektów łańcuchów znaków
 Json::Json(const std::string& arg)
     : type(Type::String)
     , value(arg)
