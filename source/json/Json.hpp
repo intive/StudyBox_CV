@@ -3,11 +3,6 @@
 
 #include <map>
 #include <vector>
-#include <string>
-#include <fstream>
-#include <algorithm>
-#include <type_traits>
-#include <initializer_list>
 
 // Klasa odpowiadająca za obsługę obiektów JSON
 class Json
@@ -57,79 +52,27 @@ public:
     Json() = default;
 
     // Konstruktor kopiujący
-    Json(const Json& arg)
-        : type(arg.type)
-    {
-        if (type == Type::Array)
-            value = *arg.value.array;
-        else if (type == Type::Boolean)
-            value = arg.value.boolean;
-        else if (type == Type::Floating)
-            value = arg.value.floating;
-        else if (type == Type::Integer)
-            value = arg.value.integer;
-        else if (type == Type::Null)
-            value = nullptr;
-        else if (type == Type::Object)
-            value = *arg.value.object;
-        else if (type == Type::String)
-            value = *arg.value.string;
-        else if (type == Type::Uinteger)
-            value = arg.value.uinteger;
-    }
+    Json(const Json& arg);
 
     // Konstruktor przenoszący
-    Json(Json&& arg)
-        : type(std::move(arg.type))
-        , value(std::move(arg.value))
-    {
-        arg.type = Type::Null;
-        arg.value = { };
-    }
+    Json(Json&& arg);
 
     // Operator przypisania
-    Json& operator=(Json arg)
-    {
-        std::swap(type, arg.type);
-        std::swap(value, arg.value);
-        return *this;
-    }
+    Json& operator=(Json arg);
 
     // Destruktor
-    ~Json()
-    {
-        if (type == Type::Array)
-            delete value.array;
-        else if (type == Type::Object)
-            delete value.object;
-        else if (type == Type::String)
-            delete value.string;
-    }
+    ~Json();
 
     /////////////////////////////////////////
 
     // Konstruktor obiektu pustego
-    Json(std::nullptr_t)
-        : type(Type::Null)
-    {
-
-    }
+    Json(std::nullptr_t);
 
     // Konstruktor obiektów Boolowskich
-    Json(bool arg)
-        : type(Type::Boolean)
-        , value(arg)
-    {
-
-    }
+    Json(bool arg);
 
     // Konstruktor obiektów łancuchów znaków
-    Json(const std::string& arg)
-        : type(Type::String)
-        , value(arg)
-    {
-
-    }
+    Json(const std::string& arg);
 
     // Konstruktor obiektów łancuchów znaków
     template <typename T,
@@ -183,103 +126,24 @@ public:
     }
 
     // Konstruktor obiektów tablicowych
-    Json(const std::vector<Json>& arg)
-        : type(Type::Array)
-        , value(arg)
-    {
-
-    }
+    Json(const std::vector<Json>& arg);
 
     // Konstruktor obiektów tablicowych
-    Json(const std::initializer_list<Json>& arg)
-        : type(Type::Array)
-        , value(std::vector<Json>(arg))
-    {
-
-    }
+    Json(const std::initializer_list<Json>& arg);
 
     // Operator zwracający obiekt o podanej nazwie
-    Json& operator[](const std::string& arg)
-    {
-        return *this;
-    }
+    Json& operator[](const std::string& arg);
 
     // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON
-    static std::string minify(std::string str)
-    {
-        size_t begin = 0;
-        while (true)
-        {
-            size_t end = str.find('\"', begin);
-            if (end == std::string::npos)
-                end = str.size();
-            else if (end > 0 && str[end - 1] == '\\')
-                continue;
-
-            size_t length = str.length();
-            str.erase(std::remove_if(str.begin() + begin, str.begin() + end,
-                [](char c) { return (c == ' ' || c == '\t' || c == '\r' || c == '\n'); }),
-                str.begin() + end);
-            length -= str.length();
-
-            begin = end - length + 1;
-            do
-            {
-                begin = str.find('\"', begin);
-                if (begin == std::string::npos)
-                    return str;
-            } while (str[begin++ - 1] == '\\');
-        }
-    }
+    static std::string minify(std::string str);
 
     // Metoda deserializująca JSON z łańcucha znaków
     // lub pliku jeśli podano ścieżkę do pliku z rozszerzeniem ".json"
-    static Json deserialize(std::string str)
-    {
-        static const std::string ext = ".json";
-
-        bool isPath = false;
-        if (str.size() > ext.size())
-            isPath = str.substr(str.size() - ext.size()) == ext;
-
-        if (isPath)
-        {
-            std::ifstream file(str);
-            if (file.good())
-                str = std::string(std::istreambuf_iterator<char>(file),
-                                  std::istreambuf_iterator<char>());
-            else
-                throw std::exception(("Couldn't open file: " + str).c_str());
-        }
-
-        str = minify(str);
-
-        Json j;
-
-        // Wykorzystać Recursive Descent Parsing
-
-        return j;
-    }
+    static Json deserialize(std::string str);
 
     // Metoda serializująca JSON do łańcucha znaków
     // lub pliku jeśli podano ścieżkę do pliku
-    std::string serialize(const std::string& path = "")
-    {
-        std::string str;
-
-        // Wykorzystać Recursive Descent Parsing
-
-        if (!path.empty())
-        {
-            std::ofstream file(path);
-            if (file.good())
-                file << str;
-            else
-                throw std::exception(("Couldn't open file: " + path).c_str());
-        }
-
-        return str;
-    }
+    std::string serialize(const std::string& path = "");
 
 protected:
     Type type;
