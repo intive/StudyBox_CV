@@ -193,26 +193,6 @@ public:
         return c(*this);
     }
 
-    /// Zwraca wartoœc dla podanej etykiety.
-    /**
-     * p. Etykiety PropertyTree.
-     */
-    template<typename T = DataType, typename Converter = PropertyTreeInputConverter<T>>
-    T get(const KeyType& label, Converter&& c = PropertyTreeInputConverter<T>()) const
-    {
-        return get<T>(label, 0, std::forward<Converter>(c));
-    }
-
-    /// Zwraca wartoœc dla podanej etykiety, zgodnie z zadanymi indeksami elementów.
-    /**
-    * p. Etykiety PropertyTree.
-    */
-    template<typename T = DataType, typename Converter = PropertyTreeInputConverter<T>, typename... Indices>
-    T get(const KeyType& label, std::size_t index, Converter&& c = PropertyTreeInputConverter<T>(), Indices&&... indices) const
-    {
-        return find(label, index).get<T>(std::forward<Converter>(c));
-    }
-
     /// Grupa metod odpowiedzialnych za zwrócenie poddrzewa zgodnie z zadanymi parametrami.
     /**
      * Wykorzystanie funkcji jest analogiczne do metod get().
@@ -568,3 +548,11 @@ struct PropertyTreeOutputConverter<T, typename std::enable_if<is_container<T>::v
         return tree;
     }
 };
+
+inline bool operator ==(const PropertyTree& lhs, const PropertyTree& rhs)
+{
+    if (lhs.empty())
+        return lhs.get<std::string>() == rhs.get<std::string>();
+
+    return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
