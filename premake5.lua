@@ -27,6 +27,9 @@ workspace 'StudyBox_CV'
         files {
             'source/**'
         }
+		excludes {
+		    '**/example.cpp'
+		}
 
         if _ACTION and string.find(_ACTION, 'vs*') then
             local toolset = _ACTION == 'vs2015' and '140' or
