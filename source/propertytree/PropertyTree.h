@@ -554,5 +554,6 @@ inline bool operator ==(const PropertyTree& lhs, const PropertyTree& rhs)
     if (lhs.empty())
         return lhs.get<std::string>() == rhs.get<std::string>();
 
-    return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    return std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
+

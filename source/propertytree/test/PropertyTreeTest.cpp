@@ -1,5 +1,4 @@
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE PropertyTree
 #include <boost/test/unit_test.hpp>
 
 #include "../PropertyTree.h"
@@ -89,12 +88,14 @@ BOOST_AUTO_TEST_CASE(ConversionIntegrity)
     std::ostringstream oss;
     PropertyTree out;
     WriteJson(tree, oss, true);
-    BOOST_REQUIRE_NO_THROW(ReadJson(out, std::istringstream(oss.str())));
+    std::istringstream iss(oss.str());
+    BOOST_REQUIRE_NO_THROW(ReadJson(out, iss));
     BOOST_TEST((tree == out));
     out = PropertyTree();
     oss = std::ostringstream();
     WriteJson(tree, oss, false);
-    BOOST_REQUIRE_NO_THROW(ReadJson(out, std::istringstream(oss.str())));
+    iss = std::istringstream(oss.str());
+    BOOST_REQUIRE_NO_THROW(ReadJson(out, iss));
     BOOST_TEST((tree == out));
 }
 
