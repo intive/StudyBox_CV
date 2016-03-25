@@ -133,6 +133,9 @@ public:
     Json(const std::initializer_list<Json>& arg);
 
     // Operator zwracający obiekt o podanej nazwie
+    Json& operator[](const char* arg);
+
+    // Operator zwracający obiekt o podanej nazwie
     Json& operator[](const std::string& arg);
 
     // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON

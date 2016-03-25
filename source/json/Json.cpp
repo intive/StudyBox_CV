@@ -96,6 +96,12 @@ Json::Json(const std::initializer_list<Json>& arg)
 }
 
 // Operator zwracający obiekt o podanej nazwie
+Json& Json::operator[](const char* arg)
+{
+    return *this;
+}
+
+// Operator zwracający obiekt o podanej nazwie
 Json& Json::operator[](const std::string& arg)
 {
     return *this;
