@@ -8,11 +8,12 @@ AzureStorageManager::AzureStorageManager()
     this->containerName = "fiszki";
 }
 
-AzureStorageManager::AzureStorageManager(std::string accountName, std::string containerName, std::string accountKey)
+AzureStorageManager::AzureStorageManager(const std::string& accountName, const std::string& containerName, const std::string& accountKey)
+    : accountName(accountName),
+      containerName(containerName),
+      accountKey(accountKey)
 {
-    this->accountName = accountName;
-    this->containerName = containerName;
-    this->accountKey = accountKey;
+
 }
 
 
@@ -20,7 +21,7 @@ AzureStorageManager::~AzureStorageManager()
 {
 }
 
-bool AzureStorageManager::downloadFromServer(std::string fileAddr)
+bool AzureStorageManager::downloadFromServer(const std::string& fileAddr)
 {
     utility::string_t connectionString;
    /* connectionString = U("DefaultEndpointsProtocol=https;AccountName=")
@@ -83,7 +84,7 @@ bool AzureStorageManager::downloadFromServer(std::string fileAddr)
     return true;
 }
 
-std::string AzureStorageManager::uploadToServer(std::string path)
+std::string AzureStorageManager::uploadToServer(const std::string& path)
 {
 
     utility::string_t connectionString;
@@ -97,6 +98,7 @@ std::string AzureStorageManager::uploadToServer(std::string path)
     azure::storage::cloud_storage_account storageAccount;
     azure::storage::cloud_blob_client blobClient;
     azure::storage::cloud_blob_container container;
+    std::string returnString;
     try
     {
         storageAccount = azure::storage::cloud_storage_account::parse(storageConnectionString);
@@ -106,7 +108,8 @@ std::string AzureStorageManager::uploadToServer(std::string path)
     }
    catch(const std::exception e)
    {
-       return "Problem z polaczeniem";
+       returnString = "Problem z polaczeniem";
+       return returnString;
    }
 
     //właściwy upload
@@ -137,10 +140,10 @@ std::string AzureStorageManager::uploadToServer(std::string path)
     }
     catch(std::exception e)
     {
-        return "blob nie istnieje";
+        returnString = "blob nie istnieje";
+        return returnString;
     }
 
-    std::string returnString;
     returnString = "https://"+this->accountName+".blob.core.windows.net/"+this->containerName+"/"+elements.back();
     return returnString;
 }

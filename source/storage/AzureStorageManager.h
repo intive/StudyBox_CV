@@ -17,7 +17,7 @@ public:
     /**
     * Ustawia wartości accountName, containerName oraz accountKey na podstawie otrzymanych parametrów
     */
-    AzureStorageManager(std::string accountName, std::string containerName, std::string accountKey);
+    AzureStorageManager(const std::string& accountName, const std::string& containerName, const std::string& accountKey);
 
 
     /// Domyślny destruktor
@@ -27,18 +27,19 @@ public:
     /// Metoda do pobierania zdjęcia z serwera Azure
     /**
     * Pobiera z serwera plik o podanej w parametrze nazwie
-    * true jeśli udało się pobrać zdjęcie lub false kiedy wystąpił jakiś błąd
+    * @return true jeśli udało się pobrać zdjęcie lub false kiedy wystąpił jakiś błąd
     * Ustawia pole temporaryFileName na nazwę tymczasowego pliku zapisanego lokalnie
     */
-    bool downloadFromServer(std::string fileAddr);
+    bool downloadFromServer(const std::string& fileAddr);
 
 
     /// Metoda do wysyłania nowego pliku na serwer Azure
     /**
-    * Wysyła na serwer azure plik o ścieżce (pełna ścieżka np "tmp//plik.png") podanej w parametrze
-    * Zwraca adres do tego pliku
+    * Wysyła na serwer azure plik o podanej ścieżce (pełna ścieżka np "tmp//plik.png")
+    * @param path ścieżka do pliku
+    * @return adres do tego pliku
     */
-    std::string uploadToServer(std::string path);
+    std::string uploadToServer(const std::string& path);
 
 
     ///Zwraca nazwę ostatnio pobranego pliku tymczasowego
