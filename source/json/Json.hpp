@@ -178,6 +178,7 @@ public:
             std::is_signed<T>::value &&
             std::is_integral<T>::value &&
             !std::is_same<T, bool>::value &&
+            !std::is_same<T, std::string::value_type>::value &&
             std::is_constructible<T, int64_t>::value, T>::type* = nullptr>
     operator T()
     {
