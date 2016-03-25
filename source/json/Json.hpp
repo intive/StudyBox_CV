@@ -138,6 +138,55 @@ public:
     // Operator zwracający obiekt o podanej nazwie
     Json& operator[](const std::string& arg);
 
+    // Operator rzutujący na obiekt Boolowski
+    /*explicit*/ operator bool();
+
+    // Operator rzutujący na obiekt łańcucha znaków
+    operator std::string();
+
+    // Operator rzutujący na obiekt zmienno-przecinkowy
+    template <typename T,
+        typename = std::enable_if<
+            std::is_constructible<T, double>::value &&
+            std::is_floating_point<T>::value>::type>
+    operator T()
+    {
+        if (type != Type::Floating)
+            throw std::domain_error("type is not floating");
+        return static_cast<T>(value.floating);
+    }
+
+    // Operator rzutujący na obiekt całkowity ze znakiem
+    template <typename T,
+        typename std::enable_if<
+            std::is_signed<T>::value &&
+            std::is_integral<T>::value &&
+            !std::is_same<T, bool>::value &&
+            std::is_constructible<T, int64_t>::value, T>::type* = nullptr>
+    operator T()
+    {
+        if (type != Type::Integer)
+            throw std::domain_error("type is not integer");
+        return static_cast<T>(value.integer);
+    }
+
+    // Operator rzutujący na obiekt całkowity bez znaku
+    template <typename T,
+        typename std::enable_if<
+            std::is_unsigned<T>::value &&
+            std::is_integral<T>::value &&
+            !std::is_same<T, bool>::value &&
+            std::is_constructible<T, uint64_t>::value, T>::type* = nullptr>
+    operator T()
+    {
+        if (type != Type::Uinteger)
+            throw std::domain_error("type is not uinteger");
+        return static_cast<T>(value.uinteger);
+    }
+
+    // Operator rzutujący na obiekt tablicowy
+    operator std::vector<Json>();
+
     // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON
     static std::string minify(std::string str);
 

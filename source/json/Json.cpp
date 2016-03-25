@@ -107,6 +107,30 @@ Json& Json::operator[](const std::string& arg)
     return *this;
 }
 
+// Operator rzutujący na obiekt Boolowski
+Json::operator bool()
+{
+    if (type != Type::Boolean)
+        throw std::domain_error("type is not boolean");
+    return value.boolean;
+}
+
+// Operator rzutujący na obiekt łańcucha znaków
+Json::operator std::string()
+{
+    if (type != Type::String)
+        throw std::domain_error("type is not string");
+    return *value.string;
+}
+
+// Operator rzutujący na obiekt tablicowy
+Json::operator std::vector<Json>()
+{
+    if (type != Type::Array)
+        throw std::domain_error("type is not array");
+    return *value.array;
+}
+
 // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON
 std::string Json::minify(std::string str)
 {
