@@ -6,6 +6,13 @@
 #include <type_traits>
 #include <initializer_list>
 
+// Konstruktor domyślny
+Json::Json()
+    : type(Type::Null)
+{
+
+}
+
 // Konstruktor kopiujący
 Json::Json(const Json& arg)
     : type(arg.type)
@@ -119,13 +126,21 @@ Json::Json(const std::initializer_list<Json>& arg)
 // Operator zwracający obiekt o podanej nazwie
 Json& Json::operator[](const char* arg)
 {
-    return *this;
+    if (type == Type::Null)
+    {
+        type = Type::Object;
+        value.object = new std::map<std::string, Json>();
+    }
+
+    if (type != Type::Object)
+        throw std::domain_error("type is not object");
+    return (*value.object)[arg];
 }
 
 // Operator zwracający obiekt o podanej nazwie
 Json& Json::operator[](const std::string& arg)
 {
-    return *this;
+    return (*this)[arg.c_str()];
 }
 
 // Operator rzutujący na obiekt Boolowski

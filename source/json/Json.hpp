@@ -50,7 +50,7 @@ public:
     ///////////// Reguła pięciu /////////////
 
     // Konstruktor domyślny
-    Json() = default;
+    Json();
 
     // Konstruktor kopiujący
     Json(const Json& arg);
@@ -131,6 +131,22 @@ public:
 
     // Konstruktor obiektów tablicowych
     Json(const std::initializer_list<Json>& arg);
+
+    // Operator zwracający obiekt o podanym indeksie
+    template <typename T, typename std::enable_if<
+        std::is_integral<T>::value>::type* = nullptr>
+    Json& operator[](const T arg)
+    {
+        if (type == Type::Null)
+        {
+            type = Type::Array;
+            value.array = new std::vector<Json>();
+        }
+
+        if (type != Type::Array)
+            throw std::domain_error("type is not array");
+        return (*value.array)[arg];
+    }
 
     // Operator zwracający obiekt o podanej nazwie
     Json& operator[](const char* arg);
