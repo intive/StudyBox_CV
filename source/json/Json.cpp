@@ -115,12 +115,31 @@ Json::Json(const std::vector<Json>& arg)
 
 }
 
-// Konstruktor obiektów tablicowych
+// Konstruktor obiektów JSON z listy inicjującej
 Json::Json(const std::initializer_list<Json>& arg)
-    : type(Type::Array)
-    , value(std::vector<Json>(arg))
 {
+    bool isObject = true;
+    for (auto x : arg)
+    {
+        if (x.type != Type::Array || x.size() != 2 || x[0].type != Type::String)
+        {
+            isObject = false;
+            break;
+        }
+    }
 
+    if (isObject)
+    {
+        type = Type::Object;
+        value.object = new std::map<std::string, Json>();
+        for (auto x : arg)
+            (*value.object)[x[0]] = x[1];
+    }
+    else
+    {
+        type = Type::Array;
+        value.array = new std::vector<Json>(std::move(arg));
+    }
 }
 
 // Operator zwracający obiekt o podanej nazwie
@@ -165,6 +184,17 @@ Json::operator std::vector<Json>()
     if (type != Type::Array)
         throw std::domain_error("type is not array");
     return *value.array;
+}
+
+// Metoda zwraca ilość elementów w obiekcie
+size_t Json::size()
+{
+    if (type == Type::Array)
+        return value.array->size();
+    else if (type == Type::Object)
+        return value.object->size();
+    else
+        throw std::domain_error("object does not have size");
 }
 
 // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON

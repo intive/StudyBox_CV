@@ -204,6 +204,9 @@ public:
     // Operator rzutujący na obiekt tablicowy
     operator std::vector<Json>();
 
+    // Metoda zwraca ilość elementów w obiekcie
+    size_t size();
+
     // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON
     static std::string minify(std::string str);
 
