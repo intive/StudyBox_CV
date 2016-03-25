@@ -8,11 +8,11 @@ AzureStorageManager::AzureStorageManager()
     this->containerName = "fiszki";
 }
 
-AzureStorageManager::AzureStorageManager(std::string _accountName, std::string _containerName, std::string _accountKey)
+AzureStorageManager::AzureStorageManager(std::string accountName, std::string containerName, std::string accountKey)
 {
-    this->accountName = _accountName;
-    this->containerName = _containerName;
-    this->accountKey = _accountKey;
+    this->accountName = accountName;
+    this->containerName = containerName;
+    this->accountKey = accountKey;
 }
 
 
@@ -20,7 +20,7 @@ AzureStorageManager::~AzureStorageManager()
 {
 }
 
-bool AzureStorageManager::downloadFromServer(std::string _fileAddr)
+bool AzureStorageManager::downloadFromServer(std::string fileAddr)
 {
     utility::string_t connectionString;
    /* connectionString = U("DefaultEndpointsProtocol=https;AccountName=")
@@ -52,7 +52,7 @@ bool AzureStorageManager::downloadFromServer(std::string _fileAddr)
 
     //pobranie nazwy pliku z podanego parametru
     std::vector<std::string> elements;
-    std::stringstream stream(_fileAddr);
+    std::stringstream stream(fileAddr);
     std::string item;
     while (std::getline(stream, item, '/'))
         elements.push_back(item);
@@ -83,7 +83,7 @@ bool AzureStorageManager::downloadFromServer(std::string _fileAddr)
     return true;
 }
 
-std::string AzureStorageManager::uploadToServer(std::string _path)
+std::string AzureStorageManager::uploadToServer(std::string path)
 {
 
     utility::string_t connectionString;
@@ -109,10 +109,10 @@ std::string AzureStorageManager::uploadToServer(std::string _path)
        return "Problem z polaczeniem";
    }
 
-    //w≥aúciwy upload
+    //w≈Ça≈õciwy upload
     //pobranie nazwy nowego bloba
     std::vector<std::string> elements;
-    std::stringstream stream(_path);
+    std::stringstream stream(path);
     std::string item;
     while (std::getline(stream, item, '/'))
         elements.push_back(item);
@@ -120,7 +120,7 @@ std::string AzureStorageManager::uploadToServer(std::string _path)
     std::string element;
     if(elements.size() == 0)
     {
-        element = _path;
+        element = path;
     }
     else
     {
@@ -130,7 +130,7 @@ std::string AzureStorageManager::uploadToServer(std::string _path)
     azure::storage::cloud_block_blob blockBlob = container.get_block_blob_reference(utility::conversions::to_string_t(element));
 
 
-    blockBlob.upload_from_file(utility::conversions::to_string_t(_path));
+    blockBlob.upload_from_file(utility::conversions::to_string_t(path));
     try
     {
         blockBlob.exists();
