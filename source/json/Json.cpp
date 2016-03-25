@@ -10,22 +10,35 @@
 Json::Json(const Json& arg)
     : type(arg.type)
 {
-    if (type == Type::Array)
-        value = *arg.value.array;
-    else if (type == Type::Boolean)
-        value = arg.value.boolean;
-    else if (type == Type::Floating)
-        value = arg.value.floating;
-    else if (type == Type::Integer)
-        value = arg.value.integer;
-    else if (type == Type::Null)
-        value = nullptr;
-    else if (type == Type::Object)
-        value = *arg.value.object;
-    else if (type == Type::String)
-        value = *arg.value.string;
-    else if (type == Type::Uinteger)
-        value = arg.value.uinteger;
+    switch (type)
+    {
+        case Type::Array:
+            value = *arg.value.array;
+            break;
+        case Type::Boolean:
+            value = arg.value.boolean;
+            break;
+        case Type::Floating:
+            value = arg.value.floating;
+            break;
+        case Type::Integer:
+            value = arg.value.integer;
+            break;
+        case Type::Null:
+            value = nullptr;
+            break;
+        case Type::Object:
+            value = *arg.value.object;
+            break;
+        case Type::String:
+            value = *arg.value.string;
+            break;
+        case Type::Uinteger:
+            value = arg.value.uinteger;
+            break;
+        default:
+            break;
+    }
 }
 
 // Konstruktor przenoszący
@@ -48,12 +61,20 @@ Json& Json::operator=(Json arg)
 // Destruktor
 Json::~Json()
 {
-    if (type == Type::Array)
+    switch (type)
+    {
+    case Type::Array:
         delete value.array;
-    else if (type == Type::Object)
+        break;
+    case Type::Object:
         delete value.object;
-    else if (type == Type::String)
+        break;
+    case Type::String:
         delete value.string;
+        break;
+    default:
+        break;
+    }
 }
 
 // Konstruktor obiektu pustego
