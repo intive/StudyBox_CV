@@ -77,8 +77,8 @@ public:
 
     // Konstruktor obiektów łańcuchów znaków
     template <typename T,
-              typename = std::enable_if<
-                  std::is_constructible<std::string, T>::value>::type>
+        typename = std::enable_if<
+            std::is_constructible<std::string, T>::value>::type>
     Json(const T& arg)
         : type(Type::String)
         , value(std::string(arg))
@@ -88,9 +88,9 @@ public:
 
     // Konstruktor obiektów zmienno-przecinkowych
     template <typename T,
-              typename = std::enable_if<
-                  std::is_constructible<double, T>::value &&
-                  std::is_floating_point<T>::value>::type>
+        typename = std::enable_if<
+            std::is_constructible<double, T>::value &&
+            std::is_floating_point<T>::value>::type>
     Json(const T arg)
         : type(Type::Floating)
         , value(static_cast<double>(arg))
@@ -133,8 +133,9 @@ public:
     Json(const std::initializer_list<Json>& arg);
 
     // Operator zwracający obiekt o podanym indeksie
-    template <typename T, typename std::enable_if<
-        std::is_integral<T>::value>::type* = nullptr>
+    template <typename T,
+        typename std::enable_if<
+            std::is_integral<T>::value>::type* = nullptr>
     Json& operator[](const T arg)
     {
         if (type == Type::Null)
@@ -145,6 +146,7 @@ public:
 
         if (type != Type::Array)
             throw std::domain_error("type is not array");
+
         return (*value.array)[arg];
     }
 
@@ -169,6 +171,7 @@ public:
     {
         if (type != Type::Floating)
             throw std::domain_error("type is not floating");
+
         return static_cast<T>(value.floating);
     }
 
@@ -184,6 +187,7 @@ public:
     {
         if (type != Type::Integer)
             throw std::domain_error("type is not integer");
+
         return static_cast<T>(value.integer);
     }
 
@@ -198,6 +202,7 @@ public:
     {
         if (type != Type::Uinteger)
             throw std::domain_error("type is not uinteger");
+
         return static_cast<T>(value.uinteger);
     }
 

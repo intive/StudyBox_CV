@@ -20,32 +20,32 @@ Json::Json(const Json& arg)
 {
     switch (type)
     {
-        case Type::Array:
-            value = *arg.value.array;
-            break;
-        case Type::Boolean:
-            value = arg.value.boolean;
-            break;
-        case Type::Floating:
-            value = arg.value.floating;
-            break;
-        case Type::Integer:
-            value = arg.value.integer;
-            break;
-        case Type::Null:
-            value = nullptr;
-            break;
-        case Type::Object:
-            value = *arg.value.object;
-            break;
-        case Type::String:
-            value = *arg.value.string;
-            break;
-        case Type::Uinteger:
-            value = arg.value.uinteger;
-            break;
-        default:
-            break;
+    case Type::Array:
+        value = *arg.value.array;
+        break;
+    case Type::Boolean:
+        value = arg.value.boolean;
+        break;
+    case Type::Floating:
+        value = arg.value.floating;
+        break;
+    case Type::Integer:
+        value = arg.value.integer;
+        break;
+    case Type::Null:
+        value = nullptr;
+        break;
+    case Type::Object:
+        value = *arg.value.object;
+        break;
+    case Type::String:
+        value = *arg.value.string;
+        break;
+    case Type::Uinteger:
+        value = arg.value.uinteger;
+        break;
+    default:
+        break;
     }
 }
 
@@ -154,6 +154,7 @@ Json& Json::operator[](const char* arg)
 
     if (type != Type::Object)
         throw std::domain_error("type is not object");
+
     return (*value.object)[arg];
 }
 
@@ -168,6 +169,7 @@ Json::operator bool() const
 {
     if (type != Type::Boolean)
         throw std::domain_error("type is not boolean");
+
     return value.boolean;
 }
 
@@ -176,6 +178,7 @@ Json::operator std::string() const
 {
     if (type != Type::String)
         throw std::domain_error("type is not string");
+
     return *value.string;
 }
 
@@ -184,6 +187,7 @@ Json::operator std::vector<Json>() const
 {
     if (type != Type::Array)
         throw std::domain_error("type is not array");
+
     return *value.array;
 }
 
