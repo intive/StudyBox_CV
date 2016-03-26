@@ -249,7 +249,7 @@ protected:
             std::is_integral<T>::value, T>::type* = nullptr>
     const T numericCast(U arg) const
     {
-        if (arg > (std::make_unsigned<T>::type)std::numeric_limits<T>::max())
+        if (arg > (typename std::make_unsigned<T>::type)std::numeric_limits<T>::max())
             throw std::domain_error("overflow");
 
         return static_cast<T>(arg);
