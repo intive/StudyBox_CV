@@ -1,10 +1,35 @@
 #ifndef TEXT_ANALYSIS
 #define TEXT_ANALYSIS
 #include<string>
-using namespace std;
+#include<vector>
+//Slowniczek slow kluczowych pomocnych przy szukaniu pytan
+const std::vector<std::string> dictionary = {
+	"Czy","czy",
+	"Ile","ile",
+	"Gdzie","gdzie",
+	"Jak","jak",
+	"Dlaczego","dlaczego",
+	"Po co","po co",
+	"Czemu","czemu",
+	"Z kim","z kim",
+	"Z czym","z czym",
+	"Na czym","na czym",
+	"Kiedy","kiedy",
+	"Kim","kim",
+	"W którym","w którym","W ktorym","w ktorym",
+	"Kogo","kogo",
+	"Za co","za co",
+	"Co","co",
+	"U kogo","u kogo",
+	"Jakiego","jakiego",
+	"Dla jakiego","dla jakiego",
+	"Dla kogo","dla kogo",
+	"Komu","komu"
+};
 /* Typ enumeracyjny uzywany przy markerach*/
-enum textType
+enum TextType
 {
+	unclasified,
 	question,
 	answer
 };
@@ -13,8 +38,10 @@ class Markers
 {
 	int start;
 	int end;
-	textType type;
+	TextType type;
+	int percentage_chance;
 public:
-	Markers(int s, int e, textType t) :start(s), end(e), type(t) {};
+	Markers(int s, int e, textType t, int percent) :start(s), end(e), type(t), percentage_chance(percent) {};
 };
+std::vector<Markers> findQA(const std::string& text);
 #endif
