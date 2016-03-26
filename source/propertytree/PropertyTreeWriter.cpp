@@ -2,6 +2,8 @@
 #include "PropertyTree.h"
 #include "../json/json.h"
 
+#include <cstdint>
+
 namespace {
 
 void WriteJsonImpl(const PropertyTree& tree, std::ostream& stream, bool whitespace, int indent = 1)
@@ -68,43 +70,79 @@ void WriteJson(const PropertyTree& tree, std::ostream& stream, bool whitespace)
 
 namespace {
 
-Json::Object ToJsonObjectImpl(const PropertyTree& tree);
-Json::Array ToJsonArrayImpl(const PropertyTree& tree)
+template<typename F, typename... Args>
+void DeduceNumericType(const PropertyTree& tree, F&& func, Args&&... args)
 {
-    Json::Array array;
-    for (auto& subtree : tree)
+    auto str = tree.get<std::string>();
+    if (str.find_first_of('.') != std::string::npos || str.find_first_of('e') != std::string::npos || str.find_first_of('E') != std::string::npos)
     {
-        switch (subtree.second.type())
-        {
-        case PropertyTree::Value: array.Add(subtree.second.get<double>()); break;
-        case PropertyTree::Boolean: array.Add(subtree.second.get<bool>()); break;
-        case PropertyTree::Null: array.Add(nullptr); break;
-        case PropertyTree::String: array.Add(subtree.second.get<std::string>()); break;
-        case PropertyTree::Array: array.Add(ToJsonArrayImpl(subtree.second)); break;
-        case PropertyTree::Object: array.Add(ToJsonObjectImpl(subtree.second)); break;
-        }
+        func(tree.get<double>(), std::forward<Args>(args)...);//array.Add(tree.get<double>());
+        return;
     }
-
-    return array;
+    else if (str[0] == '-')
+    {
+        func(tree.get<int64_t>(), std::forward<Args>(args)...);
+        return;
+    }
+    else
+    {
+        func(tree.get<uint64_t>(), std::forward<Args>(args)...);
+        return;
+    }
 }
 
+struct AddToJson
+{
+    template<typename Value, typename JsonObject, typename... Args, typename std::enable_if<std::is_integral<Value>::value>::type* = nullptr>
+    void operator ()(Value&& value, JsonObject&& object, Args&&... args)
+    {
+        object.Add(std::forward<Args>(args)..., static_cast<int>(std::forward<Value>(value)));
+    }
+
+    template<typename Value, typename JsonObject, typename... Args, typename std::enable_if<!std::is_integral<Value>::value>::type* = nullptr>
+    void operator ()(Value&& value, JsonObject&& object, Args&&... args)
+    {
+        object.Add(std::forward<Args>(args)..., std::forward<Value>(value));
+    }
+};
+
+template<typename ToObject, typename ToArray, typename Func, typename JsonObject, typename... Args>
+void Deduce(const PropertyTree& tree, ToObject&& toObject, ToArray&& toArray, Func&& func, JsonObject&& object, Args&&... args)
+{
+    switch (tree.type())
+    {
+    case PropertyTree::Value: DeduceNumericType(tree, func, std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
+    case PropertyTree::Boolean: func(tree.get<bool>(), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
+    case PropertyTree::Null: func(nullptr, std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
+    case PropertyTree::String: func(tree.get<std::string>(), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
+    case PropertyTree::Array: func(toArray(tree), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
+    case PropertyTree::Object: func(toObject(tree), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
+    }
+}
+
+Json::Array ToJsonArrayImpl(const PropertyTree& tree);
 Json::Object ToJsonObjectImpl(const PropertyTree& tree)
 {
     Json::Object object;
+    AddToJson func;
     for (auto& subtree : tree)
     {
-        switch (subtree.second.type())
-        {
-        case PropertyTree::Value: object.Add(subtree.first, subtree.second.get<double>()); break;
-        case PropertyTree::Boolean: object.Add(subtree.first, subtree.second.get<bool>()); break;
-        case PropertyTree::Null: object.Add(subtree.first, nullptr); break;
-        case PropertyTree::String: object.Add(subtree.first, subtree.second.get<std::string>()); break;
-        case PropertyTree::Array: object.Add(subtree.first, ToJsonArrayImpl(subtree.second)); break;
-        case PropertyTree::Object: object.Add(subtree.first, ToJsonObjectImpl(subtree.second)); break;
-        }
+        Deduce(subtree.second, ToJsonObjectImpl, ToJsonArrayImpl, func, object, subtree.first);
     }
 
     return object;
+}
+
+Json::Array ToJsonArrayImpl(const PropertyTree& tree)
+{
+    Json::Array array;
+    AddToJson func;
+    for (auto& subtree : tree)
+    {
+        Deduce(subtree.second, ToJsonObjectImpl, ToJsonArrayImpl, func, array);
+    }
+
+    return array;
 }
 
 } // namespace
