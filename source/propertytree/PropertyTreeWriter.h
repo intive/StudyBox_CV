@@ -13,16 +13,13 @@ class PropertyTree;
  */
 void WriteJson(const PropertyTree& tree, std::ostream& stream, bool whitespace = true);
 
-namespace Json
-{
-    class Object;
-}
+class Json;
 
 /// Dokonuje konwersji do obiektu Json::Object.
 /**
- * Może zostać wykorzystana w specjalizacji PropertyTreeInputConverter<Json::Object>.
+ * Może zostać wykorzystana w specjalizacji PropertyTreeInputConverter<Json>.
  * @throw std::range_error, jeżeli drzewo nie zawiera poprawnych wartości dla JSON.
  */
-Json::Object ToJsonObject(const PropertyTree& tree);
+Json ToJsonObject(const PropertyTree& tree);
 
 #endif // PATR_PROPERTY_TREE_WRITER_H

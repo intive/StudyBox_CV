@@ -5,7 +5,7 @@
 #include "../PropertyTreeReader.h"
 #include "../PropertyTreeWriter.h"
 
-#include "../../json/json.h"
+#include "../../json/Json.hpp"
 
 
 BOOST_AUTO_TEST_SUITE(PropertyTreeValidity)
@@ -33,7 +33,7 @@ struct TreeTest
         phones[1].put("type", "office");
         phones[1].put("number", "646 555 - 4567");
         tree.put("phoneNumbers", phones);
-        tree.put("children", std::vector<nullptr_t>());
+        tree.put("children", std::vector<int>{});
         tree.put("spouse", nullptr);
     }
 

@@ -1,6 +1,6 @@
 #include "PropertyTreeWriter.h"
 #include "PropertyTree.h"
-#include "../json/json.h"
+#include "../json/Json.hpp"
 
 #include <cstdint>
 
@@ -93,16 +93,16 @@ void DeduceNumericType(const PropertyTree& tree, F&& func, Args&&... args)
 
 struct AddToJson
 {
-    template<typename Value, typename JsonObject, typename... Args, typename std::enable_if<std::is_integral<Value>::value>::type* = nullptr>
-    void operator ()(Value&& value, JsonObject&& object, Args&&... args)
+    template<typename Value, typename JsonObject, typename Arg>
+    void operator ()(Value&& value, JsonObject&& object, Arg&& arg)
     {
-        object.Add(std::forward<Args>(args)..., static_cast<int>(std::forward<Value>(value)));
+        object[std::forward<Arg>(arg)] = std::forward<Value>(value);
     }
 
-    template<typename Value, typename JsonObject, typename... Args, typename std::enable_if<!std::is_integral<Value>::value>::type* = nullptr>
-    void operator ()(Value&& value, JsonObject&& object, Args&&... args)
+    template<typename Value, typename JsonObject>
+    void operator ()(Value&& value, JsonObject&& object)
     {
-        object.Add(std::forward<Args>(args)..., std::forward<Value>(value));
+        object.push_back(std::forward<Value>(value));
     }
 };
 
@@ -120,22 +120,21 @@ void Deduce(const PropertyTree& tree, ToObject&& toObject, ToArray&& toArray, Fu
     }
 }
 
-Json::Array ToJsonArrayImpl(const PropertyTree& tree);
-Json::Object ToJsonObjectImpl(const PropertyTree& tree)
+std::vector<Json> ToJsonArrayImpl(const PropertyTree& tree);
+Json ToJsonObjectImpl(const PropertyTree& tree)
 {
-    Json::Object object;
+    Json object;
     AddToJson func;
     for (auto& subtree : tree)
     {
         Deduce(subtree.second, ToJsonObjectImpl, ToJsonArrayImpl, func, object, subtree.first);
     }
-
     return object;
 }
 
-Json::Array ToJsonArrayImpl(const PropertyTree& tree)
+std::vector<Json> ToJsonArrayImpl(const PropertyTree& tree)
 {
-    Json::Array array;
+    std::vector<Json> array;
     AddToJson func;
     for (auto& subtree : tree)
     {
@@ -147,7 +146,7 @@ Json::Array ToJsonArrayImpl(const PropertyTree& tree)
 
 } // namespace
 
-Json::Object ToJsonObject(const PropertyTree & tree)
+Json ToJsonObject(const PropertyTree & tree)
 {
     if (tree.type() == PropertyTree::Object)
         return ToJsonObjectImpl(tree);
