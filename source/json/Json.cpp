@@ -108,6 +108,14 @@ Json::Json(const std::string& arg)
 
 }
 
+// Konstruktor obiektów łańcuchów znaków
+Json::Json(const char* arg)
+    : type(Type::String)
+    , value(arg)
+{
+
+}
+
 // Konstruktor obiektów tablicowych
 Json::Json(const std::vector<Json>& arg)
     : type(Type::Array)
@@ -189,7 +197,7 @@ Json::operator bool() const
 }
 
 // Operator rzutujący na obiekt łańcucha znaków
-Json::operator std::string() const
+Json::operator std::string&() const
 {
     if (type != Type::String)
         throw std::domain_error("type is not string");
@@ -198,7 +206,7 @@ Json::operator std::string() const
 }
 
 // Operator rzutujący na obiekt tablicowy
-Json::operator std::vector<Json>() const
+Json::operator std::vector<Json>&() const
 {
     if (type != Type::Array)
         throw std::domain_error("type is not array");
@@ -322,7 +330,7 @@ Json Json::deserialize(std::string str)
 
     Json j;
 
-    // Wykorzystać Recursive Descent Parsing
+    // Deserializacja
 
     return j;
 }
