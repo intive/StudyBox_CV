@@ -11,6 +11,6 @@ using namespace cv;
 class ImageProcess
 {
 public:
-	vector <Rect> textBounding(Mat *img);
+	vector <Rect> findRectangles(Mat *img);
 };
 #endif
