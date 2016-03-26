@@ -3,6 +3,9 @@
 
 #include <map>
 #include <vector>
+#include <limits>
+#include <stdexcept>
+#include <type_traits>
 
 // Klasa odpowiadająca za obsługę obiektów JSON
 class Json
@@ -173,46 +176,24 @@ public:
     // Operator rzutujący na obiekt tablicowy
     operator std::vector<Json>&() const;
 
-    // Operator rzutujący na obiekt zmienno-przecinkowy
+    // Operator rzutujący obiekt na typ numeryczny
     template <typename T,
         typename std::enable_if<
-            std::is_constructible<T, double>::value &&
-            std::is_floating_point<T>::value>::type* = nullptr>
+            std::is_arithmetic<T>::value &&
+            !std::is_same<T, std::string::value_type>::value>::type* = nullptr>
     operator T() const
     {
-        if (type != Type::Floating)
-            throw std::domain_error("type is not floating");
-
-        return static_cast<T>(value.floating);
-    }
-
-    // Operator rzutujący na obiekt całkowity ze znakiem
-    template <typename T,
-        typename std::enable_if<
-            std::is_signed<T>::value &&
-            std::is_integral<T>::value &&
-            !std::is_same<T, std::string::value_type>::value &&
-            std::is_constructible<T, int64_t>::value, T>::type* = nullptr>
-    operator T() const
-    {
-        if (type != Type::Integer)
-            throw std::domain_error("type is not integer");
-
-        return static_cast<T>(value.integer);
-    }
-
-    // Operator rzutujący na obiekt całkowity bez znaku
-    template <typename T,
-        typename std::enable_if<
-            std::is_unsigned<T>::value &&
-            std::is_integral<T>::value &&
-            std::is_constructible<T, uint64_t>::value, T>::type* = nullptr>
-    operator T() const
-    {
-        if (type != Type::Uinteger)
-            throw std::domain_error("type is not uinteger");
-
-        return static_cast<T>(value.uinteger);
+        switch (type)
+        {
+        case Type::Floating:
+            return numericCast<T>(value.floating);
+        case Type::Integer:
+            return numericCast<T>(value.integer);
+        case Type::Uinteger:
+            return numericCast<T>(value.uinteger);
+        default:
+            throw std::domain_error("object is not number");
+        }
     }
 
     // Operator strumienia wyjścia
@@ -233,6 +214,60 @@ public:
     std::string serialize(const std::string& path = "") const;
 
 protected:
+
+    // Metoda rzutuje wartości numeryczne z kontrolą przepełnienia
+    template <typename T, typename U,
+        typename std::enable_if<
+            std::is_floating_point<T>::value, T>::type* = nullptr>
+    const T numericCast(U arg) const
+    {
+        if (arg > std::numeric_limits<T>::max() || arg < std::numeric_limits<T>::lowest())
+            throw std::domain_error("overflow");
+
+        return static_cast<T>(arg);
+    }
+
+    // Metoda rzutuje wartości numeryczne z kontrolą przepełnienia
+    template <typename T, typename U,
+        typename std::enable_if<
+            std::is_signed<T>::value &&
+            std::is_signed<U>::value &&
+            std::is_integral<T>::value>::type* = nullptr>
+    const T numericCast(U arg) const
+    {
+        if (arg < std::numeric_limits<T>::min() || arg > std::numeric_limits<T>::max())
+            throw std::domain_error("overflow");
+
+        return static_cast<T>(arg);
+    }
+
+    // Metoda rzutuje wartości numeryczne z kontrolą przepełnienia
+    template <typename T, typename U,
+        typename std::enable_if<
+            std::is_signed<T>::value &&
+            std::is_unsigned<U>::value &&
+            std::is_integral<T>::value, T>::type* = nullptr>
+    const T numericCast(U arg) const
+    {
+        if (arg > (std::make_unsigned<T>::type)std::numeric_limits<T>::max())
+            throw std::domain_error("overflow");
+
+        return static_cast<T>(arg);
+    }
+
+    // Metoda rzutuje wartości numeryczne z kontrolą przepełnienia
+    template <typename T, typename U,
+        typename std::enable_if<
+            std::is_unsigned<T>::value &&
+            std::is_integral<T>::value>::type* = nullptr>
+    const T numericCast(U arg) const
+    {
+        if (arg < 0 || arg > std::numeric_limits<T>::max())
+            throw std::domain_error("overflow");
+
+        return static_cast<T>(arg);
+    }
+
     Type type;
     Value value;
 };
