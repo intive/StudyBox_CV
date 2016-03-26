@@ -127,17 +127,17 @@ Json::Json(const std::vector<Json>& arg)
 // Konstruktor obiektów JSON z listy inicjującej
 Json::Json(const std::initializer_list<Json>& arg)
 {
-    bool isObject = true;
+    bool isValid = true;
     for (const Json& x : arg)
     {
         if (x.type != Type::Array || x.size() != 2 || x[0].type != Type::String)
         {
-            isObject = false;
+            isValid = false;
             break;
         }
     }
 
-    if (isObject)
+    if (isValid)
     {
         type = Type::Object;
         value.object = new std::map<std::string, Json>();
@@ -154,13 +154,13 @@ Json::Json(const std::initializer_list<Json>& arg)
 // Operator zwracający obiekt o podanej nazwie
 Json& Json::operator[](const char* arg)
 {
-    if (type == Type::Null)
+    if (isNull())
     {
         type = Type::Object;
         value.object = new std::map<std::string, Json>();
     }
 
-    if (type != Type::Object)
+    if (!isObject())
         throw std::domain_error("type is not object");
 
     return (*value.object)[arg];
@@ -175,7 +175,7 @@ Json& Json::operator[](const std::string& arg)
 // Operator zwracający obiekt o podanej nazwie
 const Json& Json::operator[](const char* arg) const
 {
-    if (type != Type::Object)
+    if (!isObject())
         throw std::domain_error("type is not object");
 
     return (*value.object)[arg];
@@ -190,7 +190,7 @@ const Json& Json::operator[](const std::string& arg) const
 // Operator rzutujący na obiekt Boolowski
 Json::operator bool() const
 {
-    if (type != Type::Boolean)
+    if (!isBool())
         throw std::domain_error("type is not boolean");
 
     return value.boolean;
@@ -199,7 +199,7 @@ Json::operator bool() const
 // Operator rzutujący na obiekt łańcucha znaków
 Json::operator std::string&() const
 {
-    if (type != Type::String)
+    if (!isString())
         throw std::domain_error("type is not string");
 
     return *value.string;
@@ -208,7 +208,7 @@ Json::operator std::string&() const
 // Operator rzutujący na obiekt tablicowy
 Json::operator std::vector<Json>&() const
 {
-    if (type != Type::Array)
+    if (!isArray())
         throw std::domain_error("type is not array");
 
     return *value.array;
@@ -271,14 +271,74 @@ std::ostream& operator<<(std::ostream& out, const Json& arg)
 }
 
 // Metoda zwraca ilość elementów w obiekcie
-size_t Json::size() const
+const size_t Json::size() const
 {
-    if (type == Type::Array)
+    if (isArray())
         return value.array->size();
-    else if (type == Type::Object)
+    else if (isObject())
         return value.object->size();
     else
         throw std::domain_error("object does not have size");
+}
+
+// Metoda zwraca typ obiektu
+const Json::Type Json::getType() const
+{
+    return type;
+}
+
+// Metoda sprawdza czy obiekt jest typu listowego
+const bool Json::isArray() const
+{
+    return type == Json::Type::Array;
+}
+
+// Metoda sprawdza czy obiekt jest typu obiektowego
+const bool Json::isObject() const
+{
+    return type == Json::Type::Object;
+}
+
+// Metoda sprawdza czy obiekt jest typu Boolowskiego
+const bool Json::isBool() const
+{
+    return type == Json::Type::Boolean;
+}
+
+// Metoda sprawdza czy obiekt jest typu pustego
+const bool Json::isNull() const
+{
+    return type == Json::Type::Null;
+}
+
+// Metoda sprawdza czy obiekt jest typu tekstowego
+const bool Json::isString() const
+{
+    return type == Json::Type::String;
+}
+
+// Metoda sprawdza czy obiekt jest typu zmiennoprzecinkowego
+const bool Json::isFloating() const
+{
+    return type == Json::Type::Floating;
+}
+
+// Metoda sprawdza czy obiekt jest typu całkowitego z znakiem
+const bool Json::isInteger() const
+{
+    return type == Json::Type::Integer;
+}
+
+// Metoda sprawdza czy obiekt jest typu całkowitego bez znaku
+const bool Json::isUinteger() const
+{
+    return type == Json::Type::Uinteger;
+}
+
+// Metoda sprawdza czy obiekt jest typu numerycznego
+const bool Json::isNumeric() const
+{
+    return isFloating() || isInteger() || isUinteger();
 }
 
 // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON

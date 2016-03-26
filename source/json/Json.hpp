@@ -143,7 +143,7 @@ public:
             std::is_integral<T>::value>::type* = nullptr>
     Json& operator[](const T arg)
     {
-        if (type == Type::Null)
+        if (isNull())
         {
             type = Type::Array;
             value.array = new std::vector<Json>();
@@ -161,7 +161,7 @@ public:
             std::is_integral<T>::value>::type* = nullptr>
     const Json& operator[](const T arg) const
     {
-        if (type != Type::Array)
+        if (!isArray())
             throw std::domain_error("type is not array");
 
         return (*value.array)[arg];
@@ -200,7 +200,37 @@ public:
     friend std::ostream& operator<<(std::ostream& out, const Json& arg);
 
     // Metoda zwraca ilość elementów w obiekcie
-    size_t size() const;
+    const size_t size() const;
+
+    // Metoda zwraca typ obiektu
+    const Type getType() const;
+
+    // Metoda sprawdza czy obiekt jest typu listowego
+    const bool isArray() const;
+
+    // Metoda sprawdza czy obiekt jest typu obiektowego
+    const bool isObject() const;
+
+    // Metoda sprawdza czy obiekt jest typu Boolowskiego
+    const bool isBool() const;
+
+    // Metoda sprawdza czy obiekt jest typu pustego
+    const bool isNull() const;
+
+    // Metoda sprawdza czy obiekt jest typu tekstowego
+    const bool isString() const;
+
+    // Metoda sprawdza czy obiekt jest typu zmiennoprzecinkowego
+    const bool isFloating() const;
+
+    // Metoda sprawdza czy obiekt jest typu całkowitego z znakiem
+    const bool isInteger() const;
+
+    // Metoda sprawdza czy obiekt jest typu całkowitego bez znaku
+    const bool isUinteger() const;
+
+    // Metoda sprawdza czy obiekt jest typu numerycznego
+    const bool isNumeric() const;
 
     // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON
     static std::string minify(std::string str);
