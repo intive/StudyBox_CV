@@ -326,7 +326,7 @@ Json Json::deserialize(std::string str)
             str = std::string(std::istreambuf_iterator<char>(file),
                 std::istreambuf_iterator<char>());
         else
-            throw std::exception(("Couldn't open file: " + str).c_str());
+            throw std::runtime_error(("Couldn't open file: " + str).c_str());
     }
 
     str = minify(str);
@@ -352,7 +352,7 @@ std::string Json::serialize(const std::string& path) const
         if (file.good())
             file << str;
         else
-            throw std::exception(("Couldn't open file: " + path).c_str());
+            throw std::runtime_error(("Couldn't open file: " + path).c_str());
     }
 
     return str;
