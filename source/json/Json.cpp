@@ -120,7 +120,7 @@ Json::Json(const std::vector<Json>& arg)
 Json::Json(const std::initializer_list<Json>& arg)
 {
     bool isObject = true;
-    for (auto x : arg)
+    for (const Json& x : arg)
     {
         if (x.type != Type::Array || x.size() != 2 || x[0].type != Type::String)
         {
@@ -160,6 +160,21 @@ Json& Json::operator[](const char* arg)
 
 // Operator zwracający obiekt o podanej nazwie
 Json& Json::operator[](const std::string& arg)
+{
+    return (*this)[arg.c_str()];
+}
+
+// Operator zwracający obiekt o podanej nazwie
+const Json& Json::operator[](const char* arg) const
+{
+    if (type != Type::Object)
+        throw std::domain_error("type is not object");
+
+    return (*value.object)[arg];
+}
+
+// Operator zwracający obiekt o podanej nazwie
+const Json& Json::operator[](const std::string& arg) const
 {
     return (*this)[arg.c_str()];
 }

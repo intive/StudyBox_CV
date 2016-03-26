@@ -156,6 +156,24 @@ public:
     // Operator zwracający obiekt o podanej nazwie
     Json& operator[](const std::string& arg);
 
+    // Operator zwracający obiekt o podanym indeksie
+    template <typename T,
+        typename std::enable_if<
+            std::is_integral<T>::value>::type* = nullptr>
+    const Json& operator[](const T arg) const
+    {
+        if (type != Type::Array)
+            throw std::domain_error("type is not array");
+
+        return (*value.array)[arg];
+    }
+
+    // Operator zwracający obiekt o podanej nazwie
+    const Json& operator[](const char* arg) const;
+
+    // Operator zwracający obiekt o podanej nazwie
+    const Json& operator[](const std::string& arg) const;
+
     // Operator rzutujący na obiekt Boolowski
     /*explicit*/ operator bool() const;
 
