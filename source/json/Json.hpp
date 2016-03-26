@@ -204,6 +204,9 @@ public:
     // Operator rzutujący na obiekt tablicowy
     operator std::vector<Json>() const;
 
+    // Operator strumienia wyjścia
+    friend std::ostream& operator<<(std::ostream& out, const Json& arg);
+
     // Metoda zwraca ilość elementów w obiekcie
     size_t size() const;
 

@@ -1,6 +1,7 @@
 #include "Json.hpp"
 
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <algorithm>
 #include <type_traits>
@@ -186,6 +187,59 @@ Json::operator std::vector<Json>() const
     return *value.array;
 }
 
+// Operator strumienia wyjścia
+std::ostream& operator<<(std::ostream& out, const Json& arg)
+{
+    switch (arg.type)
+    {
+    case Json::Type::Array:
+    {
+        auto& array = *arg.value.array;
+        auto it = array.begin();
+        out << "[";
+        if (it != array.end())
+            out << *it;
+        while (++it != array.end())
+            out << "," << *it;
+        out << "]";
+        break;
+    }
+    case Json::Type::Object:
+    {
+        auto& objects = *arg.value.object;
+        auto it = objects.begin();
+        out << "{";
+        if (it != objects.end())
+            out << "\"" << it->first << "\":" << it->second;
+        while (++it != objects.end())
+            out << ",\"" << it->first << "\":" << it->second;
+        out << "}";
+        break;
+    }
+    case Json::Type::String:
+        out << "\"" << *arg.value.string << "\"";
+        break;
+    case Json::Type::Boolean:
+        out << arg.value.boolean;
+        break;
+    case Json::Type::Floating:
+        out << arg.value.floating;
+        break;
+    case Json::Type::Integer:
+        out << arg.value.integer;
+        break;
+    case Json::Type::Uinteger:
+        out << arg.value.uinteger;
+        break;
+    case Json::Type::Null:
+        out << "null";
+        break;
+    default:
+        break;
+    }
+    return out;
+}
+
 // Metoda zwraca ilość elementów w obiekcie
 size_t Json::size() const
 {
@@ -258,9 +312,9 @@ Json Json::deserialize(std::string str)
 // lub pliku jeśli podano ścieżkę do pliku
 std::string Json::serialize(const std::string& path) const
 {
-    std::string str;
-
-    // Wykorzystać Recursive Descent Parsing
+    std::ostringstream oss;
+    oss << *this;
+    std::string str = oss.str();
 
     if (!path.empty())
     {
