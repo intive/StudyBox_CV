@@ -341,6 +341,66 @@ const bool Json::isNumeric() const
     return isFloating() || isInteger() || isUinteger();
 }
 
+// Metoda dodaje obiekt do listy
+void Json::insert(const Json& arg)
+{
+    if (isNull())
+    {
+        type = Type::Array;
+        value.array = new std::vector<Json>();
+    }
+
+    if (isArray())
+        value.array->push_back(arg);
+    else
+        throw std::domain_error("type is not array");
+}
+
+// Metoda dodaje obiekt do obiektów
+void Json::insert(const std::string& key, const Json& arg)
+{
+    if (isNull())
+    {
+        type = Type::Object;
+        value.object = new std::map<std::string, Json>();
+    }
+
+    if (isObject())
+        (*value.object)[key] = arg;
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda dodaje obiekt do listy
+void Json::insert(Json&& arg)
+{
+    if (isNull())
+    {
+        type = Type::Array;
+        value.array = new std::vector<Json>();
+    }
+
+    if (isArray())
+        value.array->push_back(std::move(arg));
+    else
+        throw std::domain_error("type is not array");
+}
+
+// Metoda dodaje obiekt do obiektów
+void Json::insert(const std::string& key, Json&& arg)
+{
+    if (isNull())
+    {
+        type = Type::Object;
+        value.object = new std::map<std::string, Json>();
+    }
+
+    if (isObject())
+        (*value.object)[key] = std::move(arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
 // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON
 std::string Json::minify(std::string str)
 {

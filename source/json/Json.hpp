@@ -232,6 +232,18 @@ public:
     // Metoda sprawdza czy obiekt jest typu numerycznego
     const bool isNumeric() const;
 
+    // Metoda dodaje obiekt do listy
+    void insert(const Json& arg);
+
+    // Metoda dodaje obiekt do obiektów
+    void insert(const std::string& key, const Json& arg);
+
+    // Metoda dodaje obiekt do listy
+    void Json::insert(Json&& arg);
+
+    // Metoda dodaje obiekt do obiektów
+    void Json::insert(const std::string& key, Json&& arg);
+
     // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON
     static std::string minify(std::string str);
 
