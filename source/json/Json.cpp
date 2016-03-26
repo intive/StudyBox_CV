@@ -224,10 +224,13 @@ std::ostream& operator<<(std::ostream& out, const Json& arg)
         auto& array = *arg.value.array;
         auto it = array.begin();
         out << "[";
-        if (it != array.end())
-            out << *it;
-        while (++it != array.end())
-            out << "," << *it;
+        if (!array.empty())
+        {
+            if (it != array.end())
+                out << *it;
+            while (++it != array.end())
+                out << "," << *it;
+        }
         out << "]";
         break;
     }
