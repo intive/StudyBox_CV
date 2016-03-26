@@ -70,7 +70,7 @@ public:
     Json(std::nullptr_t);
 
     // Konstruktor obiektów Boolowskich
-    Json(bool arg);
+    Json(const bool arg);
 
     // Konstruktor obiektów łańcuchów znaków
     Json(const std::string& arg);
@@ -155,17 +155,17 @@ public:
     Json& operator[](const std::string& arg);
 
     // Operator rzutujący na obiekt Boolowski
-    /*explicit*/ operator bool();
+    /*explicit*/ operator bool() const;
 
     // Operator rzutujący na obiekt łańcucha znaków
-    operator std::string();
+    operator std::string() const;
 
     // Operator rzutujący na obiekt zmienno-przecinkowy
     template <typename T,
         typename = std::enable_if<
             std::is_constructible<T, double>::value &&
             std::is_floating_point<T>::value>::type>
-    operator T()
+    operator T() const
     {
         if (type != Type::Floating)
             throw std::domain_error("type is not floating");
@@ -180,7 +180,7 @@ public:
             !std::is_same<T, bool>::value &&
             !std::is_same<T, std::string::value_type>::value &&
             std::is_constructible<T, int64_t>::value, T>::type* = nullptr>
-    operator T()
+    operator T() const
     {
         if (type != Type::Integer)
             throw std::domain_error("type is not integer");
@@ -194,7 +194,7 @@ public:
             std::is_integral<T>::value &&
             !std::is_same<T, bool>::value &&
             std::is_constructible<T, uint64_t>::value, T>::type* = nullptr>
-    operator T()
+    operator T() const
     {
         if (type != Type::Uinteger)
             throw std::domain_error("type is not uinteger");
@@ -202,10 +202,10 @@ public:
     }
 
     // Operator rzutujący na obiekt tablicowy
-    operator std::vector<Json>();
+    operator std::vector<Json>() const;
 
     // Metoda zwraca ilość elementów w obiekcie
-    size_t size();
+    size_t size() const;
 
     // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON
     static std::string minify(std::string str);
@@ -216,7 +216,7 @@ public:
 
     // Metoda serializująca JSON do łańcucha znaków
     // lub pliku jeśli podano ścieżkę do pliku
-    std::string serialize(const std::string& path = "");
+    std::string serialize(const std::string& path = "") const;
 
 protected:
     Type type;

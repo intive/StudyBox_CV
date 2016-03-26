@@ -92,7 +92,7 @@ Json::Json(std::nullptr_t)
 }
 
 // Konstruktor obiektów Boolowskich
-Json::Json(bool arg)
+Json::Json(const bool arg)
     : type(Type::Boolean)
     , value(arg)
 {
@@ -163,7 +163,7 @@ Json& Json::operator[](const std::string& arg)
 }
 
 // Operator rzutujący na obiekt Boolowski
-Json::operator bool()
+Json::operator bool() const
 {
     if (type != Type::Boolean)
         throw std::domain_error("type is not boolean");
@@ -171,7 +171,7 @@ Json::operator bool()
 }
 
 // Operator rzutujący na obiekt łańcucha znaków
-Json::operator std::string()
+Json::operator std::string() const
 {
     if (type != Type::String)
         throw std::domain_error("type is not string");
@@ -179,7 +179,7 @@ Json::operator std::string()
 }
 
 // Operator rzutujący na obiekt tablicowy
-Json::operator std::vector<Json>()
+Json::operator std::vector<Json>() const
 {
     if (type != Type::Array)
         throw std::domain_error("type is not array");
@@ -187,7 +187,7 @@ Json::operator std::vector<Json>()
 }
 
 // Metoda zwraca ilość elementów w obiekcie
-size_t Json::size()
+size_t Json::size() const
 {
     if (type == Type::Array)
         return value.array->size();
@@ -256,7 +256,7 @@ Json Json::deserialize(std::string str)
 
 // Metoda serializująca JSON do łańcucha znaków
 // lub pliku jeśli podano ścieżkę do pliku
-std::string Json::serialize(const std::string& path)
+std::string Json::serialize(const std::string& path) const
 {
     std::string str;
 
