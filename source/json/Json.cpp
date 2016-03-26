@@ -401,6 +401,24 @@ void Json::insert(const std::string& key, Json&& arg)
         throw std::domain_error("type is not object");
 }
 
+// Metoda usuwa obiekt z listy
+void Json::remove(const size_t arg)
+{
+    if (isArray())
+        value.array->erase(value.array->begin() + arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda usuwa obiekt z obiektów
+void Json::remove(const std::string& arg)
+{
+    if (isObject())
+        value.object->erase(arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
 // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON
 std::string Json::minify(std::string str)
 {

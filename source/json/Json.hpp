@@ -244,6 +244,12 @@ public:
     // Metoda dodaje obiekt do obiektów
     void Json::insert(const std::string& key, Json&& arg);
 
+    // Metoda usuwa obiekt z listy
+    void remove(const size_t arg);
+
+    // Metoda usuwa obiekt z obiektów
+    void remove(const std::string& arg);
+
     // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON
     static std::string minify(std::string str);
 
