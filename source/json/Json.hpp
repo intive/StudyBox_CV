@@ -52,6 +52,11 @@ public:
             : object(new std::map<std::string, Json>(arg)) { }
     };
 
+    // Klasa definująca (stały) iterator
+    template <bool> class Iterator;
+    typedef class Iterator<false> iterator;
+    typedef class Iterator<true> const_iterator;
+
     // Konstruktor domyślny
     Json();
 
@@ -202,6 +207,51 @@ public:
     // Metoda zwraca ilość elementów w obiekcie
     const size_t size() const;
 
+    // Metoda sprawdza czy kontener jest pusty
+    const bool empty() const;
+
+    // Metoda opróżnia kontener
+    void clear();
+
+    // Metoda dodaje obiekt do listy
+    void push_back(const Json& arg);
+
+    // Metoda dodaje obiekt do listy
+    void push_back(Json&& arg);
+
+    // Metoda dodaje obiekt do obiektów
+    void insert(const std::string& key, const Json& arg);
+
+    // Metoda dodaje obiekt do obiektów
+    void insert(const std::string& key, Json&& arg);
+
+    // Metoda usuwa obiekt z listy
+    void erase(const size_t arg);
+
+    // Metoda usuwa obiekt z obiektów
+    void erase(const std::string& arg);
+
+    // Metoda usuwa ostatni obiekt z listy
+    void pop_back();
+
+    // Metoda zwraca obiekt z listy
+    const Json& at(std::size_t arg);
+
+    // Metoda zwraca obiekt z obiektów
+    const Json& at(const std::string& arg);
+
+    // Metoda zwraca iterator na początek kontenera
+    iterator begin() const;
+
+    // Metoda zwraca iterator na koniec kontenera
+    iterator end() const;
+
+    // Metoda zwraca stały iterator na początek kontenera
+    const_iterator cbegin() const;
+
+    // Metoda zwraca stały iterator na koniec kontenera
+    const_iterator cend() const;
+
     // Metoda zwraca typ obiektu
     const Type getType() const;
 
@@ -246,6 +296,327 @@ public:
 protected:
     Type type;
     Value value;
+
+public:
+    // Klasa definiująca (stały) iterator
+    template <bool isConst = false>
+    class Iterator
+    {
+    public:
+        friend class Json;
+        friend class Iterator<true>;
+
+        typedef typename std::conditional<isConst, const Json*, Json*>::type Pointer;
+        typedef typename std::conditional<isConst, const Json&, Json&>::type Reference;
+
+        // Konstruktor domyślny
+        Iterator()
+            : type(Type::Null)
+        {
+
+        }
+
+        // Destruktor
+        ~Iterator()
+        {
+            switch (type)
+            {
+            case Type::Array:
+                delete iter.array;
+                break;
+            case Type::Object:
+                delete iter.object;
+                break;
+            default:
+                break;
+            }
+        }
+
+    protected:
+        // Konstruktor z iteratora listy
+        Iterator(const std::vector<Json>::iterator& arg)
+            : type(Type::Array)
+            , iter(arg)
+        {
+
+        }
+
+        // Konstruktor z iteratora obiektów
+        Iterator(const std::map<std::string, Json>::iterator& arg)
+            : type(Type::Object)
+            , iter(arg)
+        {
+
+        }
+
+    public:
+        // Konstruktor kopiujący
+        Iterator(const Iterator& arg)
+            : type(arg.type)
+        {
+            switch (type)
+            {
+            case Type::Array:
+                iter = *arg.iter.array;
+                break;
+            case Type::Object:
+                iter = *arg.iter.object;
+                break;
+            default:
+                break;
+            }
+        }
+
+        // Operator przypisania kopiującego
+        Reference operator=(Iterator arg)
+        {
+            std::swap(type, arg.type);
+            std::swap(iter, arg.iter);
+            return *this;
+        }
+
+        // Operator dereferencji gwiazdka
+        Reference operator*() const
+        {
+            switch (type)
+            {
+            case Type::Array:
+                return **iter.array;
+            case Type::Object:
+                return (*iter.object)->second;
+            default:
+                throw std::domain_error("invalid type");
+            }
+        }
+
+        // Operator dereferencji strzałka
+        Pointer operator->() const
+        {
+            switch (type)
+            {
+            case Type::Array:
+                return &**iter.array;
+            case Type::Object:
+                return &(*iter.object)->second;
+            default:
+                throw std::domain_error("invalid type");
+            }
+        }
+
+        // Operator pre-inkrementacji
+        Iterator& operator++()
+        {
+            switch (type)
+            {
+            case Type::Array:
+                ++(*iter.array);
+                break;
+            case Type::Object:
+                ++(*iter.object);
+                break;
+            default:
+                throw std::domain_error("invalid type");
+            }
+            return *this;
+        }
+
+        // Operator post-inkrementacji
+        Iterator operator++(int)
+        {
+            auto result = *this;
+            ++(*this);
+            return result;
+        }
+
+        // Operator pre-dekrementacji
+        Iterator& operator--()
+        {
+            switch (type)
+            {
+            case Type::Array:
+                --(*iter.array);
+                break;
+            case Type::Object:
+                --(*iter.object);
+                break;
+            default:
+                throw std::domain_error("invalid type");
+            }
+            return *this;
+        }
+
+        // Operator post-dekrementacji
+        Iterator operator--(int)
+        {
+            auto result = *this;
+            --(*this);
+            return result;
+        }
+
+        // Operator równości
+        bool operator==(const Iterator& arg) const
+        {
+            if (type != arg.type)
+                throw std::domain_error("invalid type");
+
+            switch (type)
+            {
+            case Type::Array:
+                return *iter.array == *arg.iter.array;
+            case Type::Object:
+                return *iter.object == *arg.iter.object;
+            default:
+                throw std::domain_error("invalid type");
+            }
+        }
+
+        // Operator nierówności
+        bool operator!=(const Iterator& arg) const
+        {
+            return !operator==(arg);
+        }
+
+        // Operator mniejszości
+        bool operator<(const Iterator& arg) const
+        {
+            if (type != arg.type)
+                throw std::domain_error("invalid type");
+
+            switch (type)
+            {
+            case Type::Array:
+                return *iter.array < *arg.iter.array;
+            default:
+                throw std::domain_error("invalid type");
+            }
+        }
+
+        // Operator mniejszości lub równości
+        bool operator<=(const Iterator& arg) const
+        {
+            return !(arg < *this);
+        }
+
+        // Operator większości
+        bool operator>(const Iterator& arg) const
+        {
+            return !(*this <= arg);
+        }
+
+        // Operator większości lub równości
+        bool operator>=(const Iterator& arg) const
+        {
+            return !(*this < arg);
+        }
+
+        // Operator przypisania z dodawaniem
+        Iterator& operator+=(std::ptrdiff_t arg)
+        {
+            if (isArray())
+                (*iter.array) += arg;
+            else
+                throw std::domain_error("invalid type");
+            return *this;
+        }
+
+        // Operator przypisania z odejmowaniem
+        Iterator& operator-=(std::ptrdiff_t arg)
+        {
+            return operator+=(-arg);
+        }
+
+        // Operator dodawania
+        Iterator operator+(std::ptrdiff_t arg)
+        {
+            auto result = *this;
+            result += arg;
+            return result;
+        }
+
+        // Operator odejmowania
+        Iterator operator-(std::ptrdiff_t arg)
+        {
+            auto result = *this;
+            result -= arg;
+            return result;
+        }
+
+        // Operator odejmowania iteratorów
+        std::ptrdiff_t operator-(const Iterator& arg) const
+        {
+            if (isArray())
+                return (*iter.array) - (*arg.iter.array);
+            else
+                throw std::domain_error("invalid type");
+        }
+
+        // Operator indeksowania
+        Reference operator[](std::ptrdiff_t arg) const
+        {
+            if (isArray())
+                return *(*iter.array + arg);
+            else
+                throw std::domain_error("invalid type");
+        }
+
+        // Metoda zwracająca klucz obiektu
+        const std::string key() const
+        {
+            if (isObject())
+                return (*iter.object)->first;
+            else
+                throw std::domain_error("invalid type");
+        }
+
+        //Metoda zwracająca wartość obiektu
+        Reference value() const
+        {
+            return *(*this);
+        }
+
+        // Metoda sprawdza czy iterator wskazuje na obiekt
+        const bool isObject() const
+        {
+            return type == Type::Object;
+        }
+
+        // Metoda sprawdza czy iterator wskazuje na listę
+        const bool isArray() const
+        {
+            return type == Type::Array;
+        }
+
+        // Metoda sprawdza czy iterator wskazuje na nic
+        const bool isNull() const
+        {
+            return type == Type::Null;
+        }
+
+    protected:
+        // Unia na iterator bazowy
+        union Iter
+        {
+            std::vector<Json>::iterator* array;
+            std::map<std::string, Json>::iterator* object;
+
+            Iter() {}
+            Iter(const std::vector<Json>::iterator& arg)
+                : array(new std::vector<Json>::iterator(arg)) { }
+            Iter(const std::map<std::string, Json>::iterator& arg)
+                : object(new std::map<std::string, Json>::iterator(arg)) { }
+        };
+
+        // Enumerator określający typ iteratora
+        enum class Type
+        {
+            Array,
+            Object,
+            Null
+        };
+
+        Iter iter;
+        Type type;
+    };
 
 protected:
     // Metoda rzutuje wartości numeryczne z kontrolą przepełnienia

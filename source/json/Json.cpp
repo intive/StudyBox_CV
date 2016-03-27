@@ -281,6 +281,190 @@ const size_t Json::size() const
         throw std::domain_error("object does not have size");
 }
 
+// Metoda sprawdza czy kontener jest pusty
+const bool Json::empty() const
+{
+    return size() == 0;
+}
+
+// Metoda opróżnia kontener
+void Json::clear()
+{
+    switch (type)
+    {
+    case Type::Array:
+        value.array->clear();
+        break;
+    case Type::Object:
+        value.object->clear();
+        break;
+    default:
+        throw std::domain_error("invalid type");
+    }
+}
+
+// Metoda dodaje obiekt do listy
+void Json::push_back(const Json& arg)
+{
+    if (isNull())
+    {
+        type = Type::Array;
+        value.array = new std::vector<Json>();
+    }
+
+    if (isArray())
+        value.array->push_back(arg);
+    else
+        throw std::domain_error("type is not array");
+}
+
+
+// Metoda dodaje obiekt do listy
+void Json::push_back(Json&& arg)
+{
+    if (isNull())
+    {
+        type = Type::Array;
+        value.array = new std::vector<Json>();
+    }
+
+    if (isArray())
+        value.array->push_back(std::move(arg));
+    else
+        throw std::domain_error("type is not array");
+}
+
+// Metoda dodaje obiekt do obiektów
+void Json::insert(const std::string& key, const Json& arg)
+{
+    if (isNull())
+    {
+        type = Type::Object;
+        value.object = new std::map<std::string, Json>();
+    }
+
+    if (isObject())
+        (*value.object)[key] = arg;
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda dodaje obiekt do obiektów
+void Json::insert(const std::string& key, Json&& arg)
+{
+    if (isNull())
+    {
+        type = Type::Object;
+        value.object = new std::map<std::string, Json>();
+    }
+
+    if (isObject())
+        (*value.object)[key] = std::move(arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda usuwa obiekt z listy
+void Json::erase(const size_t arg)
+{
+    if (isArray())
+        value.array->erase(value.array->begin() + arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda usuwa obiekt z obiektów
+void Json::erase(const std::string& arg)
+{
+    if (isObject())
+        value.object->erase(arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda usuwa ostatni obiekt z listy
+void Json::pop_back()
+{
+    if (isArray())
+        value.array->pop_back();
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda zwraca obiekt z listy
+const Json& Json::at(std::size_t arg)
+{
+    if (isArray())
+        return value.array->at(arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda zwraca obiekt z obiektów
+const Json& Json::at(const std::string& arg)
+{
+    if (isObject())
+        return value.object->at(arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda zwraca iterator na początek kontenera
+Json::iterator Json::begin() const
+{
+    switch (type)
+    {
+    case Type::Array:
+        return iterator(value.array->begin());
+    case Type::Object:
+        return iterator(value.object->begin());
+    default:
+        throw std::domain_error("invalid type");
+    }
+}
+
+// Metoda zwraca iterator na koniec kontenera
+Json::iterator Json::end() const
+{
+    switch (type)
+    {
+    case Type::Array:
+        return iterator(value.array->end());
+    case Type::Object:
+        return iterator(value.object->end());
+    default:
+        throw std::domain_error("invalid type");
+    }
+}
+
+// Metoda zwraca stały iterator na początek kontenera
+Json::const_iterator Json::cbegin() const
+{
+    switch (type)
+    {
+    case Type::Array:
+        return const_iterator(value.array->begin());
+    case Type::Object:
+        return const_iterator(value.object->begin());
+    default:
+        throw std::domain_error("invalid type");
+    }
+}
+
+// Metoda zwraca stały iterator na koniec kontenera
+Json::const_iterator Json::cend() const
+{
+    switch (type)
+    {
+    case Type::Array:
+        return const_iterator(value.array->end());
+    case Type::Object:
+        return const_iterator(value.object->end());
+    default:
+        throw std::domain_error("invalid type");
+    }
+}
+
 // Metoda zwraca typ obiektu
 const Json::Type Json::getType() const
 {
