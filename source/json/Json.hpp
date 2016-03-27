@@ -232,24 +232,6 @@ public:
     // Metoda sprawdza czy obiekt jest typu numerycznego
     const bool isNumeric() const;
 
-    // Metoda dodaje obiekt do listy
-    void insert(const Json& arg);
-
-    // Metoda dodaje obiekt do obiektów
-    void insert(const std::string& key, const Json& arg);
-
-    // Metoda dodaje obiekt do listy
-    void Json::insert(Json&& arg);
-
-    // Metoda dodaje obiekt do obiektów
-    void Json::insert(const std::string& key, Json&& arg);
-
-    // Metoda usuwa obiekt z listy
-    void remove(const size_t arg);
-
-    // Metoda usuwa obiekt z obiektów
-    void remove(const std::string& arg);
-
     // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON
     static std::string minify(std::string str);
 
@@ -262,7 +244,10 @@ public:
     std::string serialize(const std::string& path = "") const;
 
 protected:
+    Type type;
+    Value value;
 
+protected:
     // Metoda rzutuje wartości numeryczne z kontrolą przepełnienia
     template <typename T, typename U,
         typename std::enable_if<
@@ -315,9 +300,6 @@ protected:
 
         return static_cast<T>(arg);
     }
-
-    Type type;
-    Value value;
 };
 
 #endif // PATR_JSON_HPP
