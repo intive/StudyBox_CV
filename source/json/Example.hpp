@@ -56,6 +56,9 @@ void example2()
     std::string s = j["string"];
     int i = j["outer"]["inner"];
 
+    f = j["int8_t"];
+    i8 = j["double"];
+
     std::vector<Json> v = j["vector"];
     std::vector<int> vi(v.begin(), v.end());
     Json jo = j["object"];
@@ -85,4 +88,32 @@ void example3()
     str = j.serialize("out.json");
     j = Json::deserialize(str);
     j = Json::deserialize("out.json");
+}
+
+void example4()
+{
+    Json map = {{"alfa", 42}, {"beta", -3.14}, {"gamma", "delta"}};
+    Json list = {"alfa", 1, 2, "beta", "gamma", "theta"};
+
+    for (auto& x : map)
+        std::cout << x << " ";
+    std::cout << std::endl;
+
+    list.push_back(42);
+
+    for (auto& x : list)
+        std::cout << x << " ";
+    std::cout << std::endl;
+
+    map.insert("epsilon", true);
+
+    for (auto it = map.begin(); it != map.end(); it++)
+        std::cout << it.key() << " " << it.value() << std::endl;
+
+    std::cout << "map: " << map.size() << std::endl;
+
+    list.clear();
+
+    if (list.empty())
+        std::cout << "list: empty" << std::endl;
 }
