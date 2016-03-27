@@ -1,6 +1,7 @@
 #include "Json.hpp"
 
 #include <string>
+#include <iomanip>
 #include <sstream>
 #include <fstream>
 #include <algorithm>
@@ -239,10 +240,13 @@ std::ostream& operator<<(std::ostream& out, const Json& arg)
         auto& objects = *arg.value.object;
         auto it = objects.begin();
         out << "{";
-        if (it != objects.end())
-            out << "\"" << it->first << "\":" << it->second;
-        while (++it != objects.end())
-            out << ",\"" << it->first << "\":" << it->second;
+        if (!objects.empty())
+        {
+            if (it != objects.end())
+                out << "\"" << it->first << "\":" << it->second;
+            while (++it != objects.end())
+                out << ",\"" << it->first << "\":" << it->second;
+        }
         out << "}";
         break;
     }
@@ -250,10 +254,14 @@ std::ostream& operator<<(std::ostream& out, const Json& arg)
         out << "\"" << *arg.value.string << "\"";
         break;
     case Json::Type::Boolean:
-        out << arg.value.boolean;
+        out << std::boolalpha << arg.value.boolean;
         break;
     case Json::Type::Floating:
-        out << arg.value.floating;
+        if (std::fmod(arg.value.floating, 1.0))
+            out << std::setprecision(std::numeric_limits<double>::digits10)
+            << arg.value.floating;
+        else
+            out << arg.value.floating << ".0";
         break;
     case Json::Type::Integer:
         out << arg.value.integer;
