@@ -125,6 +125,14 @@ Json::Json(const Array& arg)
 
 }
 
+// Konstruktor obiektów typu obiektowego
+Json::Json(const Object& arg)
+    : type(Type::Object)
+    , value(arg)
+{
+
+}
+
 // Konstruktor obiektów JSON z listy inicjującej
 Json::Json(const std::initializer_list<Json>& arg)
 {

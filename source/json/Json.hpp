@@ -97,6 +97,9 @@ public:
     // Konstruktor obiektów tablicowych
     Json(const Array& arg);
 
+    // Konstruktor obiektów typu obiektowego
+    Json(const Object& arg);
+
     // Konstruktor obiektów tablicowych
     Json(const std::initializer_list<Json>& arg);
 
