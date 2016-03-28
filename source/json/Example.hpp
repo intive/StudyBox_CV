@@ -24,11 +24,11 @@ void example1()
 
     Json j;
     j["status"] = 1;
-    j["coordinates"] = std::vector<Json>(rects.begin(), rects.end());
+    j["coordinates"] = Json::Array(rects.begin(), rects.end());
 
     j = Json{
         {"status", 1},
-        {"coordinates", std::vector<Json>(rects.begin(), rects.end())}
+        {"coordinates", Json::Array(rects.begin(), rects.end())}
     };
 }
 
@@ -59,7 +59,28 @@ void example2()
     f = j["int8_t"];
     i8 = j["double"];
 
-    std::vector<Json> v = j["vector"];
+    bool& bRef = j["bool"];
+    bRef = false;
+
+    Json::Floating& floatRef = j["double"];
+    floatRef = 7.77f;
+
+    Json::Integer& intRef = j["int8_t"];
+    intRef = -7;
+
+    Json::Uinteger& uintRef = j["uint8_t"];
+    uintRef = 7;
+
+    Json::Array& arrRef = j["vector"];
+    arrRef.push_back(7);
+
+    Json::Object& objsRef = j["object"];
+    objsRef.insert({ "theta", 7 });
+
+    Json& ref = j["object"];
+    ref["delta"] = "force";
+
+    Json::Array v = j["vector"];
     std::vector<int> vi(v.begin(), v.end());
     Json jo = j["object"];
     jo["gamma"] = "theta";
