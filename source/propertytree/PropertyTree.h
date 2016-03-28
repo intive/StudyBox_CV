@@ -136,6 +136,12 @@ public:
         return begin() == end();
     }
 
+    /// Zwraca ilość poddrzew.
+    std::size_t size() const
+    {
+        return children.size();
+    }
+
     /// Zwraca iterator do potomków.
     Iterator begin()
     {
@@ -551,9 +557,27 @@ struct PropertyTreeOutputConverter<T, typename std::enable_if<is_container<T>::v
 
 inline bool operator ==(const PropertyTree& lhs, const PropertyTree& rhs)
 {
-    if (lhs.empty())
-        return lhs.get<std::string>() == rhs.get<std::string>();
+    try
+    {
+        if (lhs.empty())
+        {
+            if (rhs.empty())
+                return lhs.get<std::string>() == rhs.get<std::string>();
+            else
+                return false;
+        }
+    }
+    catch (const std::out_of_range&)
+    {
+        return false;
+    }
+    catch (const std::bad_cast&)
+    {
+        return false;
+    }
+
+    if (lhs.size() != rhs.size())
+        return false;
 
     return std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
-
