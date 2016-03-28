@@ -189,7 +189,7 @@ const Json& Json::operator[](const std::string& arg) const
 }
 
 // Operator rzutujący na obiekt Boolowski
-Json::operator bool() const
+Json::operator bool&()
 {
     if (!isBool())
         throw std::domain_error("type is not boolean");
@@ -198,7 +198,7 @@ Json::operator bool() const
 }
 
 // Operator rzutujący na obiekt łańcucha znaków
-Json::operator std::string&() const
+Json::operator std::string&()
 {
     if (!isString())
         throw std::domain_error("type is not string");
@@ -207,7 +207,7 @@ Json::operator std::string&() const
 }
 
 // Operator rzutujący na obiekt tablicowy
-Json::operator std::vector<Json>&() const
+Json::operator std::vector<Json>&()
 {
     if (!isArray())
         throw std::domain_error("type is not array");

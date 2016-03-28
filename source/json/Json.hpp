@@ -173,20 +173,20 @@ public:
     }
 
     // Operator rzutujący na obiekt Boolowski
-    operator bool() const;
+    operator bool&();
 
     // Operator rzutujący na obiekt łańcucha znaków
-    operator std::string&() const;
+    operator std::string&();
 
     // Operator rzutujący na obiekt tablicowy
-    operator std::vector<Json>&() const;
+    operator std::vector<Json>&();
 
     // Operator rzutujący obiekt na typ numeryczny
     template <typename T,
         typename std::enable_if<
             std::is_arithmetic<T>::value &&
             !std::is_same<T, std::string::value_type>::value>::type* = nullptr>
-    operator T() const
+    operator T()
     {
         switch (type)
         {
