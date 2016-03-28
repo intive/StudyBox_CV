@@ -11,6 +11,21 @@
 class Json
 {
 public:
+    // Deklaracje wprzód
+    template <bool> class Iterator;
+
+    // Aliasy
+    typedef bool Boolean;
+    typedef double Floating;
+    typedef int64_t Integer;
+    typedef uint64_t Uinteger;
+    typedef std::string String;
+    typedef std::nullptr_t Null;
+    typedef std::vector<Json> Array;
+    typedef std::map<std::string, Json> Object;
+    typedef class Iterator<false> iterator;
+    typedef class Iterator<true> const_iterator;
+
     // Enumerator definiujący typ obiektu
     enum class Type
     {
@@ -27,35 +42,30 @@ public:
     // Unia definiująca możliwe wartości obiektu
     union Value
     {
-        bool boolean;
-        double floating;
-        int64_t integer;
-        uint64_t uinteger;
-        std::string* string;
-        std::vector<Json>* array;
-        std::map<std::string, Json>* object;
+        Boolean boolean;
+        Floating floating;
+        Integer integer;
+        Uinteger uinteger;
+        String* string;
+        Array* array;
+        Object* object;
 
         // Konstruktory nadające wartość unii
         Value() = default;
-        Value(std::nullptr_t) { }
-        Value(const bool arg) : boolean(arg) { }
-        Value(const double arg) : floating(arg) { }
-        Value(const int64_t arg) : integer(arg) { }
-        Value(const uint64_t arg) : uinteger(arg) { }
+        Value(Null) { }
+        Value(const Boolean arg) : boolean(arg) { }
+        Value(const Floating arg) : floating(arg) { }
+        Value(const Integer arg) : integer(arg) { }
+        Value(const Uinteger arg) : uinteger(arg) { }
         Value(const char *arg)
-            : string(new std::string(arg)) { }
-        Value(const std::string& arg)
-            : string(new std::string(arg)) { }
-        Value(const std::vector<Json>& arg)
-            : array(new std::vector<Json>(arg)) { }
-        Value(const std::map<std::string, Json>& arg)
-            : object(new std::map<std::string, Json>(arg)) { }
+            : string(new String(arg)) { }
+        Value(const String& arg)
+            : string(new String(arg)) { }
+        Value(const Array& arg)
+            : array(new Array(arg)) { }
+        Value(const Object& arg)
+            : object(new Object(arg)) { }
     };
-
-    // Klasa definująca (stały) iterator
-    template <bool> class Iterator;
-    typedef class Iterator<false> iterator;
-    typedef class Iterator<true> const_iterator;
 
     // Konstruktor domyślny
     Json();
@@ -73,7 +83,7 @@ public:
     ~Json();
 
     // Konstruktor obiektu pustego
-    Json(std::nullptr_t);
+    Json(Null);
 
     // Konstruktor obiektów Boolowskich
     Json(const bool arg);
@@ -85,7 +95,7 @@ public:
     Json(const char* arg);
 
     // Konstruktor obiektów tablicowych
-    Json(const std::vector<Json>& arg);
+    Json(const Array& arg);
 
     // Konstruktor obiektów tablicowych
     Json(const std::initializer_list<Json>& arg);
@@ -93,11 +103,11 @@ public:
     // Konstruktor obiektów zmienno-przecinkowych
     template <typename T,
         typename std::enable_if<
-            std::is_constructible<double, T>::value &&
+            std::is_constructible<Floating, T>::value &&
             std::is_floating_point<T>::value>::type* = nullptr>
     Json(const T arg)
         : type(Type::Floating)
-        , value(static_cast<double>(arg))
+        , value(static_cast<Floating>(arg))
     {
 
     }
@@ -107,11 +117,11 @@ public:
         typename std::enable_if<
             std::is_signed<T>::value &&
             std::is_integral<T>::value &&
-            !std::is_same<T, bool>::value &&
-            std::is_constructible<int64_t, T>::value, T>::type* = nullptr>
+            !std::is_same<T, Boolean>::value &&
+            std::is_constructible<Integer, T>::value, T>::type* = nullptr>
     Json(const T arg)
         : type(Type::Integer)
-        , value(static_cast<int64_t>(arg))
+        , value(static_cast<Integer>(arg))
     {
 
     }
@@ -121,11 +131,11 @@ public:
         typename std::enable_if<
             std::is_unsigned<T>::value &&
             std::is_integral<T>::value &&
-            !std::is_same<T, bool>::value &&
-            std::is_constructible<uint64_t, T>::value, T>::type* = nullptr>
+            !std::is_same<T, Boolean>::value &&
+            std::is_constructible<Uinteger, T>::value, T>::type* = nullptr>
     Json(const T arg)
         : type(Type::Uinteger)
-        , value(static_cast<uint64_t>(arg))
+        , value(static_cast<Uinteger>(arg))
     {
 
     }
@@ -151,10 +161,10 @@ public:
         if (isNull())
         {
             type = Type::Array;
-            value.array = new std::vector<Json>();
+            value.array = new Array();
         }
 
-        if (type != Type::Array)
+        if (!isArray())
             throw std::domain_error("type is not array");
 
         return (*value.array)[arg];
@@ -173,25 +183,25 @@ public:
     }
 
     // Operator rzutujący na obiekt Boolowski
-    operator bool&();
+    operator Boolean&();
 
     // Operator rzutujący na obiekt łańcucha znaków
-    operator std::string&();
+    operator String&();
 
     // Operator rzutujący na obiekt tablicowy
-    operator std::vector<Json>&();
+    operator Array&();
 
     // Operator rzutujący na liczbę całkowitą z znakiem
-    operator int64_t&();
+    operator Integer&();
 
     // Operator rzutujący na liczbę całkowitą bez znaku
-    operator uint64_t&();
+    operator Uinteger&();
 
     // Operator rzutujący na liczbę zmiennoprzecinkową
-    operator double&();
+    operator Floating&();
 
     // Operator rzutujący na kontener obiektów
-    operator std::map<std::string, Json>&();
+    operator Object&();
 
     // Operator rzutujący obiekt na typ numeryczny
     template <typename T,
@@ -346,7 +356,7 @@ public:
 
     protected:
         // Konstruktor z iteratora listy
-        Iterator(const std::vector<Json>::iterator& arg)
+        Iterator(const Array::iterator& arg)
             : type(Type::Array)
             , iter(arg)
         {
@@ -354,7 +364,7 @@ public:
         }
 
         // Konstruktor z iteratora obiektów
-        Iterator(const std::map<std::string, Json>::iterator& arg)
+        Iterator(const Object::iterator& arg)
             : type(Type::Object)
             , iter(arg)
         {
@@ -608,14 +618,14 @@ public:
         // Unia na iterator bazowy
         union Iter
         {
-            std::vector<Json>::iterator* array;
-            std::map<std::string, Json>::iterator* object;
+            Array::iterator* array;
+            Object::iterator* object;
 
             Iter() {}
-            Iter(const std::vector<Json>::iterator& arg)
-                : array(new std::vector<Json>::iterator(arg)) { }
-            Iter(const std::map<std::string, Json>::iterator& arg)
-                : object(new std::map<std::string, Json>::iterator(arg)) { }
+            Iter(const Array::iterator& arg)
+                : array(new Array::iterator(arg)) { }
+            Iter(const Object::iterator& arg)
+                : object(new Object::iterator(arg)) { }
         };
 
         // Enumerator określający typ iteratora

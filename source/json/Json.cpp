@@ -87,7 +87,7 @@ Json::~Json()
 }
 
 // Konstruktor obiektu pustego
-Json::Json(std::nullptr_t)
+Json::Json(Null)
     : type(Type::Null)
 {
 
@@ -118,7 +118,7 @@ Json::Json(const char* arg)
 }
 
 // Konstruktor obiektów tablicowych
-Json::Json(const std::vector<Json>& arg)
+Json::Json(const Array& arg)
     : type(Type::Array)
     , value(arg)
 {
@@ -141,14 +141,14 @@ Json::Json(const std::initializer_list<Json>& arg)
     if (isValid)
     {
         type = Type::Object;
-        value.object = new std::map<std::string, Json>();
+        value.object = new Object();
         for (auto x : arg)
             (*value.object)[x[0]] = x[1];
     }
     else
     {
         type = Type::Array;
-        value.array = new std::vector<Json>(std::move(arg));
+        value.array = new Array(std::move(arg));
     }
 }
 
@@ -158,7 +158,7 @@ Json& Json::operator[](const char* arg)
     if (isNull())
     {
         type = Type::Object;
-        value.object = new std::map<std::string, Json>();
+        value.object = new Object();
     }
 
     if (!isObject())
@@ -189,7 +189,7 @@ const Json& Json::operator[](const std::string& arg) const
 }
 
 // Operator rzutujący na obiekt Boolowski
-Json::operator bool&()
+Json::operator Boolean&()
 {
     if (!isBool())
         throw std::domain_error("type is not boolean");
@@ -198,7 +198,7 @@ Json::operator bool&()
 }
 
 // Operator rzutujący na obiekt łańcucha znaków
-Json::operator std::string&()
+Json::operator String&()
 {
     if (!isString())
         throw std::domain_error("type is not string");
@@ -207,7 +207,7 @@ Json::operator std::string&()
 }
 
 // Operator rzutujący na obiekt tablicowy
-Json::operator std::vector<Json>&()
+Json::operator Array&()
 {
     if (!isArray())
         throw std::domain_error("type is not array");
@@ -216,7 +216,7 @@ Json::operator std::vector<Json>&()
 }
 
 // Operator rzutujący na liczbę całkowitą z znakiem
-Json::operator int64_t&()
+Json::operator Integer&()
 {
     if (!isInteger())
         throw std::domain_error("type is not valid");
@@ -225,7 +225,7 @@ Json::operator int64_t&()
 }
 
 // Operator rzutujący na liczbę całkowitą bez znaku
-Json::operator uint64_t&()
+Json::operator Uinteger&()
 {
     if (!isUinteger())
         throw std::domain_error("type is not valid");
@@ -234,7 +234,7 @@ Json::operator uint64_t&()
 }
 
 // Operator rzutujący na liczbę zmiennoprzecinkową
-Json::operator double&()
+Json::operator Floating&()
 {
     if (!isFloating())
         throw std::domain_error("type is not valid");
@@ -243,7 +243,7 @@ Json::operator double&()
 }
 
 // Operator rzutujący na kontener obiektów
-Json::operator std::map<std::string, Json>&()
+Json::operator Object&()
 {
     if (!isObject())
         throw std::domain_error("type is not valid");
@@ -353,7 +353,7 @@ void Json::push_back(const Json& arg)
     if (isNull())
     {
         type = Type::Array;
-        value.array = new std::vector<Json>();
+        value.array = new Array();
     }
 
     if (isArray())
@@ -369,7 +369,7 @@ void Json::push_back(Json&& arg)
     if (isNull())
     {
         type = Type::Array;
-        value.array = new std::vector<Json>();
+        value.array = new Array();
     }
 
     if (isArray())
@@ -384,7 +384,7 @@ void Json::insert(const std::string& key, const Json& arg)
     if (isNull())
     {
         type = Type::Object;
-        value.object = new std::map<std::string, Json>();
+        value.object = new Object();
     }
 
     if (isObject())
@@ -399,7 +399,7 @@ void Json::insert(const std::string& key, Json&& arg)
     if (isNull())
     {
         type = Type::Object;
-        value.object = new std::map<std::string, Json>();
+        value.object = new Object();
     }
 
     if (isObject())
