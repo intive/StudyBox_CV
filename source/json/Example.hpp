@@ -137,4 +137,19 @@ void example4()
 
     if (list.empty())
         std::cout << "list: empty" << std::endl;
+
+    Json empty = Json::Object{};
+    std::cout << empty << std::endl;
+    empty = Json::Array{};
+    std::cout << empty << std::endl;
+
+    Json j = Json::Object({
+        {"a", 1},
+        {"b", 2},
+        {"c", Json::Array(
+            {1,"b",3, Json::Null{}})},
+        {"empty", Json::Array{}}
+    });
+
+    std::cout << j;
 }
