@@ -181,6 +181,18 @@ public:
     // Operator rzutujący na obiekt tablicowy
     operator std::vector<Json>&();
 
+    // Operator rzutujący na liczbę całkowitą z znakiem
+    operator int64_t&();
+
+    // Operator rzutujący na liczbę całkowitą bez znaku
+    operator uint64_t&();
+
+    // Operator rzutujący na liczbę zmiennoprzecinkową
+    operator double&();
+
+    // Operator rzutujący na kontener obiektów
+    operator std::map<std::string, Json>&();
+
     // Operator rzutujący obiekt na typ numeryczny
     template <typename T,
         typename std::enable_if<

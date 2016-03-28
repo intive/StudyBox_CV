@@ -215,6 +215,42 @@ Json::operator std::vector<Json>&()
     return *value.array;
 }
 
+// Operator rzutujący na liczbę całkowitą z znakiem
+Json::operator int64_t&()
+{
+    if (!isInteger())
+        throw std::domain_error("type is not valid");
+
+    return value.integer;
+}
+
+// Operator rzutujący na liczbę całkowitą bez znaku
+Json::operator uint64_t&()
+{
+    if (!isUinteger())
+        throw std::domain_error("type is not valid");
+
+    return value.uinteger;
+}
+
+// Operator rzutujący na liczbę zmiennoprzecinkową
+Json::operator double&()
+{
+    if (!isFloating())
+        throw std::domain_error("type is not valid");
+
+    return value.floating;
+}
+
+// Operator rzutujący na kontener obiektów
+Json::operator std::map<std::string, Json>&()
+{
+    if (!isObject())
+        throw std::domain_error("type is not valid");
+
+    return *value.object;
+}
+
 // Operator strumienia wyjścia
 std::ostream& operator<<(std::ostream& out, const Json& arg)
 {
