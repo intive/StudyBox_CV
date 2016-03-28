@@ -131,7 +131,7 @@ Json::Json(const std::initializer_list<Json>& arg)
     bool isValid = true;
     for (const Json& x : arg)
     {
-        if (x.type != Type::Array || x.size() != 2 || x[0].type != Type::String)
+        if (!x.isArray() || x.size() != 2 || !x[0].isString())
         {
             isValid = false;
             break;
