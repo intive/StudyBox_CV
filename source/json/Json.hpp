@@ -210,8 +210,28 @@ public:
     template <typename T,
         typename std::enable_if<
             std::is_arithmetic<T>::value &&
-            !std::is_same<T, std::string::value_type>::value>::type* = nullptr>
+            !std::is_same<T, char>::value>::type* = nullptr>
     operator T()
+    {
+        switch (type)
+        {
+        case Type::Floating:
+            return numericCast<T>(value.floating);
+        case Type::Integer:
+            return numericCast<T>(value.integer);
+        case Type::Uinteger:
+            return numericCast<T>(value.uinteger);
+        default:
+            throw std::domain_error("object is not number");
+        }
+    }
+
+    // Operator rzutujący obiekt na typ numeryczny
+    template <typename T,
+        typename std::enable_if<
+            std::is_arithmetic<T>::value &&
+            !std::is_same<T, char>::value>::type* = nullptr>
+    operator T() const
     {
         switch (type)
         {
