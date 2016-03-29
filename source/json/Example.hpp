@@ -4,6 +4,8 @@ void example1()
 {
     struct Rect
     {
+        Rect(const Json& j)
+            : x(j["x"]), y(j["y"]), w(j["w"]), h(j["h"]) {}
         Rect(int x, int y, int w, int h)
             : x(x), y(y), w(w), h(h) {}
         operator Json()
@@ -30,6 +32,17 @@ void example1()
         {"status", 1},
         {"coordinates", Json::Array(rects.begin(), rects.end())}
     };
+
+    std::string str = j.serialize();
+    //j = j.deserialize(str);
+
+    rects.clear();
+    if ((int)j["status"] == 1)
+    {
+        const Json::Array& jj = j["coordinates"];
+        rects.reserve(jj.size());
+        rects.assign(jj.begin(), jj.end());
+    }
 }
 
 void example2()
