@@ -8,6 +8,10 @@
 #include <type_traits>
 #include <initializer_list>
 
+#include "../propertytree/PropertyTree.h"
+#include "../propertytree/PropertyTreeReader.h"
+#include "../propertytree/PropertyTreeWriter.h"
+
 // Konstruktor domyślny
 Json::Json()
     : type(Type::Null)
@@ -625,13 +629,9 @@ Json Json::deserialize(std::string str)
             throw std::runtime_error(("Couldn't open file: " + str).c_str());
     }
 
-    str = minify(str);
-
-    Json j;
-
-    // Deserializacja
-
-    return j;
+    PropertyTree tree;
+    ReadJson(tree, std::istringstream(str));
+    return ToJsonObject(tree);
 }
 
 // Metoda serializująca JSON do łańcucha znaków
