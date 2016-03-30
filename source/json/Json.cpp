@@ -630,7 +630,8 @@ Json Json::deserialize(std::string str)
     }
 
     PropertyTree tree;
-    ReadJson(tree, std::istringstream(str));
+    std::istringstream istr(str);
+    ReadJson(tree, istr);
     return ToJsonObject(tree);
 }
 
