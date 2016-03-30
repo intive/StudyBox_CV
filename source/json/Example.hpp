@@ -34,7 +34,7 @@ void example1()
     };
 
     std::string str = j.serialize();
-    //j = j.deserialize(str);
+    j = j.deserialize(str);
 
     rects.clear();
     if ((int)j["status"] == 1)
