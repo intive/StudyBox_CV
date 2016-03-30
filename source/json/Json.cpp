@@ -1,6 +1,7 @@
 #include "Json.hpp"
 
 #include <string>
+#include <iomanip>
 #include <sstream>
 #include <fstream>
 #include <algorithm>
@@ -86,7 +87,7 @@ Json::~Json()
 }
 
 // Konstruktor obiektu pustego
-Json::Json(std::nullptr_t)
+Json::Json(Null)
     : type(Type::Null)
 {
 
@@ -117,8 +118,16 @@ Json::Json(const char* arg)
 }
 
 // Konstruktor obiektów tablicowych
-Json::Json(const std::vector<Json>& arg)
+Json::Json(const Array& arg)
     : type(Type::Array)
+    , value(arg)
+{
+
+}
+
+// Konstruktor obiektów typu obiektowego
+Json::Json(const Object& arg)
+    : type(Type::Object)
     , value(arg)
 {
 
@@ -127,40 +136,40 @@ Json::Json(const std::vector<Json>& arg)
 // Konstruktor obiektów JSON z listy inicjującej
 Json::Json(const std::initializer_list<Json>& arg)
 {
-    bool isObject = true;
+    bool isValid = true;
     for (const Json& x : arg)
     {
-        if (x.type != Type::Array || x.size() != 2 || x[0].type != Type::String)
+        if (!x.isArray() || x.size() != 2 || !x[0].isString())
         {
-            isObject = false;
+            isValid = false;
             break;
         }
     }
 
-    if (isObject)
+    if (isValid)
     {
         type = Type::Object;
-        value.object = new std::map<std::string, Json>();
+        value.object = new Object();
         for (auto x : arg)
             (*value.object)[x[0]] = x[1];
     }
     else
     {
         type = Type::Array;
-        value.array = new std::vector<Json>(std::move(arg));
+        value.array = new Array(std::move(arg));
     }
 }
 
 // Operator zwracający obiekt o podanej nazwie
 Json& Json::operator[](const char* arg)
 {
-    if (type == Type::Null)
+    if (isNull())
     {
         type = Type::Object;
-        value.object = new std::map<std::string, Json>();
+        value.object = new Object();
     }
 
-    if (type != Type::Object)
+    if (!isObject())
         throw std::domain_error("type is not object");
 
     return (*value.object)[arg];
@@ -175,7 +184,7 @@ Json& Json::operator[](const std::string& arg)
 // Operator zwracający obiekt o podanej nazwie
 const Json& Json::operator[](const char* arg) const
 {
-    if (type != Type::Object)
+    if (!isObject())
         throw std::domain_error("type is not object");
 
     return (*value.object)[arg];
@@ -188,30 +197,66 @@ const Json& Json::operator[](const std::string& arg) const
 }
 
 // Operator rzutujący na obiekt Boolowski
-Json::operator bool() const
+Json::operator Boolean&()
 {
-    if (type != Type::Boolean)
+    if (!isBool())
         throw std::domain_error("type is not boolean");
 
     return value.boolean;
 }
 
 // Operator rzutujący na obiekt łańcucha znaków
-Json::operator std::string&() const
+Json::operator String&()
 {
-    if (type != Type::String)
+    if (!isString())
         throw std::domain_error("type is not string");
 
     return *value.string;
 }
 
 // Operator rzutujący na obiekt tablicowy
-Json::operator std::vector<Json>&() const
+Json::operator Array&()
 {
-    if (type != Type::Array)
+    if (!isArray())
         throw std::domain_error("type is not array");
 
     return *value.array;
+}
+
+// Operator rzutujący na liczbę całkowitą z znakiem
+Json::operator Integer&()
+{
+    if (!isInteger())
+        throw std::domain_error("type is not valid");
+
+    return value.integer;
+}
+
+// Operator rzutujący na liczbę całkowitą bez znaku
+Json::operator Uinteger&()
+{
+    if (!isUinteger())
+        throw std::domain_error("type is not valid");
+
+    return value.uinteger;
+}
+
+// Operator rzutujący na liczbę zmiennoprzecinkową
+Json::operator Floating&()
+{
+    if (!isFloating())
+        throw std::domain_error("type is not valid");
+
+    return value.floating;
+}
+
+// Operator rzutujący na kontener obiektów
+Json::operator Object&()
+{
+    if (!isObject())
+        throw std::domain_error("type is not valid");
+
+    return *value.object;
 }
 
 // Operator strumienia wyjścia
@@ -239,10 +284,13 @@ std::ostream& operator<<(std::ostream& out, const Json& arg)
         auto& objects = *arg.value.object;
         auto it = objects.begin();
         out << "{";
-        if (it != objects.end())
-            out << "\"" << it->first << "\":" << it->second;
-        while (++it != objects.end())
-            out << ",\"" << it->first << "\":" << it->second;
+        if (!objects.empty())
+        {
+            if (it != objects.end())
+                out << "\"" << it->first << "\":" << it->second;
+            while (++it != objects.end())
+                out << ",\"" << it->first << "\":" << it->second;
+        }
         out << "}";
         break;
     }
@@ -250,10 +298,14 @@ std::ostream& operator<<(std::ostream& out, const Json& arg)
         out << "\"" << *arg.value.string << "\"";
         break;
     case Json::Type::Boolean:
-        out << arg.value.boolean;
+        out << std::boolalpha << arg.value.boolean;
         break;
     case Json::Type::Floating:
-        out << arg.value.floating;
+        if (std::fmod(arg.value.floating, 1.0))
+            out << std::setprecision(std::numeric_limits<double>::digits10)
+            << arg.value.floating;
+        else
+            out << arg.value.floating << ".0";
         break;
     case Json::Type::Integer:
         out << arg.value.integer;
@@ -271,14 +323,258 @@ std::ostream& operator<<(std::ostream& out, const Json& arg)
 }
 
 // Metoda zwraca ilość elementów w obiekcie
-size_t Json::size() const
+const size_t Json::size() const
 {
-    if (type == Type::Array)
+    if (isArray())
         return value.array->size();
-    else if (type == Type::Object)
+    else if (isObject())
         return value.object->size();
     else
         throw std::domain_error("object does not have size");
+}
+
+// Metoda sprawdza czy kontener jest pusty
+const bool Json::empty() const
+{
+    return size() == 0;
+}
+
+// Metoda opróżnia kontener
+void Json::clear()
+{
+    switch (type)
+    {
+    case Type::Array:
+        value.array->clear();
+        break;
+    case Type::Object:
+        value.object->clear();
+        break;
+    default:
+        throw std::domain_error("invalid type");
+    }
+}
+
+// Metoda dodaje obiekt do listy
+void Json::push_back(const Json& arg)
+{
+    if (isNull())
+    {
+        type = Type::Array;
+        value.array = new Array();
+    }
+
+    if (isArray())
+        value.array->push_back(arg);
+    else
+        throw std::domain_error("type is not array");
+}
+
+
+// Metoda dodaje obiekt do listy
+void Json::push_back(Json&& arg)
+{
+    if (isNull())
+    {
+        type = Type::Array;
+        value.array = new Array();
+    }
+
+    if (isArray())
+        value.array->push_back(std::move(arg));
+    else
+        throw std::domain_error("type is not array");
+}
+
+// Metoda dodaje obiekt do obiektów
+void Json::insert(const std::string& key, const Json& arg)
+{
+    if (isNull())
+    {
+        type = Type::Object;
+        value.object = new Object();
+    }
+
+    if (isObject())
+        (*value.object)[key] = arg;
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda dodaje obiekt do obiektów
+void Json::insert(const std::string& key, Json&& arg)
+{
+    if (isNull())
+    {
+        type = Type::Object;
+        value.object = new Object();
+    }
+
+    if (isObject())
+        (*value.object)[key] = std::move(arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda usuwa obiekt z listy
+void Json::erase(const size_t arg)
+{
+    if (isArray())
+        value.array->erase(value.array->begin() + arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda usuwa obiekt z obiektów
+void Json::erase(const std::string& arg)
+{
+    if (isObject())
+        value.object->erase(arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda usuwa ostatni obiekt z listy
+void Json::pop_back()
+{
+    if (isArray())
+        value.array->pop_back();
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda zwraca obiekt z listy
+const Json& Json::at(std::size_t arg)
+{
+    if (isArray())
+        return value.array->at(arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda zwraca obiekt z obiektów
+const Json& Json::at(const std::string& arg)
+{
+    if (isObject())
+        return value.object->at(arg);
+    else
+        throw std::domain_error("type is not object");
+}
+
+// Metoda zwraca iterator na początek kontenera
+Json::iterator Json::begin() const
+{
+    switch (type)
+    {
+    case Type::Array:
+        return iterator(value.array->begin());
+    case Type::Object:
+        return iterator(value.object->begin());
+    default:
+        throw std::domain_error("invalid type");
+    }
+}
+
+// Metoda zwraca iterator na koniec kontenera
+Json::iterator Json::end() const
+{
+    switch (type)
+    {
+    case Type::Array:
+        return iterator(value.array->end());
+    case Type::Object:
+        return iterator(value.object->end());
+    default:
+        throw std::domain_error("invalid type");
+    }
+}
+
+// Metoda zwraca stały iterator na początek kontenera
+Json::const_iterator Json::cbegin() const
+{
+    switch (type)
+    {
+    case Type::Array:
+        return const_iterator(value.array->begin());
+    case Type::Object:
+        return const_iterator(value.object->begin());
+    default:
+        throw std::domain_error("invalid type");
+    }
+}
+
+// Metoda zwraca stały iterator na koniec kontenera
+Json::const_iterator Json::cend() const
+{
+    switch (type)
+    {
+    case Type::Array:
+        return const_iterator(value.array->end());
+    case Type::Object:
+        return const_iterator(value.object->end());
+    default:
+        throw std::domain_error("invalid type");
+    }
+}
+
+// Metoda zwraca typ obiektu
+const Json::Type Json::getType() const
+{
+    return type;
+}
+
+// Metoda sprawdza czy obiekt jest typu listowego
+const bool Json::isArray() const
+{
+    return type == Json::Type::Array;
+}
+
+// Metoda sprawdza czy obiekt jest typu obiektowego
+const bool Json::isObject() const
+{
+    return type == Json::Type::Object;
+}
+
+// Metoda sprawdza czy obiekt jest typu Boolowskiego
+const bool Json::isBool() const
+{
+    return type == Json::Type::Boolean;
+}
+
+// Metoda sprawdza czy obiekt jest typu pustego
+const bool Json::isNull() const
+{
+    return type == Json::Type::Null;
+}
+
+// Metoda sprawdza czy obiekt jest typu tekstowego
+const bool Json::isString() const
+{
+    return type == Json::Type::String;
+}
+
+// Metoda sprawdza czy obiekt jest typu zmiennoprzecinkowego
+const bool Json::isFloating() const
+{
+    return type == Json::Type::Floating;
+}
+
+// Metoda sprawdza czy obiekt jest typu całkowitego z znakiem
+const bool Json::isInteger() const
+{
+    return type == Json::Type::Integer;
+}
+
+// Metoda sprawdza czy obiekt jest typu całkowitego bez znaku
+const bool Json::isUinteger() const
+{
+    return type == Json::Type::Uinteger;
+}
+
+// Metoda sprawdza czy obiekt jest typu numerycznego
+const bool Json::isNumeric() const
+{
+    return isFloating() || isInteger() || isUinteger();
 }
 
 // Metoda zwraca łańcuch znaków z usuniętymi nadmiarowymi znakami białymi zgodnie z regułami JSON

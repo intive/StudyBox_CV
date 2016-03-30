@@ -4,6 +4,8 @@ void example1()
 {
     struct Rect
     {
+        Rect(const Json& j)
+            : x(j["x"]), y(j["y"]), w(j["w"]), h(j["h"]) {}
         Rect(int x, int y, int w, int h)
             : x(x), y(y), w(w), h(h) {}
         operator Json()
@@ -24,12 +26,23 @@ void example1()
 
     Json j;
     j["status"] = 1;
-    j["coordinates"] = std::vector<Json>(rects.begin(), rects.end());
+    j["coordinates"] = Json::Array(rects.begin(), rects.end());
 
     j = Json{
         {"status", 1},
-        {"coordinates", std::vector<Json>(rects.begin(), rects.end())}
+        {"coordinates", Json::Array(rects.begin(), rects.end())}
     };
+
+    std::string str = j.serialize();
+    //j = j.deserialize(str);
+
+    rects.clear();
+    if ((int)j["status"] == 1)
+    {
+        const Json::Array& jj = j["coordinates"];
+        rects.reserve(jj.size());
+        rects.assign(jj.begin(), jj.end());
+    }
 }
 
 void example2()
@@ -56,7 +69,31 @@ void example2()
     std::string s = j["string"];
     int i = j["outer"]["inner"];
 
-    std::vector<Json> v = j["vector"];
+    f = j["int8_t"];
+    i8 = j["double"];
+
+    bool& bRef = j["bool"];
+    bRef = false;
+
+    Json::Floating& floatRef = j["double"];
+    floatRef = 7.77f;
+
+    Json::Integer& intRef = j["int8_t"];
+    intRef = -7;
+
+    Json::Uinteger& uintRef = j["uint8_t"];
+    uintRef = 7;
+
+    Json::Array& arrRef = j["vector"];
+    arrRef.push_back(7);
+
+    Json::Object& objsRef = j["object"];
+    objsRef.insert({ "theta", 7 });
+
+    Json& ref = j["object"];
+    ref["delta"] = "force";
+
+    Json::Array v = j["vector"];
     std::vector<int> vi(v.begin(), v.end());
     Json jo = j["object"];
     jo["gamma"] = "theta";
@@ -85,4 +122,47 @@ void example3()
     str = j.serialize("out.json");
     j = Json::deserialize(str);
     j = Json::deserialize("out.json");
+}
+
+void example4()
+{
+    Json map = {{"alfa", 42}, {"beta", -3.14}, {"gamma", "delta"}};
+    Json list = {"alfa", 1, 2, "beta", "gamma", "theta"};
+
+    for (auto& x : map)
+        std::cout << x << " ";
+    std::cout << std::endl;
+
+    list.push_back(42);
+
+    for (auto& x : list)
+        std::cout << x << " ";
+    std::cout << std::endl;
+
+    map.insert("epsilon", true);
+
+    for (auto it = map.begin(); it != map.end(); it++)
+        std::cout << it.key() << " " << it.value() << std::endl;
+
+    std::cout << "map: " << map.size() << std::endl;
+
+    list.clear();
+
+    if (list.empty())
+        std::cout << "list: empty" << std::endl;
+
+    Json empty = Json::Object{};
+    std::cout << empty << std::endl;
+    empty = Json::Array{};
+    std::cout << empty << std::endl;
+
+    Json j = Json::Object({
+        {"a", 1},
+        {"b", 2},
+        {"c", Json::Array(
+            {1,"b",3, Json::Null{}})},
+        {"empty", Json::Array{}}
+    });
+
+    std::cout << j;
 }
