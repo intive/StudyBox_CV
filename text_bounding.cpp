@@ -1,6 +1,6 @@
 #include"text_bounding.h"
 #include <vector>
-std::vector <Rect> ImageProcess::findRectangles(Mat *img)
+std::vector<Rect> ImageProcess::findRectangles(Mat *img)
 {
 	if (img->rows > 1000 || img->cols > 1000)
 	{
@@ -25,10 +25,10 @@ std::vector <Rect> ImageProcess::findRectangles(Mat *img)
 	morphologyEx(img_threshold, img_threshold, CV_MOP_CLOSE, element);
 
 	//Znajdujemy kontury
-	std::vector< std::vector< Point> > contours;
+	std::vector<std::vector<Point>> contours;
 	findContours(img_threshold, contours, 0, 1);
 
-	std::vector<std::vector<Point> > contours_poly(contours.size());
+	std::vector<std::vector<Point>> contours_poly(contours.size());
 	for (int i = 0; i < contours.size(); i++)
 		if (contours[i].size()>70)
 		{

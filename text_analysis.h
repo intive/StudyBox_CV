@@ -19,7 +19,12 @@ class Markers
 	TextType type;
 	int percentage_chance;
 public:
-	Markers(int s, int e, TextType t, int percent) :start(s), end(e), type(t), percentage_chance(percent) {};
+	Markers(int s, int e, TextType t, int percent) 
+	    : start(s)
+	    , end(e)
+	    , type(t)
+	    , percentage_chance(percent) 
+	{};
 };
 std::vector<Markers> findQA(const std::string& text);
 #endif
