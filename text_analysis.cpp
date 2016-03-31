@@ -1,5 +1,28 @@
 #include"text_analysis.h"
 #include<vector>
+const std::vector<std::string> dictionary = {
+	"Czy","czy",
+	"Ile","ile",
+	"Gdzie","gdzie",
+	"Jak","jak",
+	"Dlaczego","dlaczego",
+	"Po co","po co",
+	"Czemu","czemu",
+	"Z kim","z kim",
+	"Z czym","z czym",
+	"Na czym","na czym",
+	"Kiedy","kiedy",
+	"Kim","kim",
+	"W którym","w którym","W ktorym","w ktorym",
+	"Kogo","kogo",
+	"Za co","za co",
+	"Co","co",
+	"U kogo","u kogo",
+	"Jakiego","jakiego",
+	"Dla jakiego","dla jakiego",
+	"Dla kogo","dla kogo",
+	"Komu","komu"
+};
 std::vector<Markers> findQA(const std::string& text)
 {
 	std::vector<Markers> markersVector;

@@ -1,12 +1,13 @@
 #include"text_bounding.h"
-vector <Rect> ImageProcess::findRectangles(Mat *img)
+#include <vector>
+std::vector <Rect> ImageProcess::findRectangles(Mat *img)
 {
 	if (img->rows > 1000 || img->cols > 1000)
 	{
 		pyrDown(*img, *img, Size(img->cols / 2, img->rows / 2));
 		pyrDown(*img, *img, Size(img->cols / 2, img->rows / 2));
 	}
-	vector<Rect> boundRect;
+	std::vector<Rect> boundRect;
 	Mat img_gray, img_sobel, img_threshold, element;
 
 	//Przygotowanie obrazka. Usuniecie szumow, dodanie treshold
@@ -24,10 +25,10 @@ vector <Rect> ImageProcess::findRectangles(Mat *img)
 	morphologyEx(img_threshold, img_threshold, CV_MOP_CLOSE, element);
 
 	//Znajdujemy kontury
-	vector< vector< Point> > contours;
+	std::vector< std::vector< Point> > contours;
 	findContours(img_threshold, contours, 0, 1);
 
-	vector<vector<Point> > contours_poly(contours.size());
+	std::vector<std::vector<Point> > contours_poly(contours.size());
 	for (int i = 0; i < contours.size(); i++)
 		if (contours[i].size()>70)
 		{
