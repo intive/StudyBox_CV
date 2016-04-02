@@ -1,11 +1,11 @@
 #ifndef PATR_JSON_HPP
 #define PATR_JSON_HPP
 
+#include <map>
 #include <vector>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
-#include <unordered_map>
 
 // Klasa odpowiadająca za obsługę obiektów JSON
 class Json
@@ -22,7 +22,7 @@ public:
     typedef std::string String;
     typedef std::nullptr_t Null;
     typedef std::vector<Json> Array;
-    typedef std::unordered_map<std::string, Json> Object;
+    typedef std::map<std::string, Json> Object;
     typedef class Iterator<false> iterator;
     typedef class Iterator<true> const_iterator;
 
