@@ -201,7 +201,7 @@ const Json& Json::operator[](const std::string& arg) const
 }
 
 // Operator rzutujący na obiekt Boolowski
-Json::operator Boolean&()
+Json::operator Boolean() const
 {
     if (!isBool())
         throw std::domain_error("type is not boolean");
@@ -210,7 +210,7 @@ Json::operator Boolean&()
 }
 
 // Operator rzutujący na obiekt łańcucha znaków
-Json::operator String&()
+Json::operator String() const
 {
     if (!isString())
         throw std::domain_error("type is not string");
@@ -219,7 +219,7 @@ Json::operator String&()
 }
 
 // Operator rzutujący na obiekt tablicowy
-Json::operator Array&()
+Json::operator Array() const
 {
     if (!isArray())
         throw std::domain_error("type is not array");
@@ -228,7 +228,7 @@ Json::operator Array&()
 }
 
 // Operator rzutujący na liczbę całkowitą z znakiem
-Json::operator Integer&()
+Json::operator Integer() const
 {
     if (!isInteger())
         throw std::domain_error("type is not valid");
@@ -237,7 +237,7 @@ Json::operator Integer&()
 }
 
 // Operator rzutujący na liczbę całkowitą bez znaku
-Json::operator Uinteger&()
+Json::operator Uinteger() const
 {
     if (!isUinteger())
         throw std::domain_error("type is not valid");
@@ -246,7 +246,7 @@ Json::operator Uinteger&()
 }
 
 // Operator rzutujący na liczbę zmiennoprzecinkową
-Json::operator Floating&()
+Json::operator Floating() const
 {
     if (!isFloating())
         throw std::domain_error("type is not valid");
@@ -255,7 +255,7 @@ Json::operator Floating&()
 }
 
 // Operator rzutujący na kontener obiektów
-Json::operator Object&()
+Json::operator Object() const
 {
     if (!isObject())
         throw std::domain_error("type is not valid");

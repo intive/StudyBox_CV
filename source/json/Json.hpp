@@ -186,45 +186,25 @@ public:
     }
 
     // Operator rzutujący na obiekt Boolowski
-    operator Boolean&();
+    operator Boolean() const;
 
     // Operator rzutujący na obiekt łańcucha znaków
-    operator String&();
+    operator String() const;
 
     // Operator rzutujący na obiekt tablicowy
-    operator Array&();
+    operator Array() const;
 
     // Operator rzutujący na liczbę całkowitą z znakiem
-    operator Integer&();
+    operator Integer() const;
 
     // Operator rzutujący na liczbę całkowitą bez znaku
-    operator Uinteger&();
+    operator Uinteger() const;
 
     // Operator rzutujący na liczbę zmiennoprzecinkową
-    operator Floating&();
+    operator Floating() const;
 
     // Operator rzutujący na kontener obiektów
-    operator Object&();
-
-    // Operator rzutujący obiekt na typ numeryczny
-    template <typename T,
-        typename std::enable_if<
-            std::is_arithmetic<T>::value &&
-            !std::is_same<T, char>::value>::type* = nullptr>
-    operator T()
-    {
-        switch (type)
-        {
-        case Type::Floating:
-            return numericCast<T>(value.floating);
-        case Type::Integer:
-            return numericCast<T>(value.integer);
-        case Type::Uinteger:
-            return numericCast<T>(value.uinteger);
-        default:
-            throw std::domain_error("object is not number");
-        }
-    }
+    operator Object() const;
 
     // Operator rzutujący obiekt na typ numeryczny
     template <typename T,
