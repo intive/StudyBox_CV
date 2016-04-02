@@ -185,45 +185,15 @@ public:
         return (*value.array)[arg];
     }
 
-    // Operator rzutujący na obiekt Boolowski
-    operator Boolean() const;
-
-    // Operator rzutujący na obiekt łańcucha znaków
-    operator String() const;
-
-    // Operator rzutujący na obiekt tablicowy
-    operator Array() const;
-
-    // Operator rzutujący na liczbę całkowitą z znakiem
-    operator Integer() const;
-
-    // Operator rzutujący na liczbę całkowitą bez znaku
-    operator Uinteger() const;
-
-    // Operator rzutujący na liczbę zmiennoprzecinkową
-    operator Floating() const;
-
-    // Operator rzutujący na kontener obiektów
-    operator Object() const;
-
-    // Operator rzutujący obiekt na typ numeryczny
+    // Operator rzutujący
     template <typename T,
         typename std::enable_if<
-            std::is_arithmetic<T>::value &&
-            !std::is_same<T, char>::value>::type* = nullptr>
+            !std::is_pointer<T>::value &&
+            !std::is_same<T, char>::value &&
+            !std::is_same<T, std::initializer_list<char>>::value>::type* = nullptr>
     operator T() const
     {
-        switch (type)
-        {
-        case Type::Floating:
-            return numericCast<T>(value.floating);
-        case Type::Integer:
-            return numericCast<T>(value.integer);
-        case Type::Uinteger:
-            return numericCast<T>(value.uinteger);
-        default:
-            throw std::domain_error("object is not number");
-        }
+        return get(static_cast<T*>(nullptr));
     }
 
     // Operator strumienia wyjścia
@@ -644,6 +614,37 @@ public:
     };
 
 protected:
+    // Metoda rzutuje na obiekt Boolowski
+    Boolean get(Boolean*) const;
+
+    // Metoda rzutuje na obiekt łańcucha znaków
+    String get(String*) const;
+
+    // Metoda rzutuje na obiekt tablicowy
+    Array get(Array*) const;
+
+    // Metoda rzutuje na kontener obiektów
+    Object get(Object*) const;
+
+    // Metoda rzutuje obiekt na typ numeryczny
+    template <typename T,
+        typename std::enable_if<
+            std::is_arithmetic<T>::value>::type* = nullptr>
+    T get(T*) const
+    {
+        switch (type)
+        {
+        case Type::Floating:
+            return numericCast<T>(value.floating);
+        case Type::Integer:
+            return numericCast<T>(value.integer);
+        case Type::Uinteger:
+            return numericCast<T>(value.uinteger);
+        default:
+            throw std::domain_error("object is not number");
+        }
+    }
+
     // Metoda rzutuje wartości numeryczne z kontrolą przepełnienia
     template <typename T, typename U,
         typename std::enable_if<

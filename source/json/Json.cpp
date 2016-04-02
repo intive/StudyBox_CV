@@ -200,8 +200,8 @@ const Json& Json::operator[](const std::string& arg) const
     return (*this)[arg.c_str()];
 }
 
-// Operator rzutujący na obiekt Boolowski
-Json::operator Boolean() const
+// Metoda rzutuje na obiekt Boolowski
+Json::Boolean Json::get(Boolean*) const
 {
     if (!isBool())
         throw std::domain_error("type is not boolean");
@@ -209,8 +209,8 @@ Json::operator Boolean() const
     return value.boolean;
 }
 
-// Operator rzutujący na obiekt łańcucha znaków
-Json::operator String() const
+// Metoda rzutuje na obiekt łańcucha znaków
+Json::String Json::get(String*) const
 {
     if (!isString())
         throw std::domain_error("type is not string");
@@ -218,8 +218,8 @@ Json::operator String() const
     return *value.string;
 }
 
-// Operator rzutujący na obiekt tablicowy
-Json::operator Array() const
+// Metoda rzutuje na obiekt tablicowy
+Json::Array Json::get(Array*) const
 {
     if (!isArray())
         throw std::domain_error("type is not array");
@@ -227,35 +227,8 @@ Json::operator Array() const
     return *value.array;
 }
 
-// Operator rzutujący na liczbę całkowitą z znakiem
-Json::operator Integer() const
-{
-    if (!isInteger())
-        throw std::domain_error("type is not valid");
-
-    return value.integer;
-}
-
-// Operator rzutujący na liczbę całkowitą bez znaku
-Json::operator Uinteger() const
-{
-    if (!isUinteger())
-        throw std::domain_error("type is not valid");
-
-    return value.uinteger;
-}
-
-// Operator rzutujący na liczbę zmiennoprzecinkową
-Json::operator Floating() const
-{
-    if (!isFloating())
-        throw std::domain_error("type is not valid");
-
-    return value.floating;
-}
-
-// Operator rzutujący na kontener obiektów
-Json::operator Object() const
+// Metoda rzutuje na kontener obiektów
+Json::Object Json::get(Object*) const
 {
     if (!isObject())
         throw std::domain_error("type is not valid");
