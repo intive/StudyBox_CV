@@ -1,5 +1,4 @@
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE HTTP
 #include <boost/test/unit_test.hpp>
 
 #include "../Server.h"
