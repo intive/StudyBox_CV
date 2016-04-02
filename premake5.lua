@@ -2,13 +2,13 @@ workspace 'StudyBox_CV'
     location 'build'
     flags 'FatalWarnings'
     startproject 'StudyBox_CV'
-    configurations { 'Debug', 'Release' }
+    configurations { 'Debug', 'Release', 'Test' }
     targetdir 'bin/%{cfg.platform}/%{cfg.buildcfg}'
 
     filter 'debug'
         flags 'Symbols'
         defines 'DEBUG'
-    filter 'release'
+    filter 'release or test'
         optimize 'On'
         defines 'NDEBUG'
 
@@ -28,6 +28,14 @@ workspace 'StudyBox_CV'
             'source/**'
         }
 
+        filter 'test'
+            kind 'ConsoleApp'
+        filter { 'not test', 'files:**/test/** or files:**maintest.cpp' }
+            flags 'ExcludeFromBuild'
+        filter { 'test', 'files:**main.cpp' }
+            flags 'ExcludeFromBuild'
+        filter '*'
+
         if _ACTION and string.find(_ACTION, 'vs*') then
             local toolset = _ACTION == 'vs2015' and '140' or
                             _ACTION == 'vs2013' and '120' or
@@ -42,34 +50,45 @@ workspace 'StudyBox_CV'
                 'build/packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/build/native/include'
             }
             libdirs {
-                'build/packages/opencv3.1.1.0/build/native/lib/%{cfg.platform}/v'..toolset..'/%{cfg.buildcfg}',
+                'build/packages/opencv3.1.1.0/build/native/lib/%{cfg.platform}/v'..toolset..'/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
                 'build/packages/boost_unit_test_framework-vc'..toolset..'.1.60.0.0/lib/native/address-model-%{string.sub(cfg.platform, -2)}/lib',
-                'build/packages/wastorage.v'..toolset..'.2.2.0/lib/native/v'..toolset..'/%{cfg.platform}/%{cfg.buildcfg}',
-                'build/packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg}'
+                'build/packages/wastorage.v'..toolset..'.2.2.0/lib/native/v'..toolset..'/%{cfg.platform}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
+                'build/packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}'
             }
             debugenvs {
                 'PATH=%PATH%;'..
-                '../packages/opencv3.1.redist.1.0/build/native/bin/%{cfg.platform}/v'..toolset..'/%{cfg.buildcfg};'..
+                '../packages/opencv3.1.redist.1.0/build/native/bin/%{cfg.platform}/v'..toolset..'/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
                 '../packages/boost_unit_test_framework-vc'..toolset..'.1.60.0.0/lib/native/address-model-%{string.sub(cfg.platform, -2)}/lib;'..
-                '../packages/wastorage.v'..toolset..'.2.2.0/lib/native/v'..toolset..'/%{cfg.platform}/%{cfg.buildcfg};'..
-                '../packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg}'
+                '../packages/wastorage.v'..toolset..'.2.2.0/lib/native/v'..toolset..'/%{cfg.platform}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
+                '../packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}'
             }
 
             filter '*'
                 links {
                     'wastorage'
                 }
-            filter 'release'
+            filter 'release or test'
                 links {
                     'cpprest140_2_7',
                     'opencv_world310',
-                    'boost_unit_test_framework-vc'..toolset..'-mt-1_60'
                 }
             filter 'debug'
                 links {
                     'cpprest140d_2_7',
-                    'opencv_world310d',
-                    'boost_unit_test_framework-vc' .. toolset .. '-mt-gd-1_60'
+                    'opencv_world310d'
+                }
+            filter 'test'
+                links {
+                    'boost_unit_test_framework-vc'..toolset..'-mt-1_60'
+                }
+
+            filter 'test'
+                postbuildcommands {
+                    'xcopy /Y "$(SolutionDir)packages\\opencv3.1.redist.1.0\\build\\native\\bin\\%{cfg.platform}\\v'..toolset..'\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\opencv_world310.dll" "$(TargetDir)"',
+                    'xcopy /Y "$(SolutionDir)packages\\boost_unit_test_framework-vc'..toolset..'.1.60.0.0\\lib\\native\\address-model-%{string.sub(cfg.platform, -2)}\\lib\\boost_unit_test_framework-vc'..toolset..'-mt-1_60.dll" "$(TargetDir)"',
+                    'xcopy /Y "$(SolutionDir)packages\\wastorage.v'..toolset..'.2.2.0\\lib\\native\\v'..toolset..'\\%{cfg.platform}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\wastorage.dll" "$(TargetDir)"',
+                    'xcopy /Y "$(SolutionDir)packages\\cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0\\lib\\native\\v'..toolset..'\\windesktop\\msvcstl\\dyn\\rt-dyn\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\cpprest140_2_7.dll" "$(TargetDir)"',
+                    '"$(TargetDir)\\$(TargetName).exe" --result_code=no --report_level=short'
                 }
 
             local file = assert(io.open('build/studybox_cv/packages.config', 'w'))
