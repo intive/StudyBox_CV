@@ -126,9 +126,12 @@ workspace 'StudyBox_CV'
                 'opencv_highgui',
                 'opencv_imgcodecs',
                 'boost_system',
-                'boost_unit_test_framework',
                 'pthread'
             }
+            filter 'test'
+                links {
+                    'boost_unit_test_framework'
+                }
 
             if os.execute('sudo stat /usr/local/lib/libopencv_core.so.3.1.0 > /dev/null 2>&1') ~= 0 then
                 print('Setting up "OpenCV 3.1.0"')
