@@ -1,5 +1,6 @@
 #include"text_analysis.h"
 #include<vector>
+
 const std::vector<std::string> dictionary = {
 	"Czy","czy",
 	"Ile","ile",
@@ -62,13 +63,21 @@ std::vector<Markers> findQA(const std::string& text)
 				int k = 0;
 
 				//Wyszukiwanie w zdaniu jednego ze slow kluczowych zdefiniowanych w dictionary, charakteryzujacych pytanie
-				while (found == std::string::npos && k < dictionary.size())
+				while (k < dictionary.size())
 				{
-					found = text.find(dictionary[k], startingMarker);
+					int tmp= text.find(dictionary[k], startingMarker);
+					if (found != std::string::npos && tmp < found && tmp >= startingMarker)
+					{
+						found = tmp;
+					}
+					else if (found == std::string::npos)
+					{
+						found = text.find(dictionary[k], startingMarker);
+					}
 					k++;
 				}
 				//Jezeli znaleziono takie slowo kluczowe na poczatku zdania to na 100% jest to pytanie
-				if (found - startingMarker < 4 && found!=std::string::npos)
+				if (found - startingMarker < 4 && found!=std::string::npos && found < i)
 				{
 					Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, question, 100);
 					markersVector.push_back(question);
@@ -78,7 +87,7 @@ std::vector<Markers> findQA(const std::string& text)
 					Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, question, 99);
 					markersVector.push_back(question);
 				}
-				else if (found == std::string::npos)               //jesli nie znaleziono 
+				else               //jesli nie znaleziono 
 				{
 
 					//Sprawdzam czy zdanie ma jakakolwiek samogloske. Jesli jej nie ma to prawie na pewno jest to blad
