@@ -1,94 +1,133 @@
-//Jak Dawid wrzuci kod, to dostosuje testy do jego kodu.
 #define BOOST_TEST_MODULE MyTest
 #include <boost/test/included/unit_test.hpp>
 #include <iostream>
-#include <string>
-#include <vector>
+#include "text_analysis.h"
 
 using namespace std;
 
-//Klasa markerów do zaznaczania początku, końca oraz typu (answer/question) tekstu, 
-//podobną będzie miał Dawid w swoim kodzie.
-class Markers
-{
-//Tylko na czas testów public:
-public:
-    int start;
-    int end;
-    string type;
-public:
-    Markers(int s, int e, string t) :start(s), end(e), type(t) {};
-};
+//Na czas testów zakładamy, że dane są public.
 
-//Uboga funkcja tylko do testów odpowiedzi
-vector<Markers> findA(string text)
-{
-    vector<Markers> markersVector;
-    Markers answer(0, 9, "answer");
-    markersVector.push_back(answer);
-    return markersVector;
-}
-
-//Uboga funkcja tylko do testów pytań
-vector<Markers> findQ(string text)
-{
-    vector<Markers> markersVector;
-    Markers answer(0, 11, "question");
-    markersVector.push_back(answer);
-    return markersVector;
-}
-
-//Uboga funkcja tylko do testów odpowiedzi i pytania
-vector<Markers> findQA(string text)
-{
-    vector<Markers> markersVector;
-    Markers answer(0, 9, "answer");
-    markersVector.push_back(answer);
-    Markers question(10, 21, "question");
-    markersVector.push_back(question);
-    return markersVector;
-}
-
-//Test odpowiedzi
+//Poprawna odpowiedz
 BOOST_AUTO_TEST_CASE(SimplePositiveAnswerTest)
 {
-    vector<Markers> testing;
-    testing = findA("Moja wina.");
-    Markers a = testing[0];
-    BOOST_CHECK(a.start == 0 && a.end == 9 && a.type == "answer");
+	cout << "Test nr 1"<<endl;
+	vector<Markers> testing;
+	testing = findQA("Moja wina.");
+	Markers a = testing[0];
+	BOOST_CHECK(a.start == 0 && a.end == 9 && a.type == answer);
+	getchar();
 }
 
-//Test pytania
-BOOST_AUTO_TEST_CASE(SimplePositiveQuestionTest)
+//Brak spacji przy dlugim zdaniu
+BOOST_AUTO_TEST_CASE(UnclasifiedTest)
 {
-    vector<Markers> testing;
-    testing = findQ("Czy to moje?");
-    Markers a = testing[0];
-    BOOST_CHECK(a.start == 0 && a.end == 11 && a.type == "question");
+	cout << "Test nr 2" << endl;
+	vector<Markers> testing;
+	testing = findQA("ojasdsaawiddfsafdfgdsna");
+	Markers a = testing[0];
+	BOOST_CHECK(a.type == unclasified);
+	getchar();
 }
 
-//Test odpowiedź-pytanie
-BOOST_AUTO_TEST_CASE(SimpleMixedTest)
+
+//Poprawne pytanie
+BOOST_AUTO_TEST_CASE(QuestionTest)
 {
-    vector<Markers> testing;
-    testing = findQA("Moja wina.Czy to moje?");
-    Markers a = testing[0];
-    BOOST_CHECK(a.start == 0 && a.end == 9 && a.type == "answer");
-    Markers b = testing[1];
-    BOOST_CHECK(b.start == 10 && b.end == 21 && b.type == "question");
+	cout << "Test nr 3" << endl;
+	vector<Markers> testing;
+	testing = findQA("Co tu sie dzieje?");
+	Markers a = testing[0];
+	BOOST_CHECK(a.start == 0 && a.end == 16 && a.percentage_chance == 100 && a.type == question);
+	getchar();
 }
 
-//Test błędów
-BOOST_AUTO_TEST_CASE(SimpleErrorTest)
+//Brak samoglosek w zdaniu
+BOOST_AUTO_TEST_CASE(VowelTest)
 {
-    vector<Markers> testing;
-    testing = findQ("Moja wina.");
-    Markers a = testing[0];
-	//Użyłem findQ zamiast findA, więc nie będzie się zgadzać a.end oraz a.type
-    BOOST_CHECK(a.start == 0 && a.end == 9 && a.type == "answer");
-	//Test a.start jest równy 0, więc wyrzuci błąd
-    BOOST_CHECK_EQUAL(a.start , 5);
-    getchar();
-	//Jeżeli a.start nie równa się 4 to automatycznie sfailuje
-    BOOST_REQUIRE(a.start == 4);
+	cout << "Test nr 4" << endl;
+	vector<Markers> testing;
+	testing = findQA("Gsdl ptdsfgh lkrtf?");
+	Markers a = testing[0];
+	BOOST_CHECK(a.type == unclasified);
+	getchar();
 }
+
+//Pare poprawnych zdan (nie wykrywa pierwszego zdania!)
+BOOST_AUTO_TEST_CASE(FewSentence)
+{
+	cout << "Test nr 5" << endl;
+	vector<Markers> testing;
+	testing = findQA("Dlaczego tak malo? Jutro bedzie wiosna. Mam alergie i kota. Jak i gdzie to sie wydarzylo?");
+	cout <<"size : " << testing.size() << endl;
+	BOOST_CHECK(testing.size() == 4);
+
+	// Ponieważ size() != 4 to tu będzie bład kompilacji, więc zakomentowałem dopóki algorytm źle działa.
+	/*
+	Markers a = testing[3];
+	cout << a.start << " " << a.end << " " << a.type << " " << a.percentage_chance << endl;
+	BOOST_CHECK(a.start == 59 && a.end == 88 && a.type == question);
+	getchar();
+	a = testing[2];
+	cout << a.start << " " << a.end << " " << a.type << " " << a.percentage_chance << endl;
+	BOOST_CHECK(a.start == 39 && a.end == 58 && a.type == answer);
+	getchar();
+	a = testing[1];
+	cout << a.start << " " << a.end << " " << a.type << " " << a.percentage_chance << endl;
+	BOOST_CHECK(a.start == 18 && a.end == 38 && a.type == answer);
+	getchar();
+	a = testing[0];
+	cout << a.start << " " << a.end << " " << a.type << " " << a.percentage_chance << endl;
+	BOOST_CHECK(a.start == 0 && a.end == 17 && a.type == question);
+	getchar();
+	*/
+}
+
+// Myślałem, że to błąd przy wykrywaniu zdania pytającego na początku ciągu zdań,
+// lecz po tym teście widać, że algorytm tylko te zdanie nie wykrywa ("Dlaczego tak malo?")
+BOOST_AUTO_TEST_CASE(FewSentence2)
+{
+	cout << "Test nr 6" << endl;
+	vector<Markers> testing;
+	testing = findQA("Tak ma byc. Dlaczego tak malo? Jutro bedzie wiosna. Mam alergie i kota. Jak i gdzie to sie wydarzylo?");
+	cout << "size : " << testing.size() << endl;
+	BOOST_CHECK(testing.size() == 5);
+
+	// Ponieważ size() != 4 to tu będzie bład kompilacji, więc zakomentowałem dopóki algorytm źle działa.
+	/*
+	Markers a = testing[4];
+	cout << a.start << " " << a.end << " " << a.type << " " << a.percentage_chance << endl;
+	BOOST_CHECK(a.start == 71 && a.end == 100 && a.type == answer);
+	getchar();
+	a = testing[3];
+	cout << a.start << " " << a.end << " " << a.type << " " << a.percentage_chance << endl;
+	BOOST_CHECK(a.start == 51 && a.end == 70 && a.type == answer);
+	getchar();
+	a = testing[2];
+	cout << a.start << " " << a.end << " " << a.type << " " << a.percentage_chance << endl;
+	BOOST_CHECK(a.start == 30 && a.end == 50 && a.type == question);
+	getchar();
+	a = testing[1];
+	cout << a.start << " " << a.end << " " << a.type << " " << a.percentage_chance << endl;
+	BOOST_CHECK(a.start == 11 && a.end == 29 && a.type == answer);
+	getchar();
+	a = testing[0];
+	cout << a.start << " " << a.end << " " << a.type << " " << a.percentage_chance << endl;
+	BOOST_CHECK(a.start == 0 && a.end == 10 && a.type == answer);
+	getchar();
+	*/
+}
+
+//Tutaj już wykrywa, więc to bład w algorytmie.
+BOOST_AUTO_TEST_CASE(OneSentence3)
+{
+	cout << "Test nr 7" << endl;
+	vector<Markers> testing;
+	testing = findQA("Dlaczego tak malo?");
+	cout << "size : " << testing.size() << endl;
+	BOOST_CHECK(testing.size() == 1);
+	Markers a = testing[0];
+	cout << a.start << " " << a.end << " " << a.type << " " << a.percentage_chance << endl;
+	BOOST_CHECK(a.type == question);
+	getchar();
+}
+
