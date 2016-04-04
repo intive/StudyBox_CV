@@ -21,7 +21,7 @@ std::vector<Rect> ImageProcess::findRectangles(Mat *img)
 	przerywa itp. Ciezko wyjasnic). Drugi argument f-cji getStructuringElement
 	okresla jakby rozmiar obszaru tego zamykania dziur. Im mniejsze beda wartosci tym mniejsze
 	bloki dostaniemy*/
-	element = getStructuringElement(MORPH_RECT, Size(50, 10));
+	element = getStructuringElement(MORPH_RECT, Size(60, 10));
 	morphologyEx(img_threshold, img_threshold, CV_MOP_CLOSE, element);
 
 	//Znajdujemy kontury
