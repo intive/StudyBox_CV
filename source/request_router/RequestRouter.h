@@ -52,7 +52,7 @@ namespace Router
          * @param Request od serwera
          * @return Odpowiedź do serwera z ciałem zawierającym:
          *   wynik działania handlera lub
-         *   json z wiadomością o "bad request" jeżeli nie ma obsługi żądanego endpointa lub
+         *   json z wiadomością o "not found" jeżeli nie ma obsługi żądanego endpointa lub
          *   json z wiadomością o "internal server error" jeżeli złapano wyjątek podczas działania handlera.
          */
         Http::Response routeRequest(const Http::Request& request);

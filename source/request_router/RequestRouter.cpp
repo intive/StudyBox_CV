@@ -13,8 +13,8 @@ namespace Router
         if (func == services.end())
         {
             return Http::Response(
-                Http::Response::Status::BadRequest,
-                R"({"Error":"Bad request. No service for )" + request.uri().raw() + R"("})",
+                Http::Response::Status::NotFound,
+                R"({"error":"no service for )" + request.uri().raw() + R"("})",
                 "application/json");
         }
 
@@ -47,7 +47,7 @@ namespace Router
         auto lookup = services.find(endPoint);
         if (lookup != services.end())
         {
-            lookup->second = func;
+            lookup->second = std::move(func);
         }
         else
         {

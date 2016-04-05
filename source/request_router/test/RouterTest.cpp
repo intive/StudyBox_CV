@@ -98,9 +98,9 @@ BOOST_AUTO_TEST_CASE(Routing)
     BOOST_CHECK(internal_error_response.raw().find(R"({"error":"internal server error"})") != std::string::npos);
 
 
-    auto bad_request = getTestRequest("/api/none", "{\"test\":\"router\"}");
-    auto bad_response = rr.routeRequest(bad_request);
-    BOOST_CHECK(bad_response.raw().find(R"({"Error":"Bad request. No service for /api/none"})") != std::string::npos);
+    auto not_found_request = getTestRequest("/api/none", "{\"test\":\"router\"}");
+    auto not_found_response = rr.routeRequest(not_found_request);
+    BOOST_CHECK(not_found_response.raw().find(R"({"error":"no service for /api/none"})") != std::string::npos);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
