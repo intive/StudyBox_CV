@@ -9,7 +9,7 @@ void registerServices(Router::RequestRouter& router)
 {
     router.registerEndPointService("/api/ocr", [](const std::string& s)
     {
-        return R"({"c":"d"})";
+        return std::make_pair<std::string, bool>(R"({"c":"d"})", true);
     });
 }
 

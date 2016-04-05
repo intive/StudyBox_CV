@@ -20,9 +20,9 @@ namespace Router
         /// Szablon lambdy
         /*
          * @param ciało zapytania http (np. JSON)
-         * @return odpowiedź na zapytanie (np. JSON) w postaci std::string.
+         * @return odpowiedź na zapytanie (np. JSON) w postaci std::pair<std::string, bool>. Bool określa pomyślność działania handlera.
          */
-        using EndpointHandler = std::function<std::string(const std::string&)>;
+        using EndpointHandler = std::function<std::pair<std::string, bool>(const std::string&)>;
 
         std::map<std::string, EndpointHandler> services;
 
@@ -41,7 +41,7 @@ namespace Router
         /// Rejestruje handler do wykonania w przypadku żądania http dla podanego endpointa
         /*
          * @param endpoint - ciąg znaków określający dla jakiego endpointa jest przeznaczony handler, np. "/api/ocr"
-         * @param handler - lambda lub obiekt funkcyjny przyjmujący const std::string& i zwracający std::string.
+         * @param handler - lambda lub obiekt funkcyjny przyjmujący const std::string& i zwracający std::pair<std::string, bool>.
          * Jeśli podany end point jest już zarejestrowany, handler jest nadpisywany.
          */
         void registerEndPointService(const std::string& endpoint, EndpointHandler handler);

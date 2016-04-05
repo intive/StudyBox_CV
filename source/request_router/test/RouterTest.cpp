@@ -9,9 +9,9 @@ BOOST_AUTO_TEST_SUITE(RequestRouter)
 
 struct FuncObj
 {
-    std::string operator()(const std::string& s)
+    std::pair<std::string, bool> operator()(const std::string& s)
     {
-        return "func_obj_response_string";
+        return std::make_pair("func_obj_response_string", true);
     }
 };
 
@@ -45,20 +45,20 @@ Http::Request getTestRequest(const std::string& uri, const std::string& content)
 
 void registerServices(Router::RequestRouter& r)
 {
-    r.registerEndPointService("/api/test", [](const std::string& s)
+    r.registerEndPointService("/api/test", [](const std::string& s) -> std::pair<std::string, bool>
     {
-        return R"({"request":"response"})";
+        return std::make_pair(R"({"request":"response"})", true);
     });
 
     r.registerEndPointService("/api/test2", [](const std::string& s)
     {
-        return "json_response2";
+        return std::make_pair<std::string, bool>("json_response2", true);
     });
 
     r.registerEndPointService("/api/except", [](const std::string& s)
     {
         throw std::runtime_error("sample exception");
-        return "except";
+        return std::make_pair<std::string, bool>("except", true);
     });
 }
 
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(Routing)
     auto internal_error_request = getTestRequest("/api/except", "{\"test\":\"router\"}");
     auto internal_error_response = rr.routeRequest(internal_error_request);
     BOOST_CHECK(internal_error_response.raw().find(R"({"error":"internal server error"})") != std::string::npos);
-
+    
 
     auto not_found_request = getTestRequest("/api/none", "{\"test\":\"router\"}");
     auto not_found_response = rr.routeRequest(not_found_request);

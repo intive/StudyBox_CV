@@ -21,10 +21,14 @@ namespace Router
 
         try
         {
-            auto result = func->second(request.body());
+            std::string body;
+            bool success;
+            std::tie(body, success) = func->second(request.body());
+            auto status = success ? Http::Response::Status::Ok : Http::Response::Status::InternalServerError;
+
             return Http::Response(
-                Http::Response::Status::Ok,
-                result,
+                status,
+                body,
                 "application/json");
         }
         catch (const std::exception& e)
