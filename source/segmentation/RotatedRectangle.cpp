@@ -1,22 +1,26 @@
 #include "RotatedRectangle.hpp"
 
 RotatedRectangle::RotatedRectangle()
-	: p1(cv::Point2f(0.0f, 0.0f))
-	, p2(cv::Point2f(0.0f, 0.0f))
-	, p3(cv::Point2f(0.0f, 0.0f))
-	, p4(cv::Point2f(0.0f, 0.0f))
+	: p1_x_Key("p1.x")
+	, p1_y_Key("p1.y")
+	, p2_x_Key("p2.x")
+	, p2_y_Key("p2.y")
+	, p3_x_Key("p3.x")
+	, p3_y_Key("p3.y")
+	, p4_x_Key("p4.x")
+	, p4_y_Key("p4.y")
 {
 }
 
 RotatedRectangle::RotatedRectangle(const Json & json)
-	: p1(json["p1.x"], json["p1.y"])
-	, p2(json["p2.x"], json["p2.y"])
-	, p3(json["p3.x"], json["p3.y"])
-	, p4(json["p4.x"], json["p4.y"])
+	: p1(json[p1_x_Key], json[p1_y_Key])
+	, p2(json[p2_x_Key], json[p2_y_Key])
+	, p3(json[p3_x_Key], json[p3_y_Key])
+	, p4(json[p4_x_Key], json[p4_y_Key])
 {
 }
 
-RotatedRectangle::RotatedRectangle(cv::Point2f p1, cv::Point2f p2, cv::Point2f p3, cv::Point2f p4)
+RotatedRectangle::RotatedRectangle(const cv::Point2f& p1, const cv::Point2f& p2, const cv::Point2f& p3, const cv::Point2f& p4)
 	: p1(p1)
 	, p2(p2)
 	, p3(p3)
@@ -47,17 +51,17 @@ const cv::Point2f& RotatedRectangle::P4() const
 RotatedRectangle::operator Json()
 {
 	Json j;
-	j["p1.x"] = p1.x;
-	j["p1.y"] = p1.y;
+	j[p1_x_Key] = p1.x;
+	j[p1_y_Key] = p1.y;
 
-	j["p2.x"] = p2.x;
-	j["p2.y"] = p2.y;
+	j[p2_x_Key] = p2.x;
+	j[p2_y_Key] = p2.y;
 
-	j["p3.x"] = p3.x;
-	j["p3.y"] = p3.y;
+	j[p3_x_Key] = p3.x;
+	j[p3_y_Key] = p3.y;
 
-	j["p4.x"] = p4.x;
-	j["p4.y"] = p4.y;
+	j[p4_x_Key] = p4.x;
+	j[p4_y_Key] = p4.y;
 
 	return j;
 }

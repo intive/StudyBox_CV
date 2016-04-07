@@ -17,7 +17,7 @@ int main(int, char* argv[])
 	segmentation.SetMorphEllipseSize(morphEllipseSize);
 	segmentation.SetMorphRectSize(morphRectSize);
 
-	std::vector<RotatedRectangle> rectangles = segmentation.GetRectangles();
+	std::vector<RotatedRectangle> rectangles = segmentation.CreateRectangles();
 	for (size_t i = 0; i < rectangles.size(); i++)
 	{
 		int thickness = 3;

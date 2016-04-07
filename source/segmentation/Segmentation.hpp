@@ -19,7 +19,7 @@ public:
 	void SetMorphEllipseSize(const cv::Size& mes);
 	void SetMorphRectSize(const cv::Size& mrs);
 
-	std::vector<RotatedRectangle> GetRectangles();
+	std::vector<RotatedRectangle> CreateRectangles();
 
 private:
 	void Algorithm();

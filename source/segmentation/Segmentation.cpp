@@ -32,7 +32,7 @@ void Segmentation::SetMorphRectSize(const cv::Size& mrs)
 	morphRectSize = mrs;
 }
 
-std::vector<RotatedRectangle> Segmentation::GetRectangles()
+std::vector<RotatedRectangle> Segmentation::CreateRectangles()
 {
 	Algorithm();
 	size_t s = usedScale > 1 ? 1 << (usedScale - 1) : 1;
