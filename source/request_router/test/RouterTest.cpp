@@ -9,9 +9,9 @@ BOOST_AUTO_TEST_SUITE(RequestRouter)
 
 struct FuncObj
 {
-    std::pair<std::string, bool> operator()(const std::string& s)
+    std::pair<std::string, int> operator()(const std::string& s)
     {
-        return std::make_pair("func_obj_response_string", true);
+        return std::make_pair("func_obj_response_string", 200);
     }
 };
 
@@ -45,20 +45,20 @@ Http::Request getTestRequest(const std::string& uri, const std::string& content)
 
 void registerServices(Router::RequestRouter& r)
 {
-    r.registerEndPointService("/api/test", [](const std::string& s) -> std::pair<std::string, bool>
+    r.registerEndPointService("/api/test", [](const std::string& s) -> std::pair<std::string, int>
     {
-        return std::make_pair(R"({"request":"response"})", true);
+        return{ R"({"request":"response"})", 200 };
     });
 
     r.registerEndPointService("/api/test2", [](const std::string& s)
     {
-        return std::make_pair<std::string, bool>("json_response2", true);
+        return std::make_pair<std::string, int>("json_response2", 200);
     });
 
     r.registerEndPointService("/api/except", [](const std::string& s)
     {
         throw std::runtime_error("sample exception");
-        return std::make_pair<std::string, bool>("except", true);
+        return std::make_pair<std::string, int>("except", 200);
     });
 }
 

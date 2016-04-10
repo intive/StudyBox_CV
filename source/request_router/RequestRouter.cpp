@@ -22,12 +22,11 @@ namespace Router
         try
         {
             std::string body;
-            bool success;
-            std::tie(body, success) = func->second(request.body());
-            auto status = success ? Http::Response::Status::Ok : Http::Response::Status::InternalServerError;
-
+            int response_code;
+            std::tie(body, response_code) = func->second(request.body());
+           
             return Http::Response(
-                status,
+                static_cast<Http::Response::Status>(response_code),
                 body,
                 "application/json");
         }
