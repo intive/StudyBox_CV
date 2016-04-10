@@ -53,7 +53,7 @@ std::vector<Markers> findQA(const std::string& text)
 			//Sprawdzanie sytuacji typu ". ? " badz z jakims jednym znakiem pomiedzy
 			if (i - startingMarker + 1 < 2)
 			{
-				Markers unclasified(startingMarker, i, unclasified, 80);
+				Markers unclasified(startingMarker, i, TextType::unclasified, 80);
 				markersVector.push_back(unclasified);
 				continue;
 			}
@@ -79,12 +79,12 @@ std::vector<Markers> findQA(const std::string& text)
 				//Jezeli znaleziono takie slowo kluczowe na poczatku zdania to na 100% jest to pytanie
 				if (found - startingMarker < 4 && found!=std::string::npos && found < i)
 				{
-					Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, question, 100);
+					Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::question, 100);
 					markersVector.push_back(question);
 				}
 				else if (found - startingMarker > 4 && found < i)  //w przeciwnym wypadku jesli znaleziono gdzies bardziej w srodku to tylko na 99%
 				{
-					Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, question, 99);
+					Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::question, 99);
 					markersVector.push_back(question);
 				}
 				else               //jesli nie znaleziono 
@@ -94,7 +94,7 @@ std::vector<Markers> findQA(const std::string& text)
 					int found2 = text.find_first_of("eyuioa", startingMarker);
 					if (found2 == std::string::npos || found2 > i)
 					{
-						Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, unclasified, 95);
+						Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 95);
 						markersVector.push_back(unclasified);
 					}
 					else
@@ -103,12 +103,12 @@ std::vector<Markers> findQA(const std::string& text)
 						int found3 = text.find_first_of(" ", startingMarker+2);
 						if (i - startingMarker > 15 && (found3 > i || found3 == std::string::npos))
 						{
-							Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, unclasified, 70);
+							Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 70);
 							markersVector.push_back(unclasified);
 						}
 						else
 						{
-							Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, question, 95);
+							Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::question, 95);
 							markersVector.push_back(question);
 						}
 					}
@@ -134,7 +134,7 @@ std::vector<Markers> findQA(const std::string& text)
 			//Wykrywanie sytuacji " ? . " i podobnych
 			if (i - startingMarker + 1 < 2)
 			{
-				Markers unclasified(startingMarker, i, unclasified, 60);
+				Markers unclasified(startingMarker, i, TextType::unclasified, 60);
 				markersVector.push_back(unclasified);
 				continue;
 			}
@@ -145,7 +145,7 @@ std::vector<Markers> findQA(const std::string& text)
 				int found2 = text.find_first_of("eyuioa", startingMarker);
 				if (found2 == std::string::npos || found2 > i)
 				{
-					Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, unclasified, 95);
+					Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 95);
 					markersVector.push_back(unclasified);
 				}
 				else
@@ -155,12 +155,12 @@ std::vector<Markers> findQA(const std::string& text)
 					int found3 = text.find_first_of(" ", startingMarker+2);
 					if (i - startingMarker > 15 && (found3 > i || found3 == std::string::npos))
 					{
-						Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, unclasified, 70);
+						Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 70);
 						markersVector.push_back(unclasified);
 					}
 					else
 					{
-						Markers answer(startingMarker == 0 ? 0 : startingMarker + 1, i, answer, 95);
+						Markers answer(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::answer, 95);
 						markersVector.push_back(answer);
 					}
 				}
@@ -184,7 +184,7 @@ std::vector<Markers> findQA(const std::string& text)
 		//Jesli znaleziono slowo kluczowe na poczatku to bardzo prawdopodobne ze to pytanie
 		if (found == 0)
 		{
-			Markers question(0, text.size() - 1, question, 90);
+			Markers question(0, text.size() - 1, TextType::question, 90);
 			markersVector.push_back(question);
 		}
 		else
@@ -193,7 +193,7 @@ std::vector<Markers> findQA(const std::string& text)
 			int found2 = text.find_first_of("eyuioa");
 			if (found2 == std::string::npos)
 			{
-				Markers unclasified(0, text.size() - 1, unclasified, 99);
+				Markers unclasified(0, text.size() - 1, TextType::unclasified, 99);
 				markersVector.push_back(unclasified);
 			}
 			else
@@ -202,12 +202,12 @@ std::vector<Markers> findQA(const std::string& text)
 				int found3 = text.find_first_of(" ");
 				if (found3 == std::string::npos && text.size()>15)
 				{
-					Markers unclasified(0, text.size() - 1, unclasified, 70);
+					Markers unclasified(0, text.size() - 1, TextType::unclasified, 70);
 					markersVector.push_back(unclasified);
 				}
 				else
 				{
-					Markers answer(0, text.size() - 1, answer, 90);
+					Markers answer(0, text.size() - 1, TextType::answer, 90);
 					markersVector.push_back(answer);
 				}
 			}
@@ -215,3 +215,21 @@ std::vector<Markers> findQA(const std::string& text)
 	}
 	return markersVector;
 }
+
+int Markers::getStart() const
+{
+	return start;
+}
+int Markers::getEnd() const
+{
+	return end;
+}
+TextType Markers::getType() const
+{
+	return type;
+}
+int Markers::getPercentageChance() const
+{
+	return percentage_chance;
+}
+
