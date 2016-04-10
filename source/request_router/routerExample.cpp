@@ -5,7 +5,7 @@
 #include "RequestRouter.h"
 
 
-void registerServices(Router::RequestRouter& router)
+void registerServicesExample(Router::RequestRouter& router)
 {
     router.registerEndPointService("/api/ocr", [](const std::string& s)
     {
@@ -17,7 +17,7 @@ void registerServices(Router::RequestRouter& router)
 void routerExample()
 {
     Router::RequestRouter router;
-    registerServices(router);
+    registerServicesExample(router);
 
     try
     {
