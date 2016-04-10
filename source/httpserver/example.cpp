@@ -10,7 +10,7 @@ void example()
     {
         Http::Server server("0.0.0.0", "80", [](const Http::Request&) 
         {
-            std::this_thread::sleep_for(std::chrono::seconds(5)); // Symulacja przeci¹¿enia.
+            std::this_thread::sleep_for(std::chrono::seconds(5)); // Symulacja przeciÄ…Å¼enia.
             return Http::Response(Http::Response::Status::Ok, "Ok", "text/plain");
         });
 

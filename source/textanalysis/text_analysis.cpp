@@ -14,7 +14,7 @@ const std::vector<std::string> dictionary = {
 	"Na czym","na czym",
 	"Kiedy","kiedy",
 	"Kim","kim",
-	"W którym","w którym","W ktorym","w ktorym",
+	"W ktÃ³rym","w ktÃ³rym","W ktorym","w ktorym",
 	"Kogo","kogo",
 	"Za co","za co",
 	"Co","co",
@@ -42,7 +42,7 @@ std::vector<Markers> findQA(const std::string& text)
 			}
 			std::size_t startingMarker = i - 1;
 
-			//"Cofanie siê" dopoki nie znajdzie sie znaku interpunkcyjnego lub poczatku
+			//"Cofanie siÄ™" dopoki nie znajdzie sie znaku interpunkcyjnego lub poczatku
 			while (startingMarker != 0)
 			{
 				if (text[startingMarker] == '.' || text[startingMarker] == '!' || text[startingMarker] == '?')
@@ -123,7 +123,7 @@ std::vector<Markers> findQA(const std::string& text)
 				continue;
 			}
 
-			//"Cofanie siê" dopoki nie znajdzie sie znaku interpunkcyjnego lub poczatku
+			//"Cofanie siÄ™" dopoki nie znajdzie sie znaku interpunkcyjnego lub poczatku
 			int startingMarker = i - 1;
 			while (startingMarker != 0)
 			{
@@ -167,7 +167,7 @@ std::vector<Markers> findQA(const std::string& text)
 			}
 		}
 	}
-	/*W przypadku gdy tekst jest bez zadnej interpunkcji wykonuje siê ta bardziej "zaawansowana" czesc analizy.
+	/*W przypadku gdy tekst jest bez zadnej interpunkcji wykonuje siÄ™ ta bardziej "zaawansowana" czesc analizy.
 	Jednakze analizowany tekst jest traktowany jako jedno zdanie, a nie wieksza ilosc zdan gdyz niemozliwe jest okreslenie
 	kiedy potencjalnie zaczyna sie nowe zdanie, gdy nie mamy interpunkcji*/
 	if (markersVector.empty())
