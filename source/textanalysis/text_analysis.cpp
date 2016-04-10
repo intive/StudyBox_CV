@@ -30,7 +30,7 @@ std::vector<Markers> findQA(const std::string& text)
 	if (text.empty())
 		return markersVector;
 	/*Analiza opiera sie na interpunkcji w zdaniu*/
-	for (int i = 0; i<text.size(); ++i)
+	for (std::size_t i = 0; i<text.size(); ++i)
 	{
 		//Jesli wykryto znak zapytania
 		if (text[i] == '?') 
@@ -40,7 +40,7 @@ std::vector<Markers> findQA(const std::string& text)
 			{
 				continue;
 			}
-			int startingMarker = i - 1;
+			std::size_t startingMarker = i - 1;
 
 			//"Cofanie siê" dopoki nie znajdzie sie znaku interpunkcyjnego lub poczatku
 			while (startingMarker != 0)
@@ -59,13 +59,13 @@ std::vector<Markers> findQA(const std::string& text)
 			}
 			else
 			{
-				int found=std::string::npos;
-				int k = 0;
+				auto found=std::string::npos;
+				std::size_t k = 0;
 
 				//Wyszukiwanie w zdaniu jednego ze slow kluczowych zdefiniowanych w dictionary, charakteryzujacych pytanie
 				while (k < dictionary.size())
 				{
-					int tmp= text.find(dictionary[k], startingMarker);
+					auto tmp= text.find(dictionary[k], startingMarker);
 					if (found != std::string::npos && tmp < found && tmp >= startingMarker)
 					{
 						found = tmp;
@@ -91,7 +91,7 @@ std::vector<Markers> findQA(const std::string& text)
 				{
 
 					//Sprawdzam czy zdanie ma jakakolwiek samogloske. Jesli jej nie ma to prawie na pewno jest to blad
-					int found2 = text.find_first_of("eyuioa", startingMarker);
+					auto found2 = text.find_first_of("eyuioa", startingMarker);
 					if (found2 == std::string::npos || found2 > i)
 					{
 						Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 95);
@@ -100,7 +100,7 @@ std::vector<Markers> findQA(const std::string& text)
 					else
 					{
 						//Sprawdzam czy zdanie ma jakas spacje. Jesli nie ma, a jest bardzo dlugie to prawdopodobnie jest to zlepek roznych liter
-						int found3 = text.find_first_of(" ", startingMarker+2);
+						auto found3 = text.find_first_of(" ", startingMarker+2);
 						if (i - startingMarker > 15 && (found3 > i || found3 == std::string::npos))
 						{
 							Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 70);
@@ -142,7 +142,7 @@ std::vector<Markers> findQA(const std::string& text)
 			{
 
 				//Sprawdzam czy zdanie ma jakakolwiek samogloske. Jesli jej nie ma to prawie na pewno jest to blad
-				int found2 = text.find_first_of("eyuioa", startingMarker);
+				auto found2 = text.find_first_of("eyuioa", startingMarker);
 				if (found2 == std::string::npos || found2 > i)
 				{
 					Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 95);
@@ -152,7 +152,7 @@ std::vector<Markers> findQA(const std::string& text)
 				{
 
 					//Sprawdzam czy zdanie ma spacje. Jesli jej nie ma i jest bardzo dlugie to prawdopodobnie jest to zlepek liter
-					int found3 = text.find_first_of(" ", startingMarker+2);
+					auto found3 = text.find_first_of(" ", startingMarker+2);
 					if (i - startingMarker > 15 && (found3 > i || found3 == std::string::npos))
 					{
 						Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 70);
@@ -174,7 +174,7 @@ std::vector<Markers> findQA(const std::string& text)
 	{
 		//Zaczynam od sprawdzania czy to jest pytanie
 		int found = std::string::npos;
-		int k = 0;
+		std::size_t k = 0;
 		while (found == std::string::npos && k < dictionary.size())
 		{
 			found = text.find(dictionary[k]);

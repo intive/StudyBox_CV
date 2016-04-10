@@ -1,4 +1,6 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "AzureStorageManager.h"
+#include <ctime>
 
 AzureStorageManager::AzureStorageManager()
 {
