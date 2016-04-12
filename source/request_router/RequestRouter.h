@@ -20,14 +20,15 @@ namespace Router
         /// Szablon lambdy
         /*
          * @param ciało zapytania http (np. JSON)
-         * @return odpowiedź na zapytanie (np. JSON) w postaci std::pair<std::string, bool>. Bool określa pomyślność działania handlera.
+         * @return odpowiedź na zapytanie (np. JSON) w postaci std::pair<std::string, int>. int określa kod odpowiedzi Http.
          */
-        using EndpointHandler = std::function<std::pair<std::string, bool>(const std::string&)>;
+        using EndpointHandler = std::function<std::pair<std::string, int>(const std::string&)>;
 
         std::map<std::string, EndpointHandler> services;
 
     public:
         RequestRouter()                                = default;
+        ~RequestRouter()                               = default;
         RequestRouter(RequestRouter&&)                 = default;
         RequestRouter& operator=(RequestRouter&&)      = default;
 
@@ -38,10 +39,11 @@ namespace Router
         /// Flaga określająca, czy router powinien wypisać komunikat na std::cerr w przypadku złapania wyjątku podczas działania handlera.
         bool emitExceptionsToStdcerr = true;
 
+
         /// Rejestruje handler do wykonania w przypadku żądania http dla podanego endpointa
         /*
          * @param endpoint - ciąg znaków określający dla jakiego endpointa jest przeznaczony handler, np. "/api/ocr"
-         * @param handler - lambda lub obiekt funkcyjny przyjmujący const std::string& i zwracający std::pair<std::string, bool>.
+         * @param handler - lambda lub obiekt funkcyjny przyjmujący const std::string& i zwracający std::pair<std::string, int>.
          * Jeśli podany end point jest już zarejestrowany, handler jest nadpisywany.
          */
         void registerEndPointService(const std::string& endpoint, EndpointHandler handler);
