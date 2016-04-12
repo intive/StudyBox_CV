@@ -25,6 +25,10 @@ public:
 	    , type(t)
 	    , percentage_chance(percent) 
 	{};
+	int getStart() const;
+	int getEnd() const;
+	TextType getType() const;
+	int getPercentageChance() const;
 };
 std::vector<Markers> findQA(const std::string& text);
 #endif
