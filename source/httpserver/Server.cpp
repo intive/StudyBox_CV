@@ -53,7 +53,7 @@ void Http::Connection::read()
     socket.asyncReadSome(Tcp::MakeBuffer(buffer),
         [this, self](int ec, std::size_t bytes)
     {
-        if (!ec) // Nie wykryto b³êdu.
+        if (!ec) // Nie wykryto bÅ‚Ä™du.
         {
             RequestParser::Result result;
             auto it = buffer.begin();
@@ -62,11 +62,11 @@ void Http::Connection::read()
             {
                 if (parser.fill(it, buffer.begin() + bytes, request)) // Zacznij czyta? cia?o.
                 {
-                    write(); // Je¿eli cia³o nie zosta³o wykryte, przejdŸ do odpowiedzi.
+                    write(); // JeÅ¼eli ciaÅ‚o nie zostaÅ‚o wykryte, przejdÅº do odpowiedzi.
                 }
                 else
                 {
-                    readBody(); // W przeciwnym wypadku wywo³aj kolejne asynchroniczne czytanie cia³a.
+                    readBody(); // W przeciwnym wypadku wywoÅ‚aj kolejne asynchroniczne czytanie ciaÅ‚a.
                 }
             }
             else if (result == RequestParser::Result::Bad) // Zapytanie sparsowane niepoprawnie.
@@ -186,7 +186,7 @@ void Http::ThreadedHandlerStrategy::stop(ConnectionPtr connection)
 
 Http::Response::Response(Status code, const BodyType & content, const MediaType & mediaType) : responseStatus(code), response(content)
 {
-    if (content.length() > 0) // w przypadku braku cia³a nie uzupe³niaj nag³ówków.
+    if (content.length() > 0) // w przypadku braku ciaÅ‚a nie uzupeÅ‚niaj nagÅ‚Ã³wkÃ³w.
     {
         headers.push_back(Header("Content-Length", std::to_string(content.length())));
         headers.push_back(Header("Content-Type", mediaType));
@@ -283,7 +283,7 @@ namespace {
 
 Http::RequestParser::Result Http::RequestParser::consume(char input, Request& request)
 {
-    switch (state) // Obs³uga maszyny stanów.
+    switch (state) // ObsÅ‚uga maszyny stanÃ³w.
     {
     case MethodStart:
         if (!isChar(input) || isControl(input) || isSpecial(input))
@@ -660,7 +660,7 @@ const std::string & Http::Uri::raw() const
 Http::Uri::QueryType Http::Uri::query() const
 {
     QueryType retval;
-    auto results = std::move(tokenize(uri.begin(), uri.end(), '?')); // Podziel ze wzglêdu na '?'.
+    auto results = std::move(tokenize(uri.begin(), uri.end(), '?')); // Podziel ze wzglÄ™du na '?'.
     if (results.size() == 1)
         return retval;
     
@@ -671,11 +671,11 @@ Http::Uri::QueryType Http::Uri::query() const
         full += std::move(*i);
     }
 
-    results = std::move(tokenize(full.begin(), full.end(), '&')); // Podziel ze wzglêdu na '&'.
+    results = std::move(tokenize(full.begin(), full.end(), '&')); // Podziel ze wzglÄ™du na '&'.
 
     for (const auto& token : results)
     {
-        auto nresults = std::move(tokenize(token.begin(), token.end(), '=')); // Podziel ze wzglêdu na '='.
+        auto nresults = std::move(tokenize(token.begin(), token.end(), '=')); // Podziel ze wzglÄ™du na '='.
         full.clear();
         for (auto i = nresults.rbegin(); i != nresults.rend() - 1; ++i)
         {

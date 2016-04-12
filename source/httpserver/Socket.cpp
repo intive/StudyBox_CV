@@ -170,7 +170,7 @@ int Tcp::StreamService::select(const std::chrono::high_resolution_clock::time_po
         if (remainingTime > 0)
             retval = ::select(result + 1, &readFds, nullptr, nullptr, &timeout);
         else
-            retval = ::select(result + 1, &readFds, nullptr, nullptr, nullptr); // w przypadku braku oczekujπcych gniazd, blokuj bez przerwy.
+            retval = ::select(result + 1, &readFds, nullptr, nullptr, nullptr); // w przypadku braku oczekujƒÖcych gniazd, blokuj bez przerwy.
 
         if (retval < 0)
         {
@@ -183,11 +183,11 @@ int Tcp::StreamService::select(const std::chrono::high_resolution_clock::time_po
         timeSinceLastUpdate += (int)std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
 
         if (retval != 0)
-            return retval; // nie zosta≥ przekroczony czas oczekiwania.
+            return retval; // nie zosta≈Ç przekroczony czas oczekiwania.
 
         while (!timevals.empty() && (*timevals.begin())->remainingTime() <= timeSinceLastUpdate)
         {
-            (*timevals.begin())->updateRemainingTime(timeSinceLastUpdate); // gniazdo przekroczy≥o swÛj czas oczekiwania.
+            (*timevals.begin())->updateRemainingTime(timeSinceLastUpdate); // gniazdo przekroczy≈Ço sw√≥j czas oczekiwania.
             timevals.erase(timevals.begin());
         }
     }

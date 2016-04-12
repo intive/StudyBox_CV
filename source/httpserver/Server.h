@@ -18,27 +18,27 @@
 #include "Socket.h"
 
 
-/// Przestrzeñ klas i funkcji oraz sta³ych zwi¹zanych z dzia³aniem serwera HTTP.
+/// PrzestrzeÅ„ klas i funkcji oraz staÅ‚ych zwiÄ…zanych z dziaÅ‚aniem serwera HTTP.
 /**
- * Pozostaj¹ w du¿ym zwi¹zku z przestrzeni¹ TCP - komunikacja przebiega za pomoc¹ gniazd
- * przy wykorzystaniu serwisów reaktywnych. 
- * Komunikacja z frontendem u¿ytkownika przebiega asynchronicznie za pomoc¹ serwisów proaktywnych,
- * - wystêpuje wielow¹tkowoœæ w celu zredukowania czasu blokowania.
+ * PozostajÄ… w duÅ¼ym zwiÄ…zku z przestrzeniÄ… TCP - komunikacja przebiega za pomocÄ… gniazd
+ * przy wykorzystaniu serwisÃ³w reaktywnych. 
+ * Komunikacja z frontendem uÅ¼ytkownika przebiega asynchronicznie za pomocÄ… serwisÃ³w proaktywnych,
+ * - wystÄ™puje wielowÄ…tkowoÅ›Ä‡ w celu zredukowania czasu blokowania.
  */
 namespace Http {
 
-/// Sta³a okreœlaj¹ca now¹ linie wykorzystywan¹ przez HTTP.
+/// StaÅ‚a okreÅ›lajÄ…ca nowÄ… linie wykorzystywanÄ… przez HTTP.
 constexpr auto CRLF = "\r\n";
-/// Separator nag³ówków HTTP.
+/// Separator nagÅ‚Ã³wkÃ³w HTTP.
 constexpr auto HEADER_SEPARATOR = ": ";
 
 
 
 
-/// Klasa okreœlaj¹ca URI.
+/// Klasa okreÅ›lajÄ…ca URI.
 /**
- * Pozwala na dekodowanie, tokenizacjê i segmentacjê oraz szeregowanie
- * subdomen, katalogów, zapytañ GET.
+ * Pozwala na dekodowanie, tokenizacjÄ™ i segmentacjÄ™ oraz szeregowanie
+ * subdomen, katalogÃ³w, zapytaÅ„ GET.
  */
 class Uri
 {
@@ -48,36 +48,36 @@ public:
     /// Przeprowadza dekodowanie z formatu HTTP.
     static bool Decode(const std::string& in, std::string& out);
 
-    /// Tworzy nowy URI z podanego ³añcucha znaków.
+    /// Tworzy nowy URI z podanego Å‚aÅ„cucha znakÃ³w.
     Uri(const std::string& uri);
     /// Tworzy pusty URI.
     Uri();
 
-    /// Zwraca surowy ³añcuch znaków w postaci, w jakiej je otrzyma³.
+    /// Zwraca surowy Å‚aÅ„cuch znakÃ³w w postaci, w jakiej je otrzymaÅ‚.
     std::string& raw();
     const std::string& raw() const;
     /// Zwraca argumenty zapytania GET
     /**
      * Tokenizacja przebiega po pierwszym znaku '?',
      * rodzielona '&' oraz '='.
-     * Elementy nie s¹ dekodowane.
+     * Elementy nie sÄ… dekodowane.
      */
     QueryType query() const;
     /// Zwraca rodzica katalogu.
     /**
      * Dla /foo/bar/ zwraca /foo/bar
      * Dla /foo/bar zwraca /foo
-     * Elementy nie s¹ dekodowane.
+     * Elementy nie sÄ… dekodowane.
      */
     Uri parent() const;
-    /// Zwraca œcie¿kê bez argumentów GET.
+    /// Zwraca Å›cieÅ¼kÄ™ bez argumentÃ³w GET.
     /**
-     * Œcie¿ka nie jest dekodowana.
+     * ÅšcieÅ¼ka nie jest dekodowana.
      */
     Uri absolutePath() const;
-    /// Rozdziela œcie¿kê absolutn¹ na poszczególne katalogi.
+    /// Rozdziela Å›cieÅ¼kÄ™ absolutnÄ… na poszczegÃ³lne katalogi.
     /**
-     * Segmenty nie s¹ dekodowane.
+     * Segmenty nie sÄ… dekodowane.
      */
     std::vector<std::string> segments() const;
 
@@ -87,14 +87,14 @@ private:
 
 
 
-/// Typ wykorzystywany jako cia³o dokumentu HTTP.
+/// Typ wykorzystywany jako ciaÅ‚o dokumentu HTTP.
 typedef std::string BodyType;
 /// Typ wykorzystywany jako oznaczenie typu MIME.
 typedef std::string MediaType;
 
 
 
-/// Posiada dostêpne domyœlne metody HTTP.
+/// Posiada dostÄ™pne domyÅ›lne metody HTTP.
 namespace RequestMethod
 {
     constexpr auto OPTIONS = "OPTIONS";
@@ -109,7 +109,7 @@ namespace RequestMethod
 
 
 
-/// Struktura okreœlaj¹ca wersjê HTTP.
+/// Struktura okreÅ›lajÄ…ca wersjÄ™ HTTP.
 struct Version
 {
     int major, minor;
@@ -117,33 +117,33 @@ struct Version
 
 
 
-/// Typ wykorzystywany do reprezentacji Nag³ówka.
+/// Typ wykorzystywany do reprezentacji NagÅ‚Ã³wka.
 typedef std::pair<std::string /* name */, std::string /* value */> Header;
-/// Typ wykorzystywany do kolekcji nag³ówków.
+/// Typ wykorzystywany do kolekcji nagÅ‚Ã³wkÃ³w.
 //typedef std::unordered_map<Header::first_type, Header::second_type> HeaderContainer;
 typedef std::vector<Header> HeaderContainer;
 
 
 
-/// Klasa okreœlaj¹ca zapytanie HTTP.
+/// Klasa okreÅ›lajÄ…ca zapytanie HTTP.
 class Request
 {
 public:
-    /// Zwraca ci¹g znaków, jaki otrzymany by³ w zapytaniu.
+    /// Zwraca ciÄ…g znakÃ³w, jaki otrzymany byÅ‚ w zapytaniu.
     std::string raw() const;
-    /// Zwraca metodê HTTP.
+    /// Zwraca metodÄ™ HTTP.
     const std::string& method() const;
     /// Zwraca URI.
     const Uri& uri() const;
-    /// Zwraca wersjê w formacie {}.{}
+    /// Zwraca wersjÄ™ w formacie {}.{}
     std::string version() const;
-    /// Zwraca kolekcjê wszystkich nag³ówków.
+    /// Zwraca kolekcjÄ™ wszystkich nagÅ‚Ã³wkÃ³w.
     const HeaderContainer& headers() const;
-    /// Zwraca cia³o dokumentu.
+    /// Zwraca ciaÅ‚o dokumentu.
     const BodyType body() const;
 
 private:
-    /// Posiada informacje szczegó³owe o g³ówynm wierszu.
+    /// Posiada informacje szczegÃ³Å‚owe o gÅ‚Ã³wynm wierszu.
     struct RequestLine
     {
         std::string method;
@@ -159,9 +159,9 @@ private:
 
 
 
-/// Parser zapytañ HTTP.
+/// Parser zapytaÅ„ HTTP.
 /**
- * Jest maszyn¹ stanów w celu optymalizacji asynchronicznego odczytywania zapytañ.
+ * Jest maszynÄ… stanÃ³w w celu optymalizacji asynchronicznego odczytywania zapytaÅ„.
  */
 class RequestParser
 {
@@ -169,18 +169,18 @@ public:
     /// Wynik parsowania.
     enum class Result
     {
-        Good, //< Zapytanie poprawne pod wzglêdem syntaktycznym.
-        Bad, //< Zapytanie niepoprawne pod wzglêdem syntaktycznym.
-        Indeterminate //< Zapytanie dotychczas nie zawiera³o b³êdów syntaktycznych.
+        Good, //< Zapytanie poprawne pod wzglÄ™dem syntaktycznym.
+        Bad, //< Zapytanie niepoprawne pod wzglÄ™dem syntaktycznym.
+        Indeterminate //< Zapytanie dotychczas nie zawieraÅ‚o bÅ‚Ä™dÃ³w syntaktycznych.
     };
 
     /// Tworzy nowy obiekt.
     RequestParser();
 
-    /// Przeprowadza parsowanie dla podanego zasiêgu.
+    /// Przeprowadza parsowanie dla podanego zasiÄ™gu.
     /**
-     * Kontener musi mieæ value_type == char lub kompatybilny i
-     * mo¿liwoœæ dostêpu sekwencyjnego.
+     * Kontener musi mieÄ‡ value_type == char lub kompatybilny i
+     * moÅ¼liwoÅ›Ä‡ dostÄ™pu sekwencyjnego.
      */
     template<typename InputIt>
     std::pair<Result, InputIt> parse(InputIt begin, InputIt end, Request& request)
@@ -194,10 +194,10 @@ public:
         return std::make_pair(Result::Indeterminate, begin);
     }
 
-    /// Dodaje do cia³a zapytania dany zasiêg.
+    /// Dodaje do ciaÅ‚a zapytania dany zasiÄ™g.
     /**
-     * Przeprowadza sprawdzenie z nag³ówkiem Content-Length w celu
-     * okreslenia maksymalnej wielkoœci cia³a zapytania.
+     * Przeprowadza sprawdzenie z nagÅ‚Ã³wkiem Content-Length w celu
+     * okreslenia maksymalnej wielkoÅ›ci ciaÅ‚a zapytania.
      */
     template<typename InputIt>
     static bool fill(InputIt begin, InputIt end, Request& request)
@@ -219,12 +219,12 @@ public:
     void reset();
 
 private:
-    /// Zwraca d³ugoœæ cia³a dla zapytania HTTP.
+    /// Zwraca dÅ‚ugoÅ›Ä‡ ciaÅ‚a dla zapytania HTTP.
     static int contentLength(const Request& request);
-    /// Sprawdza zgodnoœæ znaku w danej chwili dla zapytania.
+    /// Sprawdza zgodnoÅ›Ä‡ znaku w danej chwili dla zapytania.
     Result consume(char value, Request& request);
 
-    /// Lista mo¿liwych stanów parsera.
+    /// Lista moÅ¼liwych stanÃ³w parsera.
     enum State
     {
         MethodStart,
@@ -256,7 +256,7 @@ private:
 class Response
 {
 public:
-    /// Lista mo¿liwych statusów odpowiedzi wraz z odpowiadaj¹cymi kodami.
+    /// Lista moÅ¼liwych statusÃ³w odpowiedzi wraz z odpowiadajÄ…cymi kodami.
     enum class Status
     {
         /* Informational */
@@ -310,17 +310,17 @@ public:
         HttpVersionNotSupported = 505
     };
 
-    /// Tworzy odpowiedŸ z danym kodem i cia³em o podanym typie mediów.
+    /// Tworzy odpowiedÅº z danym kodem i ciaÅ‚em o podanym typie mediÃ³w.
     Response(Status code, const BodyType& content, const MediaType& mediaType);
 
-    /// Zwraca odpowiedŸ w formie, jaka zostanie wys³ana do klienta.
+    /// Zwraca odpowiedÅº w formie, jaka zostanie wysÅ‚ana do klienta.
     std::string raw() const;
     /// Zwraca status odpowiedzi.
     Status status() const;
 
-    /// Posiada nag³ówki mo¿liwe do modyfikacji w zale¿noœci od potrzeb.
+    /// Posiada nagÅ‚Ã³wki moÅ¼liwe do modyfikacji w zaleÅ¼noÅ›ci od potrzeb.
     /**
-     * Nag³ówki nie przechodz¹ walidacji syntaktycznej.
+     * NagÅ‚Ã³wki nie przechodzÄ… walidacji syntaktycznej.
      */
     HeaderContainer headers;
 
@@ -333,34 +333,34 @@ private:
 
 class HandlerStrategy;
 
-/// Klasa enkapsuluj¹ca po³¹czenie z klientem.
+/// Klasa enkapsulujÄ…ca poÅ‚Ä…czenie z klientem.
 /**
- * Odpowiedzialna za odczytanie zapytania i wywo³anie odpowiedzi.
+ * Odpowiedzialna za odczytanie zapytania i wywoÅ‚anie odpowiedzi.
  */
 class Connection : public std::enable_shared_from_this<Connection>
 {
 public:
     typedef std::array<char, 8192> BufferType;
 
-    /// Tworzy nowe po³¹czenie dla gniazda oraz klasy obs³uguj¹cej zapytanie.
+    /// Tworzy nowe poÅ‚Ä…czenie dla gniazda oraz klasy obsÅ‚ugujÄ…cej zapytanie.
     /**
-     * Klasa obs³uguj¹ca zapytanie ma rolê mened¿era.
+     * Klasa obsÅ‚ugujÄ…ca zapytanie ma rolÄ™ menedÅ¼era.
      */
     Connection(Tcp::Socket socket, HandlerStrategy& handler);
 
-    /// Otwiera po³¹czenie.
+    /// Otwiera poÅ‚Ä…czenie.
     void start();
-    /// Zamyka po³¹czenie.
+    /// Zamyka poÅ‚Ä…czenie.
     void stop();
 
 private:
-    /// Odczytuje czêœæ nag³ówkow¹ zapytania HTTP.
+    /// Odczytuje czÄ™Å›Ä‡ nagÅ‚Ã³wkowÄ… zapytania HTTP.
     /**
-     * W przypadku niepoprawnoœci mo¿e wczeœniej zakoñczyæ po³¹czenie z
+     * W przypadku niepoprawnoÅ›ci moÅ¼e wczeÅ›niej zakoÅ„czyÄ‡ poÅ‚Ä…czenie z
      * komunikatem Bad Request.
      */
     void read();
-    /// Dokonuje odczytu cia³a zapytania HTTP.
+    /// Dokonuje odczytu ciaÅ‚a zapytania HTTP.
     void readBody();
     void write();
 
@@ -372,25 +372,25 @@ private:
     Request request;
 };
 
-/// Klasa odpowiedzialna za rozdzia³ zadañ do odpowiednich w¹tków.
+/// Klasa odpowiedzialna za rozdziaÅ‚ zadaÅ„ do odpowiednich wÄ…tkÃ³w.
 class ConnectionPool
 {
 public:
     typedef std::function<void()> RequestHandler;
 
-    /// Tworzy nowy obiekt o okreœlonym maksymalnym obci¹¿eniu.
+    /// Tworzy nowy obiekt o okreÅ›lonym maksymalnym obciÄ…Å¼eniu.
     /**
-     * Liczba w¹tków dedukowana jest na podstawie wykrytej liczby procesorów.
+     * Liczba wÄ…tkÃ³w dedukowana jest na podstawie wykrytej liczby procesorÃ³w.
      */
     ConnectionPool(std::size_t maxLoad = 5000);
-    /// Tworzy nowy obiekt o okreœlonych parametrach.
+    /// Tworzy nowy obiekt o okreÅ›lonych parametrach.
     ConnectionPool(std::size_t maxThreads, std::size_t maxLoad = 5000);
 
     ~ConnectionPool();
 
     /// dodaje zadanie do rozdzielenia.
     /**
-     * @return czy zadanie zosta³o dodane do kolejki czy nie.
+     * @return czy zadanie zostaÅ‚o dodane do kolejki czy nie.
      */
     bool add(RequestHandler handler);
 
@@ -413,7 +413,7 @@ using ConnectionPtr = std::shared_ptr<Connection>;
 
 
 
-/// Klasa okreœlaj¹ca strategiê podzia³u zadañ serwera HTTP.
+/// Klasa okreÅ›lajÄ…ca strategiÄ™ podziaÅ‚u zadaÅ„ serwera HTTP.
 class HandlerStrategy
 {
 public:
@@ -422,32 +422,32 @@ public:
 
     virtual ~HandlerStrategy() = default;
 
-    /// Przekazuje sparsowane zapytanie do funkcji obs³uguj¹cej.
+    /// Przekazuje sparsowane zapytanie do funkcji obsÅ‚ugujÄ…cej.
     /**
-     * Sposób wywo³ania funkcji le¿y po stronie implementacji.
+     * SposÃ³b wywoÅ‚ania funkcji leÅ¼y po stronie implementacji.
      */
     virtual void handle(ConnectionResponse response) = 0;
-    /// Bezpoœrednio wysy³a odpowiedŸ do gniazda.
+    /// BezpoÅ›rednio wysyÅ‚a odpowiedÅº do gniazda.
     virtual void respond(Tcp::Socket& socket, Response::Status stockResponse) = 0;
 
-    /// Uruchamia po³¹czenie.
+    /// Uruchamia poÅ‚Ä…czenie.
     virtual void start(ConnectionPtr connection) = 0;
-    /// Koñczy po³¹czenie.
+    /// KoÅ„czy poÅ‚Ä…czenie.
     virtual void stop(ConnectionPtr connection) = 0;
 };
 
 
 
-/// Klasa odpowiedzialna za strategiê podzia³u zadañ na ograniczon¹ liczbê w¹tków.
+/// Klasa odpowiedzialna za strategiÄ™ podziaÅ‚u zadaÅ„ na ograniczonÄ… liczbÄ™ wÄ…tkÃ³w.
 class ThreadedHandlerStrategy : public HandlerStrategy
 {
 public:
 
     ThreadedHandlerStrategy(RequestHandler handler);
 
-    /// Przekazuje zadanie do oddzielnego w¹tku.
+    /// Przekazuje zadanie do oddzielnego wÄ…tku.
     void handle(ConnectionResponse response) override;
-    /// Odpowiada na g³ównym w¹tku.
+    /// Odpowiada na gÅ‚Ã³wnym wÄ…tku.
     void respond(Tcp::Socket& socket, Response::Status stockResponse) override;
 
     /// Implementuje HandlerStrategy.
@@ -462,10 +462,10 @@ private:
 
 
 
-/// Klasa bêd¹ca frontendem u¿ytkownika do serwera HTTP.
+/// Klasa bÄ™dÄ…ca frontendem uÅ¼ytkownika do serwera HTTP.
 /**
- * Za jej pomoc¹ u¿ytkownik mo¿e ustaliæ strategiê 
- * rozdzielania zadañ oraz serwis demultipleksacji po³¹czeñ.
+ * Za jej pomocÄ… uÅ¼ytkownik moÅ¼e ustaliÄ‡ strategiÄ™ 
+ * rozdzielania zadaÅ„ oraz serwis demultipleksacji poÅ‚Ä…czeÅ„.
  */
 class Server
 {
@@ -475,25 +475,25 @@ public:
     typedef std::unique_ptr<HandlerStrategy> StrategyPtr;
     /// Tworzy nowy obiekt na danym adresie i porcie.
     /**
-     * Daje najwiêksze mo¿liwoœci dostosowania.
+     * Daje najwiÄ™ksze moÅ¼liwoÅ›ci dostosowania.
      */
     Server(const std::string& host, const std::string& port, ServicePtr service, StrategyPtr globalHandler);
-    /// Tworzy nowy obiekt z zadan¹ funkcj¹ odpowiadaj¹c¹ na zapytania.
+    /// Tworzy nowy obiekt z zadanÄ… funkcjÄ… odpowiadajÄ…cÄ… na zapytania.
     /**
-     * @param handler funkcja lub obiekt funkcyjny obs³uguj¹cy argument Http::Request i zwracaj¹cy Http::Response.
-     * Obiekt wykorzystuje domyœln¹ strategiê ThreadedHandlerStrategy.
+     * @param handler funkcja lub obiekt funkcyjny obsÅ‚ugujÄ…cy argument Http::Request i zwracajÄ…cy Http::Response.
+     * Obiekt wykorzystuje domyÅ›lnÄ… strategiÄ™ ThreadedHandlerStrategy.
      */
     Server(const std::string& host, const std::string& port, RequestHandler handler, ServicePtr service = ServicePtr(new Tcp::StreamService()));
 
     /// Uruchamia serwer.
     /**
-     * Serwer bêdzie dzia³aæ do czasu otrzymania sygna³u przerwania systemowego.
-     * Zwraca 0 w przypadku z³apania wyj¹tku, w przeciwnym razie nie wraca.
+     * Serwer bÄ™dzie dziaÅ‚aÄ‡ do czasu otrzymania sygnaÅ‚u przerwania systemowego.
+     * Zwraca 0 w przypadku zÅ‚apania wyjÄ…tku, w przeciwnym razie nie wraca.
      */
     int run();
 
 private:
-    /// asynchronicznie akceptuje po³¹czenie.
+    /// asynchronicznie akceptuje poÅ‚Ä…czenie.
     void accept();
 
     ServicePtr service;

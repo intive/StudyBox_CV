@@ -1,5 +1,6 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "AzureStorageManager.h"
-
+#include <ctime>
 
 AzureStorageManager::AzureStorageManager()
 {
@@ -66,16 +67,15 @@ bool AzureStorageManager::downloadFromServer(const std::string& fileAddr)
 
     //pobieranie obecnego czasu
     time_t currentTime;
-    struct tm cTime;
     time(&currentTime);
-    localtime_s(&cTime,&currentTime);
-    std::string newFileName = std::to_string(cTime.tm_year)
-        + std::to_string(cTime.tm_mon)
-        + std::to_string(cTime.tm_mday)
-        + std::to_string(cTime.tm_hour)
-        + std::to_string(cTime.tm_hour)
-        + std::to_string(cTime.tm_min)
-        + std::to_string(cTime.tm_sec)
+    std::tm* cTime = std::localtime(&currentTime);
+    std::string newFileName = std::to_string(cTime->tm_year)
+        + std::to_string(cTime->tm_mon)
+        + std::to_string(cTime->tm_mday)
+        + std::to_string(cTime->tm_hour)
+        + std::to_string(cTime->tm_hour)
+        + std::to_string(cTime->tm_min)
+        + std::to_string(cTime->tm_sec)
         + elements.back();
 
     //lokalny zapis pliku

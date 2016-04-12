@@ -14,7 +14,7 @@ const std::vector<std::string> dictionary = {
 	"Na czym","na czym",
 	"Kiedy","kiedy",
 	"Kim","kim",
-	"W którym","w którym","W ktorym","w ktorym",
+	"W ktÃ³rym","w ktÃ³rym","W ktorym","w ktorym",
 	"Kogo","kogo",
 	"Za co","za co",
 	"Co","co",
@@ -30,7 +30,7 @@ std::vector<Markers> findQA(const std::string& text)
 	if (text.empty())
 		return markersVector;
 	/*Analiza opiera sie na interpunkcji w zdaniu*/
-	for (int i = 0; i<text.size(); ++i)
+	for (std::size_t i = 0; i<text.size(); ++i)
 	{
 		//Jesli wykryto znak zapytania
 		if (text[i] == '?') 
@@ -40,9 +40,9 @@ std::vector<Markers> findQA(const std::string& text)
 			{
 				continue;
 			}
-			int startingMarker = i - 1;
+			std::size_t startingMarker = i - 1;
 
-			//"Cofanie siê" dopoki nie znajdzie sie znaku interpunkcyjnego lub poczatku
+			//"Cofanie siÄ™" dopoki nie znajdzie sie znaku interpunkcyjnego lub poczatku
 			while (startingMarker != 0)
 			{
 				if (text[startingMarker] == '.' || text[startingMarker] == '!' || text[startingMarker] == '?')
@@ -53,19 +53,19 @@ std::vector<Markers> findQA(const std::string& text)
 			//Sprawdzanie sytuacji typu ". ? " badz z jakims jednym znakiem pomiedzy
 			if (i - startingMarker + 1 < 2)
 			{
-				Markers unclasified(startingMarker, i, unclasified, 80);
+				Markers unclasified(startingMarker, i, TextType::unclasified, 80);
 				markersVector.push_back(unclasified);
 				continue;
 			}
 			else
 			{
-				int found=std::string::npos;
-				int k = 0;
+				auto found=std::string::npos;
+				std::size_t k = 0;
 
 				//Wyszukiwanie w zdaniu jednego ze slow kluczowych zdefiniowanych w dictionary, charakteryzujacych pytanie
 				while (k < dictionary.size())
 				{
-					int tmp= text.find(dictionary[k], startingMarker);
+					auto tmp= text.find(dictionary[k], startingMarker);
 					if (found != std::string::npos && tmp < found && tmp >= startingMarker)
 					{
 						found = tmp;
@@ -79,36 +79,36 @@ std::vector<Markers> findQA(const std::string& text)
 				//Jezeli znaleziono takie slowo kluczowe na poczatku zdania to na 100% jest to pytanie
 				if (found - startingMarker < 4 && found!=std::string::npos && found < i)
 				{
-					Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, question, 100);
+					Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::question, 100);
 					markersVector.push_back(question);
 				}
 				else if (found - startingMarker > 4 && found < i)  //w przeciwnym wypadku jesli znaleziono gdzies bardziej w srodku to tylko na 99%
 				{
-					Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, question, 99);
+					Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::question, 99);
 					markersVector.push_back(question);
 				}
 				else               //jesli nie znaleziono 
 				{
 
 					//Sprawdzam czy zdanie ma jakakolwiek samogloske. Jesli jej nie ma to prawie na pewno jest to blad
-					int found2 = text.find_first_of("eyuioa", startingMarker);
+					auto found2 = text.find_first_of("eyuioa", startingMarker);
 					if (found2 == std::string::npos || found2 > i)
 					{
-						Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, unclasified, 95);
+						Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 95);
 						markersVector.push_back(unclasified);
 					}
 					else
 					{
 						//Sprawdzam czy zdanie ma jakas spacje. Jesli nie ma, a jest bardzo dlugie to prawdopodobnie jest to zlepek roznych liter
-						int found3 = text.find_first_of(" ", startingMarker+2);
+						auto found3 = text.find_first_of(" ", startingMarker+2);
 						if (i - startingMarker > 15 && (found3 > i || found3 == std::string::npos))
 						{
-							Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, unclasified, 70);
+							Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 70);
 							markersVector.push_back(unclasified);
 						}
 						else
 						{
-							Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, question, 95);
+							Markers question(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::question, 95);
 							markersVector.push_back(question);
 						}
 					}
@@ -123,7 +123,7 @@ std::vector<Markers> findQA(const std::string& text)
 				continue;
 			}
 
-			//"Cofanie siê" dopoki nie znajdzie sie znaku interpunkcyjnego lub poczatku
+			//"Cofanie siÄ™" dopoki nie znajdzie sie znaku interpunkcyjnego lub poczatku
 			int startingMarker = i - 1;
 			while (startingMarker != 0)
 			{
@@ -134,7 +134,7 @@ std::vector<Markers> findQA(const std::string& text)
 			//Wykrywanie sytuacji " ? . " i podobnych
 			if (i - startingMarker + 1 < 2)
 			{
-				Markers unclasified(startingMarker, i, unclasified, 60);
+				Markers unclasified(startingMarker, i, TextType::unclasified, 60);
 				markersVector.push_back(unclasified);
 				continue;
 			}
@@ -142,39 +142,39 @@ std::vector<Markers> findQA(const std::string& text)
 			{
 
 				//Sprawdzam czy zdanie ma jakakolwiek samogloske. Jesli jej nie ma to prawie na pewno jest to blad
-				int found2 = text.find_first_of("eyuioa", startingMarker);
+				auto found2 = text.find_first_of("eyuioa", startingMarker);
 				if (found2 == std::string::npos || found2 > i)
 				{
-					Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, unclasified, 95);
+					Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 95);
 					markersVector.push_back(unclasified);
 				}
 				else
 				{
 
 					//Sprawdzam czy zdanie ma spacje. Jesli jej nie ma i jest bardzo dlugie to prawdopodobnie jest to zlepek liter
-					int found3 = text.find_first_of(" ", startingMarker+2);
+					auto found3 = text.find_first_of(" ", startingMarker+2);
 					if (i - startingMarker > 15 && (found3 > i || found3 == std::string::npos))
 					{
-						Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, unclasified, 70);
+						Markers unclasified(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::unclasified, 70);
 						markersVector.push_back(unclasified);
 					}
 					else
 					{
-						Markers answer(startingMarker == 0 ? 0 : startingMarker + 1, i, answer, 95);
+						Markers answer(startingMarker == 0 ? 0 : startingMarker + 1, i, TextType::answer, 95);
 						markersVector.push_back(answer);
 					}
 				}
 			}
 		}
 	}
-	/*W przypadku gdy tekst jest bez zadnej interpunkcji wykonuje siê ta bardziej "zaawansowana" czesc analizy.
+	/*W przypadku gdy tekst jest bez zadnej interpunkcji wykonuje siÄ™ ta bardziej "zaawansowana" czesc analizy.
 	Jednakze analizowany tekst jest traktowany jako jedno zdanie, a nie wieksza ilosc zdan gdyz niemozliwe jest okreslenie
 	kiedy potencjalnie zaczyna sie nowe zdanie, gdy nie mamy interpunkcji*/
 	if (markersVector.empty())
 	{
 		//Zaczynam od sprawdzania czy to jest pytanie
 		int found = std::string::npos;
-		int k = 0;
+		std::size_t k = 0;
 		while (found == std::string::npos && k < dictionary.size())
 		{
 			found = text.find(dictionary[k]);
@@ -184,7 +184,7 @@ std::vector<Markers> findQA(const std::string& text)
 		//Jesli znaleziono slowo kluczowe na poczatku to bardzo prawdopodobne ze to pytanie
 		if (found == 0)
 		{
-			Markers question(0, text.size() - 1, question, 90);
+			Markers question(0, text.size() - 1, TextType::question, 90);
 			markersVector.push_back(question);
 		}
 		else
@@ -193,7 +193,7 @@ std::vector<Markers> findQA(const std::string& text)
 			int found2 = text.find_first_of("eyuioa");
 			if (found2 == std::string::npos)
 			{
-				Markers unclasified(0, text.size() - 1, unclasified, 99);
+				Markers unclasified(0, text.size() - 1, TextType::unclasified, 99);
 				markersVector.push_back(unclasified);
 			}
 			else
@@ -202,12 +202,12 @@ std::vector<Markers> findQA(const std::string& text)
 				int found3 = text.find_first_of(" ");
 				if (found3 == std::string::npos && text.size()>15)
 				{
-					Markers unclasified(0, text.size() - 1, unclasified, 70);
+					Markers unclasified(0, text.size() - 1, TextType::unclasified, 70);
 					markersVector.push_back(unclasified);
 				}
 				else
 				{
-					Markers answer(0, text.size() - 1, answer, 90);
+					Markers answer(0, text.size() - 1, TextType::answer, 90);
 					markersVector.push_back(answer);
 				}
 			}
@@ -215,3 +215,21 @@ std::vector<Markers> findQA(const std::string& text)
 	}
 	return markersVector;
 }
+
+int Markers::getStart() const
+{
+	return start;
+}
+int Markers::getEnd() const
+{
+	return end;
+}
+TextType Markers::getType() const
+{
+	return type;
+}
+int Markers::getPercentageChance() const
+{
+	return percentage_chance;
+}
+

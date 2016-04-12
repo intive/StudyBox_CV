@@ -4,17 +4,17 @@
 #include "../Server.h"
 #include "../Socket.h"
 
-/// Testy sprawdzaj¹ce poprawnoœæ parsera zapytañ HTTP.
+/// Testy sprawdzajÄ…ce poprawnoÅ›Ä‡ parsera zapytaÅ„ HTTP.
 BOOST_AUTO_TEST_SUITE(RequestParse)
 
-/// Sprawdza czy prawid³owe zapytanie HTTP zostanie poprawnie zidentyfikowane metod¹ parse().
+/// Sprawdza czy prawidÅ‚owe zapytanie HTTP zostanie poprawnie zidentyfikowane metodÄ… parse().
 BOOST_AUTO_TEST_CASE(ValidRequest)
 {
     Http::Request request;
     Http::RequestParser parser;
     std::string terminate = Http::CRLF;
     terminate += terminate;
-    std::string input = "GET / HTTP/1.0" + terminate; // ca³kowity odczyt.
+    std::string input = "GET / HTTP/1.0" + terminate; // caÅ‚kowity odczyt.
     Http::RequestParser::Result result;
 
     std::tie(result, std::ignore) = parser.parse(input.begin(), input.end(), request);
@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(ValidRequest)
 
     request = Http::Request();
     parser.reset();
-    input = "POST /te"; // czêœciowy odczyt.
+    input = "POST /te"; // czÄ™Å›ciowy odczyt.
     std::tie(result, std::ignore) = parser.parse(input.begin(), input.end(), request);
     BOOST_CHECK(result == Http::RequestParser::Result::Indeterminate);
 
@@ -31,21 +31,21 @@ BOOST_AUTO_TEST_CASE(ValidRequest)
     BOOST_CHECK(result == Http::RequestParser::Result::Good);
 }
 
-/// Sprawdza czy nieprawid³owe zapytanie HTTP zostanie poprawnie zidentyfikowane metod¹ parse().
+/// Sprawdza czy nieprawidÅ‚owe zapytanie HTTP zostanie poprawnie zidentyfikowane metodÄ… parse().
 BOOST_AUTO_TEST_CASE(InvalidRequest)
 {
     Http::Request request;
     Http::RequestParser parser;
     std::string terminate = Http::CRLF;
     terminate += terminate;
-    std::string input = "GET / HTTP/1.0 *" + terminate; // b³êdne zapytanie
+    std::string input = "GET / HTTP/1.0 *" + terminate; // bÅ‚Ä™dne zapytanie
     Http::RequestParser::Result result;
 
     std::tie(result, std::ignore) = parser.parse(input.begin(), input.end(), request);
     BOOST_CHECK(result == Http::RequestParser::Result::Bad);
 }
 
-/// Sprawdza czy zawartoœæ poprawnego zapytania zgadza siê z t¹ prawdziw¹ metod¹ fill().
+/// Sprawdza czy zawartoÅ›Ä‡ poprawnego zapytania zgadza siÄ™ z tÄ… prawdziwÄ… metodÄ… fill().
 BOOST_AUTO_TEST_CASE(RequestContents)
 {
     Http::Request request;
@@ -74,10 +74,10 @@ BOOST_AUTO_TEST_CASE(RequestContents)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/// Testy sprawdzaj¹ce poprawnoœæ klasy odpowiedzialnej za odpowiedzi HTTP od serwera.
+/// Testy sprawdzajÄ…ce poprawnoÅ›Ä‡ klasy odpowiedzialnej za odpowiedzi HTTP od serwera.
 BOOST_AUTO_TEST_SUITE(ResponseValidity)
 
-/// Sprawdza czy zawartoœæ odpowiedzi jest poprawna.
+/// Sprawdza czy zawartoÅ›Ä‡ odpowiedzi jest poprawna.
 BOOST_AUTO_TEST_CASE(ResponseContents)
 {
     std::string content = "Content\n\t\n\n   \\\"; ";
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 #include <sstream>
 
-/// Klasa imituj¹ca StreamService.
+/// Klasa imitujÄ…ca StreamService.
 class ServiceMock : public Tcp::StreamServiceInterface
 {
     int run() override
@@ -105,7 +105,7 @@ class ServiceMock : public Tcp::StreamServiceInterface
     }
 };
 
-/// Klasa imituj¹ca implementacjê gniazda na podstawie std::stringstream.
+/// Klasa imitujÄ…ca implementacjÄ™ gniazda na podstawie std::stringstream.
 class SocketMock : public Tcp::SocketInterface
 {
 public:
@@ -180,10 +180,10 @@ private:
 };
 
 
-/// Testy sprawdzaj¹ce poprawnoœæ obs³ugi po³¹czeñ
+/// Testy sprawdzajÄ…ce poprawnoÅ›Ä‡ obsÅ‚ugi poÅ‚Ä…czeÅ„
 BOOST_AUTO_TEST_SUITE(ConnectionHandling)
 
-/// Sprawdza czy po³¹czenie poprawnie wywo³uje funkcjê obs³uguj¹c¹ zapytanie.
+/// Sprawdza czy poÅ‚Ä…czenie poprawnie wywoÅ‚uje funkcjÄ™ obsÅ‚ugujÄ…cÄ… zapytanie.
 BOOST_AUTO_TEST_CASE(ConnectionHandlerCall)
 {
     using Http::CRLF;
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(ConnectionHandlerCall)
     BOOST_CHECK(called);
 }
 
-/// Sprawdza czy serwer jest w stanie obs³u¿yæ kilka po³¹czeñ przy obci¹¿eniu.
+/// Sprawdza czy serwer jest w stanie obsÅ‚uÅ¼yÄ‡ kilka poÅ‚Ä…czeÅ„ przy obciÄ…Å¼eniu.
 BOOST_AUTO_TEST_CASE(MultipleConnections)
 {
     using Http::CRLF;
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(MultipleConnections)
     }
 }
 
-/// Sprawdza czy po³¹czenie odpowiada na zapytanie zgodnie z oczekiwaniami.
+/// Sprawdza czy poÅ‚Ä…czenie odpowiada na zapytanie zgodnie z oczekiwaniami.
 BOOST_AUTO_TEST_CASE(ConnectionValidity)
 {
     using Http::CRLF;
@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE(ConnectionValidity)
     BOOST_CHECK(globalWriter.str() == response.raw());
 }
 
-/// Sprawdza czy po³¹czenie poprawnie reaguje na niespodziewane zamkniêcie po stronie klienta.
+/// Sprawdza czy poÅ‚Ä…czenie poprawnie reaguje na niespodziewane zamkniÄ™cie po stronie klienta.
 BOOST_AUTO_TEST_CASE(ConnectionSendClosed)
 {
     using Http::CRLF;
@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE(ConnectionSendClosed)
     BOOST_CHECK(isClosed);
 }
 
-/// Sprawdza czy po³¹czenie jest poprawnie zamkniête po zakoñczeniu obs³ugi i czy nie ma wycieków.
+/// Sprawdza czy poÅ‚Ä…czenie jest poprawnie zamkniÄ™te po zakoÅ„czeniu obsÅ‚ugi i czy nie ma wyciekÃ³w.
 BOOST_AUTO_TEST_CASE(ConnectionClose)
 {
     using Http::CRLF;
