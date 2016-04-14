@@ -1,7 +1,25 @@
+#ifndef SEGMENTATION_TEST_CPP
+#define SEGMENTATION_TEST_CPP
+
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE SegmentationTest
 #include "../Segmentation.hpp"
 #include <boost/test/unit_test.hpp>
+#include <string>
+
+/// zwraca sciezke do pliku segmentation_test.cpp
+std::string getPath()
+{
+    std::string filePath = __FILE__;
+    int i = filePath.size();
+    char thisChar = filePath[(filePath.size() - 1)];
+    while ((thisChar != '\\') && (thisChar != '/'))
+    {
+        filePath.erase(filePath.end() - 1);
+        i--;
+        thisChar = filePath[filePath.size() - 1];
+    }
+    return filePath;
+}
 
 BOOST_AUTO_TEST_SUITE(SegmentationTest)
 
@@ -12,7 +30,9 @@ BOOST_AUTO_TEST_CASE(RectanglesCount1)
     cv::Mat originalImage;
     cv::Size morphEllipseSize = cv::Size(7, 4);
     cv::Size morphRectSize = cv::Size(5, 2);
-    originalImage = cv::imread("testImage1.jpeg");
+    std::string path = getPath();
+    path = path + "testImage1.jpeg";
+    originalImage = cv::imread(path);
     BOOST_REQUIRE(originalImage.data != NULL);
     testSeg.SetImage(originalImage);
     testSeg.ScaleImage(2);
@@ -30,7 +50,9 @@ BOOST_AUTO_TEST_CASE(RectanglesCount2Dark)
     cv::Mat originalImage;
     cv::Size morphEllipseSize = cv::Size(7, 4);
     cv::Size morphRectSize = cv::Size(5, 2);
-    originalImage = cv::imread("testImage2Dark.jpeg");
+    std::string path = getPath();
+    path = path + "testImage2Dark.jpeg";
+    originalImage = cv::imread(path);
     BOOST_REQUIRE(originalImage.data != NULL);
     testSeg.SetImage(originalImage);
     testSeg.ScaleImage(2);
@@ -48,7 +70,9 @@ BOOST_AUTO_TEST_CASE(RectanglesCount2Light)
     cv::Mat originalImage;
     cv::Size morphEllipseSize = cv::Size(7, 4);
     cv::Size morphRectSize = cv::Size(5, 2);
-    originalImage = cv::imread("testImage2Light.jpeg");
+    std::string path = getPath();
+    path = path + "testImage2Light.jpeg";
+    originalImage = cv::imread(path);
     BOOST_REQUIRE(originalImage.data != NULL);
     testSeg.SetImage(originalImage);
     testSeg.ScaleImage(2);
@@ -66,7 +90,9 @@ BOOST_AUTO_TEST_CASE(RectanglesCount1Grid)
     cv::Mat originalImage;
     cv::Size morphEllipseSize = cv::Size(7, 4);
     cv::Size morphRectSize = cv::Size(5, 2);
-    originalImage = cv::imread("testImage1Grid.jpeg");
+    std::string path = getPath();
+    path = path + "testImage1Grid.jpeg";
+    originalImage = cv::imread(path);
     BOOST_REQUIRE(originalImage.data != NULL);
     testSeg.SetImage(originalImage);
     testSeg.ScaleImage(2);
@@ -84,7 +110,9 @@ BOOST_AUTO_TEST_CASE(RectanglesCount2Grid)
     cv::Mat originalImage;
     cv::Size morphEllipseSize = cv::Size(7, 4);
     cv::Size morphRectSize = cv::Size(5, 2);
-    originalImage = cv::imread("testImage2Grid.jpeg");
+    std::string path = getPath();
+    path = path + "testImage2Grid.jpeg";
+    originalImage = cv::imread(path);
     BOOST_REQUIRE(originalImage.data != NULL);
     testSeg.SetImage(originalImage);
     testSeg.ScaleImage(2);
@@ -102,7 +130,9 @@ BOOST_AUTO_TEST_CASE(RectanglesCount4Grid)
     cv::Mat originalImage;
     cv::Size morphEllipseSize = cv::Size(7, 4);
     cv::Size morphRectSize = cv::Size(5, 2);
-    originalImage = cv::imread("testImage4Grid.jpeg");
+    std::string path = getPath();
+    path = path + "testImage4Grid.jpeg";
+    originalImage = cv::imread(path);
     BOOST_REQUIRE(originalImage.data != NULL);
     testSeg.SetImage(originalImage);
     testSeg.ScaleImage(2);
@@ -114,3 +144,5 @@ BOOST_AUTO_TEST_CASE(RectanglesCount4Grid)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+#endif
