@@ -47,21 +47,18 @@ const cv::Point2f& RotatedRectangle::P4() const
 {
 	return p4;
 }
-
-RotatedRectangle::operator Json()
+#include <iostream>
+RotatedRectangle::operator Json() const
 {
 	Json j;
-	j[p1_x_Key] = p1.x;
-	j[p1_y_Key] = p1.y;
-
-	j[p2_x_Key] = p2.x;
-	j[p2_y_Key] = p2.y;
-
-	j[p3_x_Key] = p3.x;
-	j[p3_y_Key] = p3.y;
-
-	j[p4_x_Key] = p4.x;
-	j[p4_y_Key] = p4.y;
+	j["p1.x"] = p1.x;
+	j["p1.y"] = p1.y;
+	j["p2.x"] = p2.x;
+	j["p2.y"] = p2.y;
+	j["p3.x"] = p3.x;
+	j["p3.y"] = p3.y;
+	j["p4.x"] = p4.x;
+	j["p4.y"] = p4.y;
 
 	return j;
 }

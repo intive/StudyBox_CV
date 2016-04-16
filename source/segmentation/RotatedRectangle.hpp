@@ -20,7 +20,7 @@ public:
 	const cv::Point2f& P3() const;
 	const cv::Point2f& P4() const;
 
-	operator Json();
+	operator Json() const;
 	RotatedRectangle(const RotatedRectangle& rotatedRectangle);
 	RotatedRectangle& operator = (const RotatedRectangle& rotatedRectangle);
 	RotatedRectangle& operator * (const size_t& value);
