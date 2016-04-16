@@ -92,8 +92,7 @@ typedef std::string BodyType;
 /// Typ wykorzystywany jako oznaczenie typu MIME.
 typedef std::string MediaType;
 
-
-
+#undef DELETE
 /// Posiada dostępne domyślne metody HTTP.
 namespace RequestMethod
 {
