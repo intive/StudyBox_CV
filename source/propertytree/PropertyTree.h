@@ -250,6 +250,7 @@ public:
     {
         PropertyTree tree;
         tree.put(value);
+        tree.type() = PropertyTree::Type::String;
         children.push_back(std::make_pair(key, tree));
         return *this;
     }
@@ -546,7 +547,7 @@ struct PropertyTreeOutputConverter<T, typename std::enable_if<is_container<T>::v
         PropertyTree tree;
         tree.type() = PropertyTree::Type::Array;
 
-        for (auto& val : data)
+        for (const auto& val : data)
         {
             tree.put("", val);
         }

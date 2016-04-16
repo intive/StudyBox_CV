@@ -1,6 +1,5 @@
 #include "PropertyTreeReader.h"
 #include "PropertyTree.h"
-#include <iostream>
 
 namespace {
 
