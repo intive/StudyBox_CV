@@ -11,13 +11,13 @@ namespace Router {
     class RequestRouter;
 }
 
-/// Zwraca obrazek ze úcieøki wzglÍdnej od po≥oøenia pliku wykonywalnego.
+/// Zwraca obrazek ze ≈õcie≈ºki wzglƒôdnej od po≈Ço≈ºenia pliku wykonywalnego.
 cv::Mat GetImageLocal(const std::string& path);
 /// Zwraca obrazek z azure storage.
 cv::Mat GetImageFromAzure(const std::string& url);
-/// Tworzy odpowiedü na zapytanie o segmentacjÍ obrazka.
+/// Tworzy odpowied≈∫ na zapytanie o segmentacjƒô obrazka.
 std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Mat(*GetImageaFromString)(const std::string&));
-/// Dodaje odpowiedü na segmentacjÍ obrazka do Router::RequestRouter.
+/// Dodaje odpowied≈∫ na segmentacjƒô obrazka do Router::RequestRouter.
 void registerSegmentationResponse(Router::RequestRouter& router);
 
 #endif // PATR_SEGMENTATION_RESPONSE_H

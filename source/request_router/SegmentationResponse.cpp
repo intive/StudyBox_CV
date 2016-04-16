@@ -86,29 +86,29 @@ std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Ma
         }
 
     }
-    catch (const std::domain_error&) // nieprawid³owe typy
+    catch (const std::domain_error&) // nieprawidÅ‚owe typy
     {
         CreateBadRequestError(status, response, "request body contains invalid field types");
     }
-    catch (const std::out_of_range&) // odwo³anie poza zasiêg drzewa lub nieprawid³owa/niewspierana sk³adnia JSON powoduj¹ca wyjœcie poza zasiêg drzewa.
+    catch (const std::out_of_range&) // odwoÅ‚anie poza zasiÄ™g drzewa lub nieprawidÅ‚owa/niewspierana skÅ‚adnia JSON powodujÄ…ca wyjÅ›cie poza zasiÄ™g drzewa.
     {
         CreateBadRequestError(status, response, "server could not handle request, possibly unsupported syntax");
         status = Http::Response::Status::InternalServerError;
     }
-    catch (const std::range_error&) // nieprawid³owa sk³adnia
+    catch (const std::range_error&) // nieprawidÅ‚owa skÅ‚adnia
     {
         CreateBadRequestError(status, response, "request body could not be read as valid json");
     }
-    catch (const AzureStorageError& e) // problem z chmur¹ azure
+    catch (const AzureStorageError& e) // problem z chmurÄ… azure
     {
         CreateBadRequestError(status, response, std::string("azure storage error: ") + e.what());
     }
-    catch (const std::exception& e) // nierozpoznany b³¹d
+    catch (const std::exception& e) // nierozpoznany bÅ‚Ä…d
     {
         CreateBadRequestError(status, response, std::string("server could not handle segmentation request, reason: ") + e.what());
         status = Http::Response::Status::InternalServerError;
     }
-    catch (...) // nierozpoznany b³¹d (bez diagnostyki)
+    catch (...) // nierozpoznany bÅ‚Ä…d (bez diagnostyki)
     {
         CreateBadRequestError(status, response, "server could not handle segmentation request, error unkown");
         status = Http::Response::Status::InternalServerError;
