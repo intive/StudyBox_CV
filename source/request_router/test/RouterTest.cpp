@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(Routing)
 BOOST_AUTO_TEST_CASE(SegmentationResponse)
 {
     auto response = ::SegmentationResponse(R"({
-        "url": "images.duckduckgo.com.png",
+        "url": "../../../res/test/SegmentationResponse.png",
         "action" : "Segmentation"
 
     })", GetImageLocal);
