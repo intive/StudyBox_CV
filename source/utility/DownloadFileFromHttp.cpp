@@ -105,12 +105,14 @@ namespace Utility
     void fetchData(vector<unsigned char>& buffer, function<int(Tcp::Buffer&)> func)
     {
         array<char, 1024> b = { 0 };
+        Tcp::Buffer tb = Tcp::MakeBuffer(b);
+
         size_t recvd;
 
         bool header_complete = false;
         string header;
 
-        while ((recvd = func(Tcp::MakeBuffer(b))) != 0)
+        while ((recvd = func(tb)) != 0)
         {
             if (!header_complete)
             {
