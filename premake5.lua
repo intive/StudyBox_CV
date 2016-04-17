@@ -129,7 +129,8 @@ workspace 'StudyBox_CV'
                 'opencv_highgui',
                 'opencv_imgcodecs',
                 'boost_system',
-                'pthread'
+                'pthread',
+                'tesseract'
             }
             filter 'test'
                 links {
@@ -209,6 +210,28 @@ workspace 'StudyBox_CV'
                 file:close()
                 os.execute('sudo chmod +x '..tmp..'; sudo '..tmp)
             end
+
+            if os.execute('sudo stat /usr/local/lib/libtesseract.so > /dev/null 2>&1') ~= 0 then
+                print('Setting up "Tesseract"')
+                local tmp = os.tmpname()
+                local file = assert(io.open(tmp, 'w'))
+                file:write([[
+                    #!/bin/bash ; set -e
+                    apt-get --yes --force-yes --assume-yes install autoconf automake libtool libpng12-dev libjpeg62-dev libtiff5-dev zlib1g-dev
+                    cd /opt ; wget http://www.leptonica.com/source/leptonica-1.73.tar.gz -O leptonica.tar.gz
+                    mkdir leptonica ; tar -zxvf leptonica.tar.gz -C leptonica --strip-components 1
+                    cd leptonica
+                    ./configure ; make ; make install
+                    cd .. ; wget https://github.com/tesseract-ocr/tesseract/archive/3.04.01.tar.gz -O tesseract.tar.gz
+                    mkdir tesseract ; tar -zxvf tesseract.tar.gz -C tesseract --strip-components 1
+                    cd tesseract
+                    ./autogen.sh ; ./configure ; make ; make install ; ldconfig
+                    cd / ; rm -rf /opt/tesseract /opt/leptonica "$0"
+                ]])
+                file:close()
+                os.execute('sudo chmod +x '..tmp..'; sudo '..tmp)
+            end
+
         end
 
 newaction {
