@@ -1,4 +1,8 @@
-﻿#include <vector>
+﻿#ifndef PATR_DLHTTPFILE_UTILITY_H
+#define PATR_DLHTTPFILE_UTILITY_H
+
+
+#include <vector>
 
 namespace Utility 
 {
@@ -21,3 +25,5 @@ namespace Utility
      */
     void dlFileToFile(const std::string& url, const std::string& path);
 }
+
+#endif //PATR_DLHTTPFILE_UTILITY_H
