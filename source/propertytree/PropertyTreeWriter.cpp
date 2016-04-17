@@ -174,5 +174,7 @@ Json ToJsonObject(const PropertyTree & tree)
 {
     if (tree.type() == PropertyTree::Object)
         return ToJsonObjectImpl(tree);
+    else if (tree.type() == PropertyTree::Array)
+        return ToJsonArrayImpl(tree);
     throw std::range_error("tree does not contain valid json");
 }
