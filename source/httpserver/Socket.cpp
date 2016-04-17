@@ -11,6 +11,7 @@
 #    include <winsock2.h>
 #    include <ws2tcpip.h>
 #    include <windows.h>
+#    include <mutex>
 #elif defined(PATR_OS_UNIX)
 #    include <unistd.h>
 #    include <sys/types.h>
@@ -45,17 +46,23 @@ struct Tcp::StreamService::StreamServicePimpl
 Tcp::StreamService::StreamServicePimpl::StreamServicePimpl() : readFdsMaster()
 {
 #if defined(PATR_OS_WINDOWS)
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
-        throw PlatformError("WSA failed to initialize");
-    }
+    static std::once_flag f;
+    std::call_once(f, []() {
+        WSADATA wsaData;
+        if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
+            throw PlatformError("WSA failed to initialize");
+        }
+    });
 #endif
 }
 
 Tcp::StreamService::StreamServicePimpl::~StreamServicePimpl()
 {
 #if defined(PATR_OS_WINDOWS)
-    WSACleanup();
+    static std::once_flag f;
+    std::call_once(f, []() {
+        WSACleanup();
+    });
 #endif
 }
 
@@ -551,6 +558,27 @@ Tcp::EndpointImplementation::ProtocolType Tcp::EndpointImplementation::protocol(
     return addressVal;
 }
 
+Tcp::Socket Tcp::EndpointImplementation::connect(StreamServiceInterface & service) const
+{
+    for (auto s = address(); s != nullptr; s = address()->ai_next)
+    {
+        auto fd = ::socket(s->ai_family, s->ai_socktype, s->ai_protocol);
+        if (fd == -1)
+            continue;
+
+        if (::connect(fd, s->ai_addr, s->ai_addrlen) == -1)
+        {
+            SocketImplementation(service, fd); // zamyka połączenie
+        }
+        else
+        {
+            return Socket(std::unique_ptr<SocketInterface>(new SocketImplementation(service, fd)));
+        }
+    }
+
+    throw Tcp::EndpointError("failed to connnect to endpoint");
+}
+
 Tcp::Endpoint::Endpoint(const std::string & address, const std::string & port) : implementation(new EndpointImplementation(address, port))
 {
 }
@@ -568,7 +596,6 @@ Tcp::Endpoint::ProtocolType Tcp::Endpoint::protocol() const
 {
     return implementation->protocol();
 }
-
 
 int Tcp::SignalSet::Signal;
 bool Tcp::SignalSet::Occured;

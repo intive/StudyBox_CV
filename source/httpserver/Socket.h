@@ -386,6 +386,8 @@ public:
     virtual AddressType address() const = 0;
     /// W celu uzyskania informacji o protokole.
     virtual ProtocolType protocol() const = 0;
+
+    virtual Socket connect(StreamServiceInterface& service) const = 0;
 };
 
 
@@ -413,6 +415,8 @@ public:
     /// Zwraca informacje o protokole w celu otwarcia gniazda.
     ProtocolType protocol() const override;
 
+    Socket connect(StreamServiceInterface& service) const override;
+
 private:
     AddressType addressVal;
 };
@@ -439,6 +443,8 @@ public:
     AddressType address() const;
     /// Przekierowuje do implementacji.
     ProtocolType protocol() const;
+
+    Socket connect() const;
 
 private:
     std::unique_ptr<EndpointInterface> implementation;
@@ -621,8 +627,6 @@ public:
 private:
     StreamService& service;
 };
-
-
 
 /// Klasa do demultipleksacji połączeń oraz asynchronicznej komunikacji z innymi serwisami.
 /**

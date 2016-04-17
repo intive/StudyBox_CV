@@ -15,6 +15,8 @@
 #    error "Unrecognised OS"
 #endif
 
+#include "../httpserver/Socket.h"
+
 #include <tuple>
 #include <regex>
 #include <string>
@@ -57,50 +59,6 @@ namespace
             { url.begin() + endpoint_start, url.end() }
         );
     };
-
-
-    int connect(const string& domain, const string& port)
-    {
-        int sock = 0;
-        struct addrinfo hints;
-        memset(&hints, 0, sizeof hints);
-        hints.ai_family = AF_INET;
-        hints.ai_socktype = SOCK_STREAM;
-
-        struct addrinfo *servinfo = nullptr;
-        struct addrinfo *s = nullptr;
-
-
-        auto get_addrinfo_result = getaddrinfo(domain.c_str(), port.c_str(), &hints, &servinfo);
-        if (get_addrinfo_result != 0)
-        {
-            throw runtime_error("Host couldn't be resolved: " + string{ strerror(get_addrinfo_result) });
-        }
-
-        for (s = servinfo; s != nullptr; s = s->ai_next)
-        {
-            if ((sock = socket(s->ai_family, s->ai_socktype, s->ai_protocol)) == -1)
-            {
-                continue;
-            }
-
-            if (connect(sock, s->ai_addr, s->ai_addrlen) == -1)
-            {
-                CLOSE_SOCKET(sock);
-                continue;
-            }
-
-            break;
-        }
-
-        freeaddrinfo(servinfo);
-
-        if (s == nullptr || !sock)
-            throw runtime_error{ "Couldn't connect to server" };
-
-        return sock;
-    }
-
 
     enum class ResponseStatus
     {
@@ -152,19 +110,19 @@ namespace Utility
         string port = get<1>(result);
         string endpoint = get<2>(result);
 
-        int sock = connect(domain, port);
+        Tcp::StreamService service;
+        auto sock = service.getFactory()->resolve(domain, port)->connect(service);
 
         stringstream request;
         request << "GET " << endpoint << " HTTP/1.0\r\n"
             << "Host: " << domain << "\r\n"
             << "Accept: */*\r\n\r\n";
 
-        auto req = request.str();
+        const auto req = request.str();
 
-        auto sent = send(sock, req.c_str(), req.length(), 0);
+        auto sent = sock.write(Tcp::MakeBuffer(req));
         if (sent == 0)
         {
-            CLOSE_SOCKET(sock);
             throw runtime_error("Request fail: " + string{ strerror(errno) });
         }
 
@@ -175,7 +133,7 @@ namespace Utility
         bool header_complete = false;
         stringstream header;
 
-        while ((recvd = recv(sock, b, 1024, 0)) != 0)
+        while ((recvd = sock.readSome(Tcp::Buffer(b, sizeof b))) != 0)
         {
             if (!header_complete)
             {
@@ -201,7 +159,6 @@ namespace Utility
                 }
                 else if (status == ResponseStatus::Redirect)
                 {
-                    CLOSE_SOCKET(sock);
                     return dlFileToBuffer(msg, buffer);
                 }
 
@@ -222,10 +179,8 @@ namespace Utility
                 buffer.insert(end(buffer), begin(b), begin(b) + recvd);
             }
 
-            memset(b, 0, sizeof(b));
         };
 
-        CLOSE_SOCKET(sock);
     }
 
 
