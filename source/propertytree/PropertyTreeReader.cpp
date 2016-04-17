@@ -1,5 +1,6 @@
 #include "PropertyTreeReader.h"
 #include "PropertyTree.h"
+#include <iostream>
 
 namespace {
 
@@ -14,21 +15,20 @@ bool IsWhitespace(char c)
  * Nie zawiera przypadku \u, który sygnalizuje wartość Unicode.
  * W chwili obecnej ta funkcjonalność nie jest wspierana.
  */
-bool IsControl(char c)
+char IsControl(char c)
 {
     switch (c)
     {
-    case '\\':
-    case '"':
-    case '/':
-    case 'b':
-    case 'f':
-    case 'n':
-    case 'r':
-    case 't':
-        return true;
+    case '\\': return '\\';
+    case '"': return '"';
+    case '/': return '/';
+    case 'b': return '\b';
+    case 'f': return '\f';
+    case 'n': return '\n';
+    case 'r': return '\r';
+    case 't': return '\t';
     default:
-        return false;
+        return '\0';
     }
 }
 
@@ -106,15 +106,17 @@ public:
             if (c == '\\')
             {
                 state = State::ControlCharacter;
+                return Result::Indeterminate;
             }
             buffer += c;
             return Result::Indeterminate;
         case State::ControlCharacter:
-            if (IsControl(c))
+            if ((c = IsControl(c)) == '\0')
             {
                 return Result::Bad;
             }
             buffer += c;
+            state = State::QuotationOpen;
             return Result::Indeterminate;
         case State::QuotationClosed:
             return Result::Good;
