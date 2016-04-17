@@ -4,7 +4,7 @@
 
 std::string getPath(std::string& path)
 {
-    std::string newPath = path + "/build/studybox_cv/segmentation/test/";
+    std::string newPath = path + "/source/segmentation/test/";
     return newPath;
 }
 

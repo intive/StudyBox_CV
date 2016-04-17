@@ -19,7 +19,7 @@ std::string getPath(std::string& path)
         }
         charNumber++;
     }
-    newPath = newPath + "\\build\\studybox_cv\\segmentation\\test\\";
+    newPath = newPath + "\\source\\segmentation\\test\\";
     return newPath;
 }
 
