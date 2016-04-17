@@ -8,27 +8,27 @@
 
 namespace {
 
-    std::map<Http::ResponseStatus, std::string> StockResponse = {
-    { Http::ResponseStatus::Ok, "HTTP/1.0 200 OK\r\n" },
-    { Http::ResponseStatus::Created, "HTTP/1.0 201 Created\r\n" },
-    { Http::ResponseStatus::Accepted, "HTTP/1.0 202 Accepted\r\n" },
-    { Http::ResponseStatus::NoContent, "HTTP/1.0 204 No Content\r\n" },
-    { Http::ResponseStatus::MultipleChoices, "HTTP/1.0 300 Multiple Choices\r\n" },
-    { Http::ResponseStatus::MovedPermanently, "HTTP/1.0 301 Moved Permanently\r\n" },
-    { Http::ResponseStatus::Found, "HTTP/1.0 302 Found\r\n" },
-    { Http::ResponseStatus::NotModified, "HTTP/1.0 304 Not Modified\r\n" },
-    { Http::ResponseStatus::BadRequest, "HTTP/1.0 400 Bad request\r\n" },
-    { Http::ResponseStatus::Unauthorized, "HTTP/1.0 401 Unauthorized\r\n" },
-    { Http::ResponseStatus::Forbidden, "HTTP/1.0 403 Forbidden\r\n" },
-    { Http::ResponseStatus::NotFound, "HTTP/1.0 404 Not Found\r\n" },
-    { Http::ResponseStatus::RequestTimeout, "HTTP/1.0 408 Request Timeout\r\n" },
-    { Http::ResponseStatus::InternalServerError, "HTTP/1.0 500 Internal Server Error\r\n" },
-    { Http::ResponseStatus::NotImplemented, "HTTP/1.0 501 Not Implemented\r\n" },
-    { Http::ResponseStatus::BadGateway, "HTTP/1.0 502 Bad Gateway\r\n" },
-    { Http::ResponseStatus::ServiceUnavailable, "HTTP/1.0 503 Service Unavailable\r\n" }
+    std::map<Http::Response::Status, std::string> StockResponse = {
+    { Http::Response::Status::Ok, "HTTP/1.0 200 OK\r\n" },
+    { Http::Response::Status::Created, "HTTP/1.0 201 Created\r\n" },
+    { Http::Response::Status::Accepted, "HTTP/1.0 202 Accepted\r\n" },
+    { Http::Response::Status::NoContent, "HTTP/1.0 204 No Content\r\n" },
+    { Http::Response::Status::MultipleChoices, "HTTP/1.0 300 Multiple Choices\r\n" },
+    { Http::Response::Status::MovedPermanently, "HTTP/1.0 301 Moved Permanently\r\n" },
+    { Http::Response::Status::Found, "HTTP/1.0 302 Found\r\n" },
+    { Http::Response::Status::NotModified, "HTTP/1.0 304 Not Modified\r\n" },
+    { Http::Response::Status::BadRequest, "HTTP/1.0 400 Bad request\r\n" },
+    { Http::Response::Status::Unauthorized, "HTTP/1.0 401 Unauthorized\r\n" },
+    { Http::Response::Status::Forbidden, "HTTP/1.0 403 Forbidden\r\n" },
+    { Http::Response::Status::NotFound, "HTTP/1.0 404 Not Found\r\n" },
+    { Http::Response::Status::RequestTimeout, "HTTP/1.0 408 Request Timeout\r\n" },
+    { Http::Response::Status::InternalServerError, "HTTP/1.0 500 Internal Server Error\r\n" },
+    { Http::Response::Status::NotImplemented, "HTTP/1.0 501 Not Implemented\r\n" },
+    { Http::Response::Status::BadGateway, "HTTP/1.0 502 Bad Gateway\r\n" },
+    { Http::Response::Status::ServiceUnavailable, "HTTP/1.0 503 Service Unavailable\r\n" }
     };
 
-    Tcp::ConstBuffer MakeBuffer(Http::ResponseStatus status)
+    Tcp::ConstBuffer MakeBuffer(Http::Response::Status status)
     {
         return Tcp::MakeBuffer(const_cast<const std::string&>(StockResponse[status]));
     }
@@ -105,7 +105,7 @@ void Http::Connection::read()
             }
             else if (result == RequestParser::Result::Bad) // Zapytanie sparsowane niepoprawnie.
             {
-                globalHandler.respond(pimpl->socket, ResponseStatus::BadRequest); // Od razu odpowiedz klientowi.
+                globalHandler.respond(pimpl->socket, Response::Status::BadRequest); // Od razu odpowiedz klientowi.
                 pimpl->socket.shutdown();
                 pimpl->socket.close(); // Zamknij gniazdo.
                 globalHandler.stop(shared_from_this());
@@ -120,7 +120,7 @@ void Http::Connection::read()
             try
             {
                 if (ec > 1)
-                    globalHandler.respond(pimpl->socket, ResponseStatus::RequestTimeout);
+                    globalHandler.respond(pimpl->socket, Response::Status::RequestTimeout);
             }
             catch (const Tcp::SendError&)
             {
@@ -154,7 +154,7 @@ void Http::Connection::readBody()
         {
             try
             {
-                globalHandler.respond(pimpl->socket, ResponseStatus::RequestTimeout);
+                globalHandler.respond(pimpl->socket, Response::Status::RequestTimeout);
             }
             catch (const Tcp::SendError&)
             {
@@ -197,12 +197,12 @@ void Http::ThreadedHandlerStrategy::handle(ConnectionResponse response)
     {
         response([](const Request&)
         {
-            return Response(ResponseStatus::InternalServerError, "", "");
+            return Response(Response::Status::InternalServerError, "", "");
         });
     }
 }
 
-void Http::ThreadedHandlerStrategy::respond(Tcp::Socket& socket, ResponseStatus stockResponse)
+void Http::ThreadedHandlerStrategy::respond(Tcp::Socket& socket, Response::Status stockResponse)
 {
     socket.write(MakeBuffer(stockResponse));
 }
@@ -218,7 +218,7 @@ void Http::ThreadedHandlerStrategy::stop(ConnectionPtr connection)
     connections.erase(connection);
 }
 
-Http::Response::Response(ResponseStatus code, const BodyType & content, const MediaType & mediaType) : responseStatus(code), response(content)
+Http::Response::Response(Response::Status code, const BodyType & content, const MediaType & mediaType) : responseStatus(code), response(content)
 {
     if (content.length() > 0) // w przypadku braku ciała nie uzupełniaj nagłówków.
     {
@@ -240,7 +240,7 @@ std::string Http::Response::raw() const
     return retval;
 }
 
-Http::ResponseStatus Http::Response::status() const
+Http::Response::Status Http::Response::status() const
 {
     return responseStatus;
 }

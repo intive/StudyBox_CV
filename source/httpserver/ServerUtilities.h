@@ -290,6 +290,8 @@ class Response
 {
 public:
 
+    using Status = ResponseStatus;
+
     /// Tworzy odpowiedź z danym kodem i ciałem o podanym typie mediów.
     Response(ResponseStatus code, const BodyType& content, const MediaType& mediaType);
 
