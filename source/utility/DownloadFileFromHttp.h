@@ -24,6 +24,16 @@ namespace Utility
      * @throw std::runtime_error what() zawiera przyczynę niepowodzenia
      */
     void dlFileToFile(const std::string& url, const std::string& path);
+
+
+
+    /// Funkcja pobiera dane z podanej lambdy i wrzuca do bufora
+    /*
+     * @param buffer bufor danych
+     * @param func lambda, która przyjmuje Tcp::Buffer&, uzupełnia go i zwraca ilość wrzuconych danych
+     * Przeznaczenie raczej testowe - napisanie lambdy, która podaje dane celem sprawdzenia wyodrębnienia ciała
+     */
+    void fetchData(std::vector<unsigned char>& buffer, std::function<int(Tcp::Buffer&)> func);
 }
 
 #endif //PATR_DLHTTPFILE_UTILITY_H

@@ -1,21 +1,7 @@
-#include "../httpserver/Predef.h"
-
-#if defined(PATR_OS_WINDOWS)
-#    define _CRT_SECURE_NO_WARNINGS
-#    include <ws2tcpip.h>
-#    define CLOSE_SOCKET closesocket
-
-#elif defined(PATR_OS_UNIX)
-#    include <unistd.h>
-#    include <sys/socket.h>
-#    include <netdb.h>
-#    define CLOSE_SOCKET close
-
-#else
-#    error "Unrecognised OS"
-#endif
+#define _CRT_SECURE_NO_WARNINGS
 
 #include "../httpserver/Socket.h"
+#include "DownloadFileFromHttp.h"
 
 #include <tuple>
 #include <regex>
@@ -23,12 +9,24 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <array>
 
 
 using namespace std;
 
 namespace
 {
+    enum class ResponseStatus
+    {
+        Good,
+        Error,
+        Redirect
+    };
+
+    const string content_len_str = "Content-Length: ";
+    const string header_separator = "\r\n\r\n";
+
+    
     tuple<string, string, string> getDomainAndEndpoint(const string& url)
     {
         size_t domain_end;
@@ -54,21 +52,14 @@ namespace
         }
 
         return make_tuple<string, string, string>(
-        { url.begin() + domain_start,  url.begin() + domain_end },
+            { url.begin() + domain_start,  url.begin() + domain_end },
             port_s == port_e ? "80" : string{ url.begin() + port_s, url.begin() + port_e },
             { url.begin() + endpoint_start, url.end() }
         );
-    };
-
-    enum class ResponseStatus
-    {
-        Good,
-        Error,
-        Redirect
-    };
+    }
 
 
-    pair<ResponseStatus, string> inspectHeader(const string& header)
+    pair<ResponseStatus, string> checkResponse(const string& header)
     {
         string first_line{ begin(header), begin(header) + header.find_first_of("\r\n") };
 
@@ -97,51 +88,35 @@ namespace
 
         return{ ResponseStatus::Good, "" };
     }
+
+
+    string prepareRequest(const string& domain, const string& endpoint)
+    {
+        return "GET " + endpoint + " HTTP/1.0\r\n"
+            + "Host: " + domain + "\r\n"
+            + "Accept: */*\r\n\r\n";;
+    }
 }
 
 
 
 namespace Utility
 {
-    void dlFileToBuffer(const string& url, vector<unsigned char>& buffer)
+    void fetchData(vector<unsigned char>& buffer, function<int(Tcp::Buffer&)> func)
     {
-        auto result = getDomainAndEndpoint(url);
-        string domain = get<0>(result);
-        string port = get<1>(result);
-        string endpoint = get<2>(result);
-
-        Tcp::StreamService service;
-        auto sock = service.getFactory()->resolve(domain, port)->connect(service);
-
-        stringstream request;
-        request << "GET " << endpoint << " HTTP/1.0\r\n"
-            << "Host: " << domain << "\r\n"
-            << "Accept: */*\r\n\r\n";
-
-        const auto req = request.str();
-
-        auto sent = sock.write(Tcp::MakeBuffer(req));
-        if (sent == 0)
-        {
-            throw runtime_error("Request fail: " + string{ strerror(errno) });
-        }
-
-        char b[1024] = { 0 };
-        size_t content_len = 0;
+        array<char, 1024> b = { 0 };
         size_t recvd;
 
         bool header_complete = false;
-        stringstream header;
+        string header;
 
-        while ((recvd = sock.readSome(Tcp::Buffer(b, sizeof b))) != 0)
+        while ((recvd = func(Tcp::MakeBuffer(b))) != 0)
         {
             if (!header_complete)
             {
-                header << b;
+                copy(begin(b), begin(b) + recvd, back_inserter(header));
 
-                auto headstr = header.str();
-                auto end_of_header = headstr.find("\r\n\r\n");
-
+                auto end_of_header = header.find("\r\n\r\n");
                 if (end_of_header == string::npos)
                 {
                     continue;
@@ -152,7 +127,7 @@ namespace Utility
 
                 ResponseStatus status;
                 string msg;
-                tie(status, msg) = inspectHeader(headstr);
+                tie(status, msg) = checkResponse(header);
                 if (status == ResponseStatus::Error)
                 {
                     throw runtime_error(msg);
@@ -162,25 +137,47 @@ namespace Utility
                     return dlFileToBuffer(msg, buffer);
                 }
 
-                auto header_content_len = strstr(b, "Content-Length: ");
-                if (header_content_len)
+                auto header_content_len = search(begin(header), end(header), begin(content_len_str), end(content_len_str));
+                if (header_content_len != end(header))
                 {
-                    auto r_after_content_len = strchr(header_content_len, '\r');
+                    auto r_after_content_len = find(header_content_len, end(header), '\r');
                     string n{ header_content_len + 16, r_after_content_len };
-                    sscanf(n.c_str(), "%zu", &content_len);
-                    buffer.reserve(content_len);
+                    buffer.reserve(stoul(n));
                 }
 
-                auto body_start = strstr(b, "\r\n\r\n");
-                buffer.insert(end(buffer), body_start + 4, &b[recvd]);
+                auto body_start = search(begin(header), end(header), begin(header_separator), end(header_separator));
+                buffer.insert(end(buffer), body_start + 4, begin(header) + recvd);
             }
             else
             {
                 buffer.insert(end(buffer), begin(b), begin(b) + recvd);
             }
+        }
+    }
 
-        };
 
+    void dlFileToBuffer(const string& url, vector<unsigned char>& buffer)
+    {
+        auto result = getDomainAndEndpoint(url);
+        string domain = get<0>(result);
+        string port = get<1>(result);
+        string endpoint = get<2>(result);
+
+        Tcp::StreamService service;
+        auto sock = service.getFactory()->resolve(domain, port)->connect(service);
+
+        const auto req = prepareRequest(domain, endpoint);
+
+        auto sent = sock.write(Tcp::MakeBuffer(req));
+        if (sent == 0)
+        {
+            throw runtime_error("Request fail: " + string{ strerror(errno) });
+        }
+
+        fetchData(buffer, [&sock](Tcp::Buffer& b) -> int
+        {
+            return sock.readSome(b);
+        });
     }
 
 
