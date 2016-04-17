@@ -2,6 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../Server.h"
+#include "../ServerUtilities.h"
 #include "../Socket.h"
 
 /// Testy sprawdzające poprawność parsera zapytań HTTP.
@@ -82,10 +83,10 @@ BOOST_AUTO_TEST_CASE(ResponseContents)
 {
     std::string content = "Content\n\t\n\n   \\\"; ";
     std::string type = "text/plain";
-    Http::Response response(Http::Response::Status::Ok, content, type);
+    Http::Response response(Http::ResponseStatus::Ok, content, type);
     BOOST_CHECK(response.headers[0].first == "Content-Length" && response.headers[0].second == std::to_string(content.length()));
     BOOST_CHECK(response.headers[1].first == "Content-Type" && response.headers[1].second == type);
-    BOOST_CHECK(response.status() == Http::Response::Status::Ok);
+    BOOST_CHECK(response.status() == Http::ResponseStatus::Ok);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -194,7 +195,7 @@ BOOST_AUTO_TEST_CASE(ConnectionHandlerCall)
         Http::ThreadedHandlerStrategy handler([&called](const Http::Request& request)
         {
             called = true;
-            return Http::Response(Http::Response::Status::Ok, "", "");
+            return Http::Response(Http::ResponseStatus::Ok, "", "");
         }
         );
 
@@ -214,7 +215,7 @@ BOOST_AUTO_TEST_CASE(MultipleConnections)
         Http::ThreadedHandlerStrategy handler([](const Http::Request& request)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            return Http::Response(Http::Response::Status::Ok, "", "");
+            return Http::Response(Http::ResponseStatus::Ok, "", "");
         }
         );
         for (int i = 0; i < 12; ++i)
@@ -233,7 +234,7 @@ BOOST_AUTO_TEST_CASE(ConnectionValidity)
     using Http::CRLF;
     ServiceMock service;
     std::ostringstream globalWriter;
-    Http::Response response(Http::Response::Status::Ok, "Content\n\t\n\n   \\\"; ", "text/plain");
+    Http::Response response(Http::ResponseStatus::Ok, "Content\n\t\n\n   \\\"; ", "text/plain");
     auto socket = std::unique_ptr<Tcp::SocketInterface>(new SocketMock(std::string("GET / HTTP/1.0") + CRLF + CRLF, service, nullptr, &globalWriter));
     {
         Http::ThreadedHandlerStrategy handler([&response](const Http::Request& request)
@@ -261,7 +262,7 @@ BOOST_AUTO_TEST_CASE(ConnectionSendClosed)
     {
         Http::ThreadedHandlerStrategy handler([](const Http::Request& request)
         {
-            return Http::Response(Http::Response::Status::Ok, "", "");
+            return Http::Response(Http::ResponseStatus::Ok, "", "");
         }
         );
 
@@ -280,7 +281,7 @@ BOOST_AUTO_TEST_CASE(ConnectionClose)
     BOOST_CHECK(!isClosed);
     {
         Http::ThreadedHandlerStrategy handler([](const Http::Request& request)
-        { return Http::Response(Http::Response::Status::Ok, "", ""); }
+        { return Http::Response(Http::ResponseStatus::Ok, "", ""); }
         );
 
         BOOST_REQUIRE_NO_THROW(
