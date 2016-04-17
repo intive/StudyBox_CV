@@ -5,6 +5,8 @@ workspace 'StudyBox_CV'
     configurations { 'Debug', 'Release', 'Test' }
     targetdir 'bin/%{cfg.platform}/%{cfg.buildcfg}'
 
+	defines {'ABSOLUTE_PATH="' ..path.getabsolute('.').. '"'}
+	
     filter 'debug'
         flags 'Symbols'
         defines 'DEBUG'
