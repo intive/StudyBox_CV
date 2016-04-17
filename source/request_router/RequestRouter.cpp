@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "RequestRouter.h"
-#include "../httpserver/Server.h"
+#include "../httpserver/ServerUtilities.h"
 
 
 namespace Router
@@ -13,7 +13,7 @@ namespace Router
         if (func == services.end())
         {
             return Http::Response(
-                Http::Response::Status::NotFound,
+                Http::ResponseStatus::NotFound,
                 R"({"error":"no service for )" + request.uri().raw() + R"("})",
                 "application/json");
         }
@@ -26,7 +26,7 @@ namespace Router
             std::tie(body, response_code) = func->second(request.body());
            
             return Http::Response(
-                static_cast<Http::Response::Status>(response_code),
+                static_cast<Http::ResponseStatus>(response_code),
                 body,
                 "application/json");
         }
@@ -38,7 +38,7 @@ namespace Router
                           << std::endl;
 
             return Http::Response(
-                Http::Response::Status::InternalServerError,
+                Http::ResponseStatus::InternalServerError,
                 R"({"error":"internal server error"})",
                 "application/json");
         }
