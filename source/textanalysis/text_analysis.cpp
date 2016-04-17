@@ -173,7 +173,7 @@ std::vector<Markers> findQA(const std::string& text)
 	if (markersVector.empty())
 	{
 		//Zaczynam od sprawdzania czy to jest pytanie
-		int found = std::string::npos;
+		size_t found = std::string::npos;
 		std::size_t k = 0;
 		while (found == std::string::npos && k < dictionary.size())
 		{

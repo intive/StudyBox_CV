@@ -753,7 +753,7 @@ Http::Server::Server(const std::string& host, const std::string& port, ServicePt
     pimpl->signals.add(SIGINT); // nie wspierane na Windows
     pimpl->signals.add(SIGTERM);
 #if defined(SIGQUIT)
-    signals.add(SIGQUIT);
+    pimpl->signals.add(SIGQUIT);
 #endif // defined(SIGQUIT)
 
     Tcp::Endpoint endpoint = this->pimpl->service->getFactory()->resolve(host, port);
