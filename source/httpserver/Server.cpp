@@ -1,4 +1,6 @@
 #include "Server.h"
+#include "ServerUtilities.h"
+#include "Socket.h"
 #include <csignal>
 #include <sstream>
 #include <string>
@@ -32,8 +34,40 @@ namespace {
     }
 }
 
+namespace Http {
 
-Http::Connection::Connection(Tcp::Socket socket, HandlerStrategy& handler) : socket(std::move(socket)), globalHandler(handler)
+struct Connection::ConnectionPimpl
+{
+    ConnectionPimpl(Tcp::Socket socket) : socket(std::move(socket))
+    {
+    }
+
+    Tcp::Socket socket;
+    RequestParser parser;
+    Request request;
+};
+
+struct Server::ServerPimpl
+{
+    ServerPimpl(ServicePtr service) : 
+        service(std::move(service)),
+        acceptor(*this->service),
+        signals(*this->service)
+    {
+    }
+
+    Server::ServicePtr service;
+    Tcp::Acceptor acceptor;
+    Tcp::SignalSet signals;
+};
+
+}
+
+Http::Connection::Connection(Tcp::Socket socket, HandlerStrategy& handler) : pimpl(new ConnectionPimpl(std::move(socket))), globalHandler(handler)
+{
+}
+
+Http::Connection::~Connection()
 {
 }
 
@@ -44,23 +78,23 @@ void Http::Connection::start()
 
 void Http::Connection::stop()
 {
-    socket.close();
+    pimpl->socket.close();
 }
 
 void Http::Connection::read()
 {
     auto self = shared_from_this();
-    socket.asyncReadSome(Tcp::MakeBuffer(buffer),
+    pimpl->socket.asyncReadSome(Tcp::MakeBuffer(buffer),
         [this, self](int ec, std::size_t bytes)
     {
         if (!ec) // Nie wykryto błędu.
         {
             RequestParser::Result result;
             auto it = buffer.begin();
-            std::tie(result, it) = parser.parse(buffer.begin(), buffer.begin() + bytes, request);
+            std::tie(result, it) = pimpl->parser.parse(buffer.begin(), buffer.begin() + bytes, pimpl->request);
             if (result == RequestParser::Result::Good) // Zapytanie sparsowane poprawnie.
             {
-                if (parser.fill(it, buffer.begin() + bytes, request)) // Zacznij czyta? cia?o.
+                if (pimpl->parser.fill(it, buffer.begin() + bytes, pimpl->request)) // Zacznij czyta? cia?o.
                 {
                     write(); // Jeżeli ciało nie zostało wykryte, przejdź do odpowiedzi.
                 }
@@ -71,9 +105,9 @@ void Http::Connection::read()
             }
             else if (result == RequestParser::Result::Bad) // Zapytanie sparsowane niepoprawnie.
             {
-                globalHandler.respond(socket, Response::Status::BadRequest); // Od razu odpowiedz klientowi.
-                socket.shutdown();
-                socket.close(); // Zamknij gniazdo.
+                globalHandler.respond(pimpl->socket, Response::Status::BadRequest); // Od razu odpowiedz klientowi.
+                pimpl->socket.shutdown();
+                pimpl->socket.close(); // Zamknij gniazdo.
                 globalHandler.stop(shared_from_this());
             }
             else
@@ -86,13 +120,13 @@ void Http::Connection::read()
             try
             {
                 if (ec > 1)
-                    globalHandler.respond(socket, Response::Status::RequestTimeout);
+                    globalHandler.respond(pimpl->socket, Response::Status::RequestTimeout);
             }
             catch (const Tcp::SendError&)
             {
 
             }
-            socket.shutdown();
+            pimpl->socket.shutdown();
             globalHandler.stop(shared_from_this());
         }
     }
@@ -102,12 +136,12 @@ void Http::Connection::read()
 void Http::Connection::readBody()
 {
     auto self = shared_from_this();
-    socket.asyncReadSome(Tcp::MakeBuffer(buffer),
+    pimpl->socket.asyncReadSome(Tcp::MakeBuffer(buffer),
         [this, self](int ec, std::size_t bytes)
     {
         if (!ec)
         {
-            if (parser.fill(buffer.begin(), buffer.begin() + bytes, request))
+            if (pimpl->parser.fill(buffer.begin(), buffer.begin() + bytes, pimpl->request))
             {
                 write();
             }
@@ -120,13 +154,13 @@ void Http::Connection::readBody()
         {
             try
             {
-                globalHandler.respond(socket, Response::Status::RequestTimeout);
+                globalHandler.respond(pimpl->socket, Response::Status::RequestTimeout);
             }
             catch (const Tcp::SendError&)
             {
 
             }
-            socket.shutdown();
+            pimpl->socket.shutdown();
             globalHandler.stop(shared_from_this());
         }
     }
@@ -141,7 +175,7 @@ void Http::Connection::write()
         {
             try
             {
-                socket.write(Tcp::MakeBuffer(handler(request).raw()));
+                pimpl->socket.write(Tcp::MakeBuffer(handler(pimpl->request).raw()));
             }
             catch (const Tcp::SendError&)
             {
@@ -149,7 +183,7 @@ void Http::Connection::write()
             }
         }
     );
-    socket.shutdown();
+    pimpl->socket.shutdown();
     globalHandler.stop(shared_from_this());
 }
 
@@ -184,7 +218,7 @@ void Http::ThreadedHandlerStrategy::stop(ConnectionPtr connection)
     connections.erase(connection);
 }
 
-Http::Response::Response(Status code, const BodyType & content, const MediaType & mediaType) : responseStatus(code), response(content)
+Http::Response::Response(Response::Status code, const BodyType & content, const MediaType & mediaType) : responseStatus(code), response(content)
 {
     if (content.length() > 0) // w przypadku braku ciała nie uzupełniaj nagłówków.
     {
@@ -571,7 +605,7 @@ const Http::HeaderContainer& Http::Request::headers() const
     return headerCollection;
 }
 
-const Http::BodyType Http::Request::body() const
+const Http::BodyType& Http::Request::body() const
 {
     return content;
 }
@@ -713,22 +747,20 @@ std::vector<std::string> Http::Uri::segments() const
 }
 
 Http::Server::Server(const std::string& host, const std::string& port, ServicePtr service, StrategyPtr globalHandler) :
-    service(std::move(service)),
-    acceptor(*this->service),
-    signals(*this->service),
+    pimpl(new ServerPimpl(std::move(service))),
     globalHandler(std::move(globalHandler))//(handler)
 {
-    signals.add(SIGINT); // nie wspierane na Windows
-    signals.add(SIGTERM);
+    pimpl->signals.add(SIGINT); // nie wspierane na Windows
+    pimpl->signals.add(SIGTERM);
 #if defined(SIGQUIT)
     signals.add(SIGQUIT);
 #endif // defined(SIGQUIT)
 
-    Tcp::Endpoint endpoint = this->service->getFactory()->resolve(host, port);
-    acceptor.open(endpoint.protocol());
-    acceptor.setOption(Tcp::Option::ReuseAddress(true));
-    acceptor.bind(endpoint.address());
-    acceptor.listen(50);
+    Tcp::Endpoint endpoint = this->pimpl->service->getFactory()->resolve(host, port);
+    pimpl->acceptor.open(endpoint.protocol());
+    pimpl->acceptor.setOption(Tcp::Option::ReuseAddress(true));
+    pimpl->acceptor.bind(endpoint.address());
+    pimpl->acceptor.listen(50);
     accept();
 }
 
@@ -737,14 +769,23 @@ Http::Server::Server(const std::string & host, const std::string & port, Request
 {
 }
 
+Http::Server::Server(const std::string & host, const std::string & port, RequestHandler handler)
+    : Server(host, port, ServicePtr(new Tcp::StreamService()), StrategyPtr(new ThreadedHandlerStrategy(std::move(handler))))
+{
+}
+
+Http::Server::~Server()
+{
+}
+
 int Http::Server::run()
 {
-    return service->run();
+    return pimpl->service->run();
 }
 
 void Http::Server::accept()
 {
-    acceptor.asyncAccept([this](Tcp::Socket socket)
+    pimpl->acceptor.asyncAccept([this](Tcp::Socket socket)
     {
         globalHandler->start(std::make_shared<Connection>(std::move(socket), *globalHandler));
         accept();

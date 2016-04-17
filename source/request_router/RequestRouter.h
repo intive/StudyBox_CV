@@ -4,13 +4,7 @@
 #include <map>
 #include <string>
 #include <functional>
-
-
-namespace Http
-{
-    class Request;
-    class Response;
-}
+#include "../httpserver/ServerUtilities.h"
 
 namespace Router
 {
