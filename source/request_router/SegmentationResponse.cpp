@@ -3,7 +3,6 @@
 #include "../segmentation/Segmentation.hpp"
 #include "../json/Json.hpp"
 #include "../storage/AzureStorageManager.h"
-#include "../httpserver/Server.h"
 
 #include <algorithm>
 #include <iostream>
