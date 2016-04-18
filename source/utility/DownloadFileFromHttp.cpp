@@ -25,9 +25,15 @@ namespace
 
     const string content_len_str = "Content-Length: ";
     const string header_separator = "\r\n\r\n";
+    const string new_line = "\r\n";
+    constexpr auto default_port = "80";
+    const auto location_rgx = regex{ R"c((?:Location\:)\s+(.+[^\r\n])(?:\r\n))c" };
+    const auto http_response_rgx = regex{ R"(^HTTP\/[\d.]+\s+(\d+)\s+(.*)$)" };
+    constexpr int error_code = 400;
+    constexpr int redirect_code = 300;
 
     
-    tuple<string, string, string> getDomainAndEndpoint(const string& url)
+    tuple<string, string, string> getDomainPortEndpoint(const string& url)
     {
         size_t domain_end;
         size_t domain_start = url.find("http") == string::npos ? 0 : url.find_first_of("//") + 2;
@@ -36,7 +42,7 @@ namespace
         auto endpoint_start = url.find("/", domain_start);
         if (endpoint_start == string::npos)
         {
-            return getDomainAndEndpoint(url + "/");
+            return getDomainPortEndpoint(url + "/");
         }
 
         auto colon = url.find_first_of(":", domain_start);
@@ -53,34 +59,33 @@ namespace
 
         return make_tuple<string, string, string>(
             { url.begin() + domain_start,  url.begin() + domain_end },
-            port_s == port_e ? "80" : string{ url.begin() + port_s, url.begin() + port_e },
+            port_s == port_e ? default_port : string{ url.begin() + port_s, url.begin() + port_e },
             { url.begin() + endpoint_start, url.end() }
         );
     }
-
+    
 
     pair<ResponseStatus, string> checkResponse(const string& header)
     {
-        string first_line{ begin(header), begin(header) + header.find_first_of("\r\n") };
+        string first_line{ begin(header), begin(header) + header.find_first_of(new_line) };
 
-        regex rgx{ R"(^HTTP\/[\d.]+\s+(\d+)\s+(.*)$)" };
+        
         smatch result;
-        if (!regex_search(first_line, result, rgx))
+        if (!regex_search(first_line, result, http_response_rgx))
         {
             return{ ResponseStatus::Error, "Couldn't parse header" };
         }
 
         int response_code = stoi(result[1]);
-        if (response_code >= 400)
+        if (response_code >= error_code)
         {
             return{ ResponseStatus::Error, result[2] };
         }
 
-        if (response_code > 300)
+        if (response_code > redirect_code)
         {
-            regex loc_rgx{ R"((?:Location\:)\s+(.+[^\r\n])(?:\r\n))" };
             smatch loc_result;
-            if (regex_search(header, loc_result, loc_rgx))
+            if (regex_search(header, loc_result, location_rgx))
             {
                 return{ ResponseStatus::Redirect, loc_result[1] };
             }
@@ -118,7 +123,7 @@ namespace Utility
             {
                 copy(begin(b), begin(b) + recvd, back_inserter(header));
 
-                auto end_of_header = header.find("\r\n\r\n");
+                auto end_of_header = header.find(header_separator);
                 if (end_of_header == string::npos)
                 {
                     continue;
@@ -142,7 +147,7 @@ namespace Utility
                 auto header_content_len = search(begin(header), end(header), begin(content_len_str), end(content_len_str));
                 if (header_content_len != end(header))
                 {
-                    auto r_after_content_len = find(header_content_len, end(header), '\r');
+                    auto r_after_content_len = search(header_content_len, end(header), begin(new_line), end(new_line));
                     string n{ header_content_len + 16, r_after_content_len };
                     buffer.reserve(stoul(n));
                 }
@@ -160,7 +165,7 @@ namespace Utility
 
     void dlFileToBuffer(const string& url, vector<unsigned char>& buffer)
     {
-        auto result = getDomainAndEndpoint(url);
+        auto result = getDomainPortEndpoint(url);
         string domain = get<0>(result);
         string port = get<1>(result);
         string endpoint = get<2>(result);
