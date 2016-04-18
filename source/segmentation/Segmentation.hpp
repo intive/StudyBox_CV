@@ -6,6 +6,8 @@
 #include "opencv2/opencv.hpp"
 
 #include "NonCopyable.hpp"
+
+#include "Rectangle.hpp"
 #include "RotatedRectangle.hpp"
 
 class Segmentation : NonCopyable
@@ -19,7 +21,8 @@ public:
 	void SetMorphEllipseSize(const cv::Size& mes);
 	void SetMorphRectSize(const cv::Size& mrs);
 
-	std::vector<RotatedRectangle> CreateRectangles();
+	std::vector<Rectangle> CreateRectangles();
+	std::vector<RotatedRectangle> CreateRotatedRectangles();
 
 private:
 	void Algorithm();

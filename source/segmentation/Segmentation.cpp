@@ -32,11 +32,26 @@ void Segmentation::SetMorphRectSize(const cv::Size& mrs)
 	morphRectSize = mrs;
 }
 
-std::vector<RotatedRectangle> Segmentation::CreateRectangles()
+std::vector<Rectangle> Segmentation::CreateRectangles()
 {
 	Algorithm();
 	size_t s = usedScale > 1 ? 1 << (usedScale - 1) : 1;
-	std::vector<RotatedRectangle> rectnagles;
+	std::vector<Rectangle> rectnagles;
+
+	for (int idx = 0; idx >= 0; idx = hierarchy[idx][0])
+	{
+		Rectangle rect = Rectangle(minAreaRect(contours[idx]));
+		rectnagles.push_back(rect * s);
+	}
+
+	return rectnagles;
+}
+
+std::vector<RotatedRectangle> Segmentation::CreateRotatedRectangles()
+{
+	Algorithm();
+	size_t s = usedScale > 1 ? 1 << (usedScale - 1) : 1;
+	std::vector<RotatedRectangle> rotatedRectangles;
 
 	for (int idx = 0; idx >= 0; idx = hierarchy[idx][0])
 	{
@@ -44,10 +59,12 @@ std::vector<RotatedRectangle> Segmentation::CreateRectangles()
 		cv::Point2f p[4];
 		rr.points(p);
 
-		rectnagles.push_back(RotatedRectangle(p[0], p[1], p[2], p[3]) * s);
+		std::cout << rr.size << std::endl;
+
+		rotatedRectangles.push_back(RotatedRectangle(p[0], p[1], p[2], p[3]) * s);
 	}
 
-	return rectnagles;
+	return rotatedRectangles;
 }
 
 void Segmentation::Algorithm()
