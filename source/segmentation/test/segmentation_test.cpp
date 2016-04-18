@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(Scan4)
     Segmentation testSeg;
     cv::Mat originalImage;
     cv::Size morphEllipseSize = cv::Size(7, 4);
-    cv::Size morphRectSize = cv::Size(5, 2);
+    cv::Size morphRectSize = cv::Size(30, 10);
     std::string path = ABSOLUTE_PATH;
     path = getPath(path);
     path = path + "Scan4.jpg";
