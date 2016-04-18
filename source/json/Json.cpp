@@ -272,7 +272,7 @@ std::ostream& operator<<(std::ostream& out, const Json& arg)
         break;
     }
     case Json::Type::String:
-        out << "\"" << *arg.value.string << "\"";
+        out << "\"" << Unescape(*arg.value.string) << "\"";
         break;
     case Json::Type::Boolean:
         out << std::boolalpha << arg.value.boolean;
