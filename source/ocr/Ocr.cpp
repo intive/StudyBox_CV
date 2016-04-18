@@ -59,7 +59,7 @@ std::string Ocr::getText()
 
 void Ocr::setRectangle(const Rectangle& rect)
 {
-    api.SetRectangle((int)rect.topLeft().x, (int)rect.topLeft().y, rect.size.width, rect.size.height);
+    api.SetRectangle((int)rect.topLeft().x, (int)rect.topLeft().y, (int)rect.size.width, (int)rect.size.height);
 }
 
 void Ocr::fixErrors(std::string& text)
