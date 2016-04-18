@@ -3,7 +3,10 @@
 
 #include <string>
 #include <opencv2/opencv.hpp>
+
+#define Rectangle IT_IS_VERY_ERRONEOUS
 #include <tesseract/baseapi.h>
+#undef Rectangle
 
 #include "../json/Json.hpp"
 #include "../segmentation/Rectangle.hpp"
