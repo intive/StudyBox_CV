@@ -14,7 +14,6 @@ RotatedRectangle::RotatedRectangle(const cv::Point2f& p1, const cv::Point2f& p2,
     , p3(p3)
     , p4(p4)
 {
-	RotatedRectangle();
 }
 
 const cv::Point2f& RotatedRectangle::P1() const
