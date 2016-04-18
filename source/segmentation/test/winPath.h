@@ -6,8 +6,8 @@ std::string getPath(std::string& path)
 {
     int charNumber = 0;
     std::string newPath = path;
-    int originalSize = path.length();
-    while(charNumber < originalSize)
+	size_t originalSize = path.length();
+    while((size_t)charNumber < originalSize)
     {
         if(path[charNumber] == '/')
         {
