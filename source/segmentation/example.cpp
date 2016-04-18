@@ -50,8 +50,8 @@ int example()
     // JSON test
     Json j =
     {
-	    { "status", 1 },
-	    { "coordinates", Json::Array(rectangles.begin(), rectangles.end()) }
+        { "status", 1 },
+        { "coordinates", Json::Array(rectangles.begin(), rectangles.end()) }
     };
 
     std::fstream file;
