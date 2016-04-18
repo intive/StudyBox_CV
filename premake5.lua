@@ -13,7 +13,7 @@ workspace 'StudyBox_CV'
         defines 'NDEBUG'
 
     filter 'action:vs*'
-        defines 'WIN32'
+        defines { 'WIN32', 'NOMINMAX' }
         platforms { 'Win32', 'x64' }
     filter 'action:not vs*'
         platforms { 'x32', 'x64' }
@@ -27,9 +27,9 @@ workspace 'StudyBox_CV'
         files {
             'source/**'
         }
-		excludes {
-		    '**/example.cpp'
-		}
+        excludes {
+            '**/example.cpp'
+        }
 
         filter 'test'
             kind 'ConsoleApp'
@@ -50,25 +50,33 @@ workspace 'StudyBox_CV'
                 'build/packages/opencv3.1.1.0/build/native/include',
                 'build/packages/boost.1.60.0.0/lib/native/include',
                 'build/packages/wastorage.v'..toolset..'.2.2.0/build/native/include',
-                'build/packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/build/native/include'
+                'build/packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/build/native/include',
+                'build/packages/leptonica.1.73/lib/native/include',
+                'build/packages/tesseract.3.04/lib/native/include'
             }
             libdirs {
                 'build/packages/opencv3.1.1.0/build/native/lib/%{cfg.platform}/v'..toolset..'/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
                 'build/packages/boost_unit_test_framework-vc'..toolset..'.1.60.0.0/lib/native/address-model-%{string.sub(cfg.platform, -2)}/lib',
                 'build/packages/wastorage.v'..toolset..'.2.2.0/lib/native/v'..toolset..'/%{cfg.platform}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
-                'build/packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}'
+                'build/packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
+                'build/packages/leptonica-vc'..toolset..'.1.73/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
+                'build/packages/tesseract-vc'..toolset..'.3.04/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}'
             }
             debugenvs {
                 'PATH=%PATH%;'..
                 '../packages/opencv3.1.redist.1.0/build/native/bin/%{cfg.platform}/v'..toolset..'/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
                 '../packages/boost_unit_test_framework-vc'..toolset..'.1.60.0.0/lib/native/address-model-%{string.sub(cfg.platform, -2)}/lib;'..
                 '../packages/wastorage.v'..toolset..'.2.2.0/lib/native/v'..toolset..'/%{cfg.platform}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
-                '../packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}'
+                '../packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
+                '../packages/leptonica-vc'..toolset..'.1.73/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
+                '../packages/tesseract-vc'..toolset..'.3.04/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}'
             }
 
             filter '*'
                 links {
-                    'wastorage'
+                    'wastorage',
+                    'liblept',
+                    'libtesseract'
                 }
             filter 'release or test'
                 links {
@@ -91,6 +99,8 @@ workspace 'StudyBox_CV'
                     'xcopy /Y "$(SolutionDir)packages\\boost_unit_test_framework-vc'..toolset..'.1.60.0.0\\lib\\native\\address-model-%{string.sub(cfg.platform, -2)}\\lib\\boost_unit_test_framework-vc'..toolset..'-mt-1_60.dll" "$(TargetDir)"',
                     'xcopy /Y "$(SolutionDir)packages\\wastorage.v'..toolset..'.2.2.0\\lib\\native\\v'..toolset..'\\%{cfg.platform}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\wastorage.dll" "$(TargetDir)"',
                     'xcopy /Y "$(SolutionDir)packages\\cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0\\lib\\native\\v'..toolset..'\\windesktop\\msvcstl\\dyn\\rt-dyn\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\cpprest140_2_7.dll" "$(TargetDir)"',
+                    'xcopy /Y "$(SolutionDir)packages\\leptonica-vc'..toolset..'.1.73\\lib\\native\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\liblept.dll"',
+                    'xcopy /Y "$(SolutionDir)packages\\tesseract-vc'..toolset..'.3.04\\lib\\native\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\libtesseract.dll"',
                     '"$(TargetDir)\\$(TargetName).exe" --result_code=no --report_level=short'
                 }
 
@@ -98,15 +108,45 @@ workspace 'StudyBox_CV'
             local config =
               [[<?xml version="1.0" encoding="utf-8"?>
                 <packages>
-                <package id="boost" version="1.60.0.0" targetFramework="native"/>
-                <package id="boost_unit_test_framework-vc]]..toolset..[[" version="1.60.0.0" targetFramework="native"/>
-                <package id="opencv3.1" version="1.0" targetFramework="native"/>
-                <package id="opencv3.1.redist" version="1.0" targetFramework="native"/>
-                <package id="wastorage.v]]..toolset..[[" version="2.2.0" targetFramework="native"/>
-                <package id="cpprestsdk.v]]..toolset..[[.windesktop.msvcstl.dyn.rt-dyn" version="2.7.0" targetFramework="native"/>
+                    <package id="boost" version="1.60.0.0" targetFramework="native"/>
+                    <package id="boost_unit_test_framework-vc140" version="1.60.0.0" targetFramework="native"/>
+                    <package id="opencv3.1" version="1.0" targetFramework="native"/>
+                    <package id="opencv3.1.redist" version="1.0" targetFramework="native"/>
+                    <package id="wastorage.v140" version="2.2.0" targetFramework="native"/>
+                    <package id="cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn" version="2.7.0" targetFramework="native"/>
+                    <package id="leptonica" version="1.73" targetFramework="native" />
+                    <package id="leptonica-vc140" version="1.73" targetFramework="native" />
+                    <package id="tesseract" version="3.04" targetFramework="native" />
+                    <package id="tesseract-vc140" version="3.04" targetFramework="native" />
                 </packages>]]
             file:write(config)
             file:close()
+
+            local file = assert(io.open('build/nuget.config', 'w'))
+            local path = string.gsub(os.getcwd(), '/', '\\')..'\\3rdparty\\'
+            local config =
+              [[<?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                    <disabledPackageSources>
+                        <add key="Microsoft and .NET" value="true" />
+                    </disabledPackageSources>
+                    <packageRestore>
+                        <add key="enabled" value="True" />
+                        <add key="automatic" value="True" />
+                    </packageRestore>
+                    <bindingRedirects>
+                        <add key="skip" value="False" />
+                    </bindingRedirects>
+                    <packageSources>
+                        <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
+                        <add key="studyboxcv" value="]]..path..[[" />
+                    </packageSources>
+                    <activePackageSource>
+                        <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+                    </activePackageSource>
+                </configuration>]]
+                file:write(config)
+                file:close()
         end
 
         if _ACTION == 'gmake' or
