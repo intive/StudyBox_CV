@@ -1,7 +1,7 @@
 #include "text2flashcard.h"
 #include <vector>
 
-void textToJson(std::string& txt)
+void textToJson(const std::string& txt)
 {
 	std::vector<Markers> markers = findQA(txt);
 	Json array = Json::Array();
