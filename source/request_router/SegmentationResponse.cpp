@@ -74,7 +74,6 @@ std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Ma
             status = Http::Response::Status::BadRequest;
             response["status"] = 2;
             response["error_description"] = "unrecognised action for segment api";
-            std::make_pair<std::string, int>(response.serialize(), static_cast<int>(status));
         }
         else
         {

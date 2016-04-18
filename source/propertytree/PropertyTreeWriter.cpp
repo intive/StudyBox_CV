@@ -16,7 +16,7 @@ std::string Unescape(const std::string& str)
         {
         case '\\': newstr.append("\\\\"); break;
         case '"':  newstr.append("\\\""); break;
-        case '/':  newstr.append("\\/"); break;
+        case '/':  newstr.append("/"); break;
         case '\b':  newstr.append("\\\b"); break;
         case '\f':  newstr.append("\\\f"); break;
         case '\n':  newstr.append("\\\n"); break;
