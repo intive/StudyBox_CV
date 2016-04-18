@@ -53,7 +53,7 @@ protected:
     void setRectangle(const Rectangle& rect);
 
     // Poprawia błędy korzystając z zdefiniowanego słownika
-    void fixErrors(std::string& text);
+    void fixErrors(std::string& text) const;
 
     const Json dict;
     cv::Point2i imageSize;

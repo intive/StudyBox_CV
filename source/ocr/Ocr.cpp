@@ -62,7 +62,7 @@ void Ocr::setRectangle(const Rectangle& rect)
     api.SetRectangle((int)rect.topLeft().x, (int)rect.topLeft().y, (int)rect.size.width, (int)rect.size.height);
 }
 
-void Ocr::fixErrors(std::string& text)
+void Ocr::fixErrors(std::string& text) const
 {
     const size_t end = std::string::npos;
 
