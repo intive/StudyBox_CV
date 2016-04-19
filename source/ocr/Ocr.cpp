@@ -1,5 +1,7 @@
 #include "Ocr.hpp"
 
+#include <memory>
+
 Ocr::Ocr(const std::string& datapath, const std::string& language, const std::string& dictpath)
     : dict(dictpath.empty() ? nullptr : Json::deserialize(dictpath))
 {
@@ -49,9 +51,8 @@ std::string Ocr::recognize(const cv::Mat& image, const Rectangle& rect)
 
 std::string Ocr::getText()
 {
-    char* buffer = api.GetUTF8Text();
-    std::string text(buffer);
-    delete[] buffer;
+    std::unique_ptr<char[]> buffer(api.GetUTF8Text());
+    std::string text(buffer.get());
     if (!dict.isNull())
         fixErrors(text);
     return text;
