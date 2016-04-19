@@ -13,7 +13,7 @@ workspace 'StudyBox_CV'
         defines 'NDEBUG'
 
     filter 'action:vs*'
-        defines { 'WIN32', 'NOMINMAX' }
+        defines { 'WIN32', 'NOMINMAX', 'NOGDI' }
         platforms { 'Win32', 'x64' }
     filter 'action:not vs*'
         platforms { 'x32', 'x64' }
