@@ -12,8 +12,11 @@ class Ocr
 {
 public:
     // Inicjalizuje silnik przy użyciu podanych wyuczonych danych i językach
-    // Można wybrać kilka języków łącząc je znakiem plusa np. "pol+eng" (domyślnie)
-    // Można opcjonalnie dodać słownik poprawiający zdefiniowane błędy
+    // Zmienna datapath powinna wskazywać na KATALOG (najczęściej "tessdata") z danymi wyuczonymi (".traineddata")
+    // Można wybrać kilka języków łącząc je znakiem plusa np. "pol+eng" (domyślnie),
+    // kody języków można wywnioskować z nazw plików z danymi wyuczonymi (".traineddata")
+    // Można opcjonalnie dodać słownik poprawiający zdefiniowane błędy korzystając z ustalonego formatu json,
+    // czyli listy obiektów, gdzie nazwą jest tekst poprawny, a wartością jest lista z tekstami błędnymi
     Ocr(const std::string& datapath, const std::string& language = "pol+eng", const std::string& dictpath = "");
 
     // Destruktor
