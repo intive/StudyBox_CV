@@ -566,13 +566,13 @@ Tcp::Socket Tcp::EndpointImplementation::connect(StreamServiceInterface & servic
         if (fd == -1)
             continue;
 
-        if (::connect(fd, s->ai_addr, (int)s->ai_addrlen) == -1)
+        if (::connect(fd, s->ai_addr, s->ai_addrlen) == -1)
         {
-            SocketImplementation(service, (int)fd); // zamyka połączenie
+            SocketImplementation(service, fd); // zamyka połączenie
         }
         else
         {
-            return Socket(std::unique_ptr<SocketInterface>(new SocketImplementation(service, (int)fd)));
+            return Socket(std::unique_ptr<SocketInterface>(new SocketImplementation(service, fd)));
         }
     }
 
