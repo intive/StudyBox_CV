@@ -9,6 +9,7 @@
 #include <fstream>
 
 #include "../utility/GetExePath.h"
+#include "RestApiLiterals.h"
 
 namespace {
 
@@ -26,7 +27,6 @@ namespace {
     {
         Segmentation segmentation;
         segmentation.SetImage(image);
-        
         SetSegmentationParameters(segmentation);
         
         auto rectangles = segmentation.CreateRectangles();
@@ -41,19 +41,19 @@ namespace {
     void CreateBadRequestError(Http::Response::Status& status, Json& response, const std::string& errorMessage)
     {
         status = Http::Response::Status::BadRequest;
-        response["status"] = 2;
-        response["error_description"] = errorMessage;
+        response[Rest::Response::STATUS] = 2;
+        response[Rest::Response::ERROR_DESCRIPTION] = errorMessage;
     }
 }
 
-cv::Mat GetImageLocal(const std::string & path)
+cv::Mat GetImageLocal(const std::string& path)
 {
     return cv::imread(GetExePath() + path);
 }
 
 cv::Mat GetImageFromAzure(const std::string& url)
 {
-    AzureStorageManager manager(GetExePath() + "keys.txt");
+    AzureStorageManager manager(GetExePath() + Rest::Azure::AZURE_KEY_RELATIVE_PATH);
     auto buffer = manager.downloadToBuffer(url);
     return cv::imdecode(cv::Mat(1, buffer.size(), CV_8UC1, buffer.data()), 1);
 }
@@ -66,20 +66,20 @@ std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Ma
     {
         Json request = Json::deserialize(body);
 
-        std::string url = request["url"];
-        std::string action = request["action"];
+        std::string url = request[Rest::Request::URL];
+        std::string action = request[Rest::Request::ACTION];
 
-        if (action != "Segmentation") // "action" jest niezgodne z api.
+        if (action != Rest::Request::SEGMENTATION_ACTION) // "action" jest niezgodne z api.
         {
             status = Http::Response::Status::BadRequest;
-            response["status"] = 2;
-            response["error_description"] = "unrecognised action for segment api";
+            response[Rest::Response::STATUS] = 2;
+            response[Rest::Response::ERROR_DESCRIPTION] = "unrecognised action for segment api";
         }
         else
         {
             auto image = GetImageByUrl(url);
-            response["coordinates"] = GetSegmentsByImage(image);
-            response["status"] = static_cast<int>(response["coordinates"].size() > 0);
+            response[Rest::Response::SEGMENTATION_COORDINATES] = GetSegmentsByImage(image);
+            response[Rest::Response::STATUS] = static_cast<int>(response[Rest::Response::SEGMENTATION_COORDINATES].size() > 0);
             status = Http::Response::Status::Ok;
         }
 
@@ -117,7 +117,7 @@ std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Ma
 
 void registerSegmentationResponse(Router::RequestRouter& router)
 {
-    router.registerEndPointService("/api/segment", [](const std::string& body)
+    router.registerEndPointService(Rest::Endpoint::SEGMENTATION_ENDPOINT, [](const std::string& body)
     {
         return SegmentationResponse(body, GetImageFromAzure);
     });
