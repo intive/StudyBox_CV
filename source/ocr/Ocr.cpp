@@ -3,7 +3,7 @@
 #include <memory>
 
 Ocr::Ocr(const std::string& datapath, const std::string& language, const std::string& dictpath)
-    : dict(dictpath.empty() ? nullptr : Json::deserialize(dictpath))
+    : dict(dictpath.empty() ? Json(nullptr) : Json::deserialize(dictpath))
 {
     if (api.Init(datapath.c_str(), language.c_str()))
     {
