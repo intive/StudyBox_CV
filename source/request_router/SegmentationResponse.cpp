@@ -32,7 +32,7 @@ namespace {
         auto rectangles = segmentation.CreateRectangles();
         
         std::vector<Json> rectangleJson(rectangles.size());
-        std::transform(rectangles.begin(), rectangles.end(), rectangleJson.begin(), [](const RotatedRectangle& r) { return static_cast<Json>(r); });
+        std::transform(rectangles.begin(), rectangles.end(), rectangleJson.begin(), [](const decltype(rectangles)::value_type& r) { return static_cast<Json>(r); });
         auto result = Json(rectangleJson);
 
         return result;
