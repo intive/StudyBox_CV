@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(OneSentence1)
 	testing = findQA("?Tak było.");
 	BOOST_REQUIRE(testing.size() == 1);
 	Markers a = testing[0];
-	BOOST_CHECK(a.getStart() == 0);
-	BOOST_CHECK(a.getEnd() == 9);
+	BOOST_CHECK(a.getStart() == 1);
+	BOOST_CHECK(a.getEnd() == 10);
 	BOOST_CHECK(a.getType() == answer);
 }

@@ -1,6 +1,5 @@
 #include "PropertyTreeReader.h"
 #include "PropertyTree.h"
-#include <iostream>
 
 namespace {
 
@@ -727,6 +726,10 @@ bool ReadJsonImpl(std::istream& stream, PropertyTree& tree, const std::string& t
             if (!ReadJsonValue(stream, tree, ""))
                 return false;
         }
+        else if (!IsWhitespace(c))
+        {
+            return false;
+        }
 
         c = TrimWhitespace(stream);
 
@@ -741,6 +744,7 @@ bool ReadJsonImpl(std::istream& stream, PropertyTree& tree, const std::string& t
 
 void ReadJson(PropertyTree& tree, std::istream& stream)
 {
-    if (!ReadJsonImpl(stream, tree))
+    auto res = stream.rdbuf()->in_avail();
+    if (!stream.rdbuf()->in_avail() || !ReadJsonImpl(stream, tree))
         throw std::range_error("stream does not contain valid json");
 }
