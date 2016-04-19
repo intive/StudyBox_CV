@@ -145,10 +145,10 @@ void Deduce(const PropertyTree& tree, ToObject&& toObject, ToArray&& toArray, Fu
     }
 }
 
-std::vector<Json> ToJsonArrayImpl(const PropertyTree& tree);
-Json ToJsonObjectImpl(const PropertyTree& tree)
+Json::Array ToJsonArrayImpl(const PropertyTree& tree);
+Json::Object ToJsonObjectImpl(const PropertyTree& tree)
 {
-    Json object;
+    Json::Object object;
     AddToJson func;
     for (auto& subtree : tree)
     {
@@ -157,9 +157,9 @@ Json ToJsonObjectImpl(const PropertyTree& tree)
     return object;
 }
 
-std::vector<Json> ToJsonArrayImpl(const PropertyTree& tree)
+Json::Array ToJsonArrayImpl(const PropertyTree& tree)
 {
-    std::vector<Json> array;
+    Json::Array array;
     AddToJson func;
     for (auto& subtree : tree)
     {
@@ -175,5 +175,7 @@ Json ToJsonObject(const PropertyTree & tree)
 {
     if (tree.type() == PropertyTree::Object)
         return ToJsonObjectImpl(tree);
+    else if (tree.type() == PropertyTree::Array)
+        return ToJsonArrayImpl(tree);
     throw std::range_error("tree does not contain valid json");
 }
