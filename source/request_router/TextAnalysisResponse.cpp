@@ -64,12 +64,12 @@ std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
 
 	catch (const std::exception& e) // nierozpoznany b³¹d
 	{
-		CreateBadRequestError(status, response, std::string("server could not handle segmentation request, reason: ") + e.what());
+		CreateBadRequestError(status, response, std::string("server could not handle request, reason: ") + e.what());
 		status = Http::Response::Status::InternalServerError;
 	}
 	catch (...) // nierozpoznany b³¹d (bez diagnostyki)
 	{
-		CreateBadRequestError(status, response, "server could not handle segmentation request, error unkown");
+		CreateBadRequestError(status, response, "server could not handle request, error unkown");
 		status = Http::Response::Status::InternalServerError;
 	}
 
