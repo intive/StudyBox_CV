@@ -21,14 +21,14 @@ std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
 	{
 		Json request = Json::deserialize(body);
 
-		std::string text_for_analysis = request["jakis tekst do analizy?"];
+		std::string text_for_analysis = request["text_for_analysis"];
 		
 
-		if (text_for_analysis == "") // "text_for_analysis jest pusty
+		if (text_for_analysis.empty()) // "text_for_analysis jest pusty
 		{
 			status = Http::Response::Status::BadRequest;
 			response["status"] = 0;
-			response["error_message"] = "Nie mo¿na by³o przeanalizowaæ tekstu";
+			response["error_message"] = "Nie moÂ¿na byÂ³o przeanalizowaÃ¦ tekstu";
 			std::make_pair<std::string, int>(response.serialize(), static_cast<int>(status));
 		}
 		else
@@ -62,12 +62,12 @@ std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
 	}
 
 
-	catch (const std::exception& e) // nierozpoznany b³¹d
+	catch (const std::exception& e) // nierozpoznany bÂ³Â¹d
 	{
 		CreateBadRequestError(status, response, std::string("server could not handle segmentation request, reason: ") + e.what());
 		status = Http::Response::Status::InternalServerError;
 	}
-	catch (...) // nierozpoznany b³¹d (bez diagnostyki)
+	catch (...) // nierozpoznany bÂ³Â¹d (bez diagnostyki)
 	{
 		CreateBadRequestError(status, response, "server could not handle segmentation request, error unkown");
 		status = Http::Response::Status::InternalServerError;
