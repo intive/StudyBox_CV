@@ -2,11 +2,6 @@
 #define IMAGETOTEXT_H
 
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include "../ocr/Ocr.hpp"
-#include "../segmentation/Segmentation.hpp"
-#include <opencv2/imgproc/imgproc.hpp>
 
 /// Czytanie tekstu z obrazu
 /**
@@ -15,7 +10,7 @@
 * return string odczytany z obrazu tekst
 */
 //std::string imageToText(const cv::Mat& image);
-void imageToText(const cv::Mat& image);
+std::string imageToText(const std::string& address);
 
 /// Binaryzacja obrazu 
 /**
