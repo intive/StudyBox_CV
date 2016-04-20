@@ -107,7 +107,7 @@ namespace
 
 namespace Utility
 {
-    void fetchData(vector<unsigned char>& buffer, function<int(Tcp::Buffer&)> func)
+    void fetchData(vector<unsigned char>& buffer, function<int(pair<char*, int>&)> func)
     {
         array<char, 1024> b = { 0 };
         Tcp::Buffer tb = Tcp::MakeBuffer(b);
