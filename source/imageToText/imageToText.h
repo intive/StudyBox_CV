@@ -17,7 +17,7 @@
 //std::string imageToText(const cv::Mat& image);
 void imageToText(const cv::Mat& image);
 
-/// Binaryzacja obrazu
+/// Binaryzacja obrazu 
 /**
 * Przygotowywanie obrazu do odczytywania z niego tekstu
 * param image obraz do obrobienia
