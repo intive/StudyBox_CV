@@ -76,7 +76,7 @@ std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
 	return std::make_pair(response.serialize(), static_cast<int>(status));
 }
 
-void registerSegmentationResponse(Router::RequestRouter& router)
+void registerTextAnalysisResponse(Router::RequestRouter& router)
 {
 	router.registerEndPointService("/api/analysis", [](const std::string& body)
 	{
