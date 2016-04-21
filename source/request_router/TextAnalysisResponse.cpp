@@ -1,6 +1,7 @@
-#include "RequestRouter.h"
+﻿#include "RequestRouter.h"
 #include "../textanalysis/text_analysis.h"
 #include "../json/Json.hpp"
+
 
 #include <algorithm>
 #include <sstream>
@@ -9,8 +10,16 @@
 #include <iostream>
 #include <fstream>
 
+#include "RestApiLiterals.h"
 
 
+
+	void CreateBadRequestError(Http::Response::Status& status, Json& response, const std::string& errorMessage)
+	{
+		status = Http::Response::Status::BadRequest;
+		response[Rest::Response::STATUS] = 2;
+		response[Rest::Response::ERROR_DESCRIPTION] = errorMessage;
+	}
 
 
 std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
@@ -21,38 +30,45 @@ std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
 	{
 		Json request = Json::deserialize(body);
 
-		std::string text_for_analysis = request["text_for_analysis"];
-		
+		std::string text_for_analysis = "text_for_analysis";
+
 
 		if (text_for_analysis.empty()) // "text_for_analysis jest pusty
 		{
 			status = Http::Response::Status::BadRequest;
 			response["status"] = 0;
-			response["error_message"] = "Nie mo¿na by³o przeanalizowaæ tekstu";
+			response["error_message"] = "Nie można było przeanalizować tekstu";
 			std::make_pair<std::string, int>(response.serialize(), static_cast<int>(status));
 		}
 		else
 		{
-			std::vector <Markers> v_text;
-			v_text = findQA(text);
-			
-			
-			if (!v_text.empty())
-			{
-				std::vector <int> result;
-				for (int i = 0; i < v_text.size(); i++)
-				{
-					result.push_back(v_text[i].getStart());
-					result.push_back(v_text[i].getEnd());
-					result.push_back(v_text[i].getType());
-					result.push_back(v_text[i].getEnd());
-					result.push_back(v_text[i].getPercentageChance());
-				}
+			const std::string begin = "begin";
+			const std::string end = "end";
+			const std::string type = "type";
+			const std::string percentage_chance = "percentage_chance";
+			std::vector <Markers> markers;
+			markers = findQA(text_for_analysis);
 
-				std::ostringstream convert_text;
-				copy(result.begin(), result.end() - 1,std::ostream_iterator<int>(convert_text, " "));
-				convert_text << result.back();
-				std::string results = convert_text.str();
+
+			if (!markers.empty())
+			{
+				Json result = Json::Array();
+				for (auto i = 0; i < markers.size(); i++)
+				{
+					Json object = {
+						{ begin , markers[i].getStart() },
+						{ end , markers[i].getEnd() },
+						{ type , (int)markers[i].getType() },
+						{ percentage_chance , markers[i].getPercentageChance() }
+					};
+					result.push_back(object);
+				}
+				
+				Json final = {
+					{ "result" , result }
+				};
+				
+				std::string results = final.serialize();
 				response["results"] = results;
 				response["status"] = static_cast<int>(response["results"].size() > 0);
 				status = Http::Response::Status::Ok;
@@ -62,12 +78,12 @@ std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
 	}
 
 
-	catch (const std::exception& e) // nierozpoznany b³¹d
+	catch (const std::exception& e) // nierozpoznany błąd
 	{
 		CreateBadRequestError(status, response, std::string("server could not handle request, reason: ") + e.what());
 		status = Http::Response::Status::InternalServerError;
 	}
-	catch (...) // nierozpoznany b³¹d (bez diagnostyki)
+	catch (...) // nierozpoznany błąd (bez diagnostyki)
 	{
 		CreateBadRequestError(status, response, "server could not handle request, error unkown");
 		status = Http::Response::Status::InternalServerError;
