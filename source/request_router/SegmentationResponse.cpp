@@ -55,7 +55,7 @@ cv::Mat GetImageFromAzure(const std::string& url)
 {
     AzureStorageManager manager(GetExePath() + Rest::Azure::AZURE_KEY_RELATIVE_PATH);
     auto buffer = manager.downloadToBuffer(url);
-    return cv::imdecode(cv::Mat(1, buffer.size(), CV_8UC1, buffer.data()), 1);
+    return cv::imdecode(cv::Mat(1, static_cast<int>(buffer.size()), CV_8UC1, buffer.data()), 1);
 }
 
 std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Mat (*GetImageByUrl)(const std::string&))
