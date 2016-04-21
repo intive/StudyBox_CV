@@ -4,11 +4,10 @@
 
 #include <cstdint>
 
-namespace {
-
 std::string Unescape(const std::string& str)
 {
     std::string newstr;
+
     for (auto it = str.begin(); it != str.end(); ++it)
     {
         char current = *it;
@@ -16,7 +15,7 @@ std::string Unescape(const std::string& str)
         {
         case '\\': newstr.append("\\\\"); break;
         case '"':  newstr.append("\\\""); break;
-        case '/':  newstr.append("\\/"); break;
+        case '/':  newstr.append("/"); break;
         case '\b':  newstr.append("\\\b"); break;
         case '\f':  newstr.append("\\\f"); break;
         case '\n':  newstr.append("\\\n"); break;
@@ -29,6 +28,8 @@ std::string Unescape(const std::string& str)
 
     return newstr;
 }
+
+namespace {
 
 void WriteJsonImpl(const PropertyTree& tree, std::ostream& stream, bool whitespace, int indent = 1)
 {

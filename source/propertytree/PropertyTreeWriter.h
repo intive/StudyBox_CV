@@ -5,6 +5,8 @@
 
 class PropertyTree;
 
+std::string Unescape(const std::string& input);
+
 /// Dokonuje zapisu drzewa tree do strumienia stream.
 /**
  * @param whitespace true jeżeli przy tworzeniu reprezentacji JSON
