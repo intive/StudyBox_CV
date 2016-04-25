@@ -1,7 +1,7 @@
 #include "text2flashcard.h"
 #include <vector>
 
-std::string textToJson(const std::string& txt)
+Json textToFlashcardJson(const std::string& txt)
 {
     
     const std::string begin = "begin";
@@ -28,7 +28,5 @@ std::string textToJson(const std::string& txt)
         { "result" , array }
     };
 
-    //serializacja do stringa (stringu?)
-    std::string output=final.serialize();
-    return output;
+    return final;
 }
