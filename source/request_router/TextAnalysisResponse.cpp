@@ -1,4 +1,6 @@
-﻿#include "RequestRouter.h"
+#include "RequestRouter.h"
+#include "../httpserver/Server.h"
+#include "../httpserver/Socket.h"
 #include "../textanalysis/text_analysis.h"
 #include "../json/Json.hpp"
 
@@ -98,4 +100,24 @@ void registerTextAnalysisResponse(Router::RequestRouter& router)
 	{
 		return TextAnalysisResponse(body);
 	});
+}
+
+void routerExample()
+{
+    Router::RequestRouter router;
+    registerTextAnalysisResponse(router);
+
+    try
+    {
+        Http::Server server("0.0.0.0", "8080", [&router](const Http::Request& r)
+        {
+            return router.routeRequest(r);
+        });
+
+        server.run();
+    }
+    catch (const Tcp::SocketError& e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
 }
