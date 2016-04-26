@@ -2,6 +2,7 @@
 #define TEXT_ANALYSIS_RESPONSE_H
 
 #include <string>
+#include <utility>
 
 namespace Router {
 	class RequestRouter;
