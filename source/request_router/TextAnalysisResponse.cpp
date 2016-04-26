@@ -30,7 +30,7 @@ std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
 	{
 		Json request = Json::deserialize(body);
 
-		std::string text_for_analysis = "text_for_analysis";
+		std::string text_for_analysis = request["text_for_analysis"];
 
 
 		if (text_for_analysis.empty()) // "text_for_analysis jest pusty
