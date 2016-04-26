@@ -20,7 +20,7 @@ struct FuncObj
 class TestRouter : public Router::RequestRouter
 {
 public:
-    unsigned long size() { return services.size(); }
+    size_t size() { return services.size(); }
 };
 
 
