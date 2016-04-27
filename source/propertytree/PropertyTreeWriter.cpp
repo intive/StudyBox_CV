@@ -16,11 +16,11 @@ std::string Unescape(const std::string& str)
         case '\\': newstr.append("\\\\"); break;
         case '"':  newstr.append("\\\""); break;
         case '/':  newstr.append("/"); break;
-        case '\b':  newstr.append("\\\b"); break;
-        case '\f':  newstr.append("\\\f"); break;
-        case '\n':  newstr.append("\\\n"); break;
-        case '\r':  newstr.append("\\\r"); break;
-        case '\t':  newstr.append("\\\t"); break;
+        case '\b':  newstr.append("\\b"); break;
+        case '\f':  newstr.append("\\f"); break;
+        case '\n':  newstr.append("\\n"); break;
+        case '\r':  newstr.append("\\r"); break;
+        case '\t':  newstr.append("\\t"); break;
         default:
             newstr.push_back(current);
         }
