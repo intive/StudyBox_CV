@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(Scan5)
     cv::Size morphRectSize = cv::Size(5, 2);
     std::string path = ABSOLUTE_PATH;
     path = getPath(path);
-    path = path + "testImage2Grid.jpeg";
+    path = path + "Scan5.jpg";
     originalImage = cv::imread(path);
     BOOST_REQUIRE(originalImage.data != NULL);
     testSeg.SetImage(originalImage);
