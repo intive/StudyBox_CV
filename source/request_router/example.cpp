@@ -3,6 +3,7 @@
 #include "../httpserver/Server.h"
 #include "../httpserver/Socket.h"
 #include "RequestRouter.h"
+#include "TextAnalysisRespose.h"
 
 
 void registerServicesExample(Router::RequestRouter& router)
@@ -17,7 +18,7 @@ void registerServicesExample(Router::RequestRouter& router)
 void routerExample()
 {
     Router::RequestRouter router;
-    registerServicesExample(router);
+    registerTextAnalysisResponse(router);
 
     try
     {
