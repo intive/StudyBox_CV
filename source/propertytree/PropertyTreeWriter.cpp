@@ -139,7 +139,7 @@ void Deduce(const PropertyTree& tree, ToObject&& toObject, ToArray&& toArray, Fu
     case PropertyTree::Value: DeduceNumericType(tree, func, std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
     case PropertyTree::Boolean: func(tree.get<bool>(), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
     case PropertyTree::Null: func(nullptr, std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
-    case PropertyTree::String: func(Unescape(tree.get<std::string>()), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
+    case PropertyTree::String: func(tree.get<std::string>(), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
     case PropertyTree::Array: func(toArray(tree), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
     case PropertyTree::Object: func(toObject(tree), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
     }
