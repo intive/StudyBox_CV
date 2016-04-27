@@ -66,12 +66,8 @@ std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
 					result.push_back(object);
 				}
 				
-				Json final = {
-					{ "result" , result }
-				};
 				
-				std::string results = final.serialize();
-				response["results"] = results;
+				response["results"] = result;
 				response["status"] = static_cast<int>(response["results"].size() > 0);
 				status = Http::Response::Status::Ok;
 			}
@@ -102,22 +98,3 @@ void registerTextAnalysisResponse(Router::RequestRouter& router)
 	});
 }
 
-void routerExample()
-{
-    Router::RequestRouter router;
-    registerTextAnalysisResponse(router);
-
-    try
-    {
-        Http::Server server("0.0.0.0", "8080", [&router](const Http::Request& r)
-        {
-            return router.routeRequest(r);
-        });
-
-        server.run();
-    }
-    catch (const Tcp::SocketError& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-}
