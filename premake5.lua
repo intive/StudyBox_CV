@@ -163,7 +163,6 @@ workspace 'StudyBox_CV'
                 'ssl',
                 'crypto',
                 'cpprest',
-                'azurestorage',
                 'opencv_core',
                 'opencv_imgproc',
                 'opencv_highgui',
@@ -248,34 +247,6 @@ workspace 'StudyBox_CV'
                 file:close()
                 os.execute('sudo chmod +x '..tmp..'; sudo '..tmp)
                 os.execute('sudo rm -rf /opt/rest /opt/rest.tar.gz '..tmp)
-            end
-
-            if os.execute('sudo stat /usr/local/lib/libazurestorage.so.2.2 > /dev/null 2>&1') ~= 0 then
-                print('Setting up "Azure"')
-                local tmp = os.tmpname()
-                local file = assert(io.open(tmp, 'w'))
-                file:write([[
-                    #!/bin/bash
-                    set -e
-                    apt-get --yes update
-                    apt-get --yes --force-yes install g++-4.8 g++ git make libssl-dev cmake libxml++2.6-dev libxml++2.6-doc uuid-dev
-                    cd /opt ; wget -O azure.tar.gz https://github.com/Azure/azure-storage-cpp/archive/v2.2.0.tar.gz
-                    mkdir azure ; tar -zxvf azure.tar.gz -C azure --strip-components 1
-                    cd azure/Microsoft.WindowsAzure.Storage
-                    for config in debug release
-                    do
-                        mkdir build_$config ; cd build_$config
-                        cmake -D CMAKE_BUILD_TYPE=$config -D CMAKE_INSTALL_PREFIX=/usr/local ..
-                        make
-                        mv -v Binaries/* /usr/local/lib/ ; cd ..
-                    done
-                    cp -r includes/was /usr/local/include/
-                    cp -r includes/wascore /usr/local/include/
-                    ldconfig
-                ]])
-                file:close()
-                os.execute('sudo chmod +x '..tmp..'; sudo '..tmp)
-                os.execute('sudo rm -rf /opt/azure /opt/azure.tar.gz '..tmp)
             end
 
             if os.execute('sudo stat /usr/local/lib/libtesseract.so > /dev/null 2>&1') ~= 0 then
