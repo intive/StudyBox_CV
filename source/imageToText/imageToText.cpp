@@ -18,16 +18,15 @@ std::string imageToText(const std::string& address)
     std::string text;
     cv::Mat textImage;
     textImage = cv::imread(tmpName);
-    textImage = binarizeImage(textImage);
+    //textImage = binarizeImage(textImage);
     Segmentation seg;
     seg.SetImage(textImage);
     seg.ScaleImage(2);
     seg.SetMorphEllipseSize(cv::Size(7, 4)); // dane bêd¹ modyfikowalne
     seg.SetMorphRectSize(cv::Size(30, 15));
     std::vector<Rectangle> rectangles = seg.CreateRectangles();
-    //std::string pathToData = ABSOLUTE_PATH;
-    //pathToData = pathToData + "C:\\Users\\Mateusz\\Documents\\Visual Studio 2015\\Projects\\blstream\\StudyBox_CV\\res\\tessdata";
-    //cv::cvtColor(imgg, imgg, CV_BGR2GRAY);
+
+    textImage = binarizeImage(textImage);
      Ocr *ocr = new Ocr("C:\\Users\\Mateusz\\Documents\\Visual Studio 2015\\Projects\\blstream\\StudyBox_CV\\res\\tessdata");
      ocr->setImage(textImage);
      for (size_t i = 0; i < rectangles.size();i++)
@@ -45,15 +44,9 @@ cv::Mat binarizeImage(const cv::Mat& image)
     cv::Mat img2;
     if (image.empty())
         return image;
-    /*if (image.empty())
-        cv::imwrite("output2.jpg", image);
-    else if (image.channels() > 1)
-        cv::cvtColor(image, img, CV_BGR2GRAY);
-    else img = image;
-    img2 = img.clone();*/
     img = image;
     cv::cvtColor(img, img2, cv::COLOR_BGR2GRAY);
-    cv::threshold(img2, img2, 150, 255, CV_THRESH_BINARY); // proba wywolania zwraca pusty obraz
+    cv::threshold(img2, img2, 150, 255, CV_THRESH_BINARY);
     //cv::adaptiveThreshold(img, img, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 11, 2);
     //cv::adaptiveThreshold(image,img, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 11, 2);
     return img2;
