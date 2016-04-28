@@ -1,4 +1,4 @@
-﻿#ifdef TEXT_ANALYSIS_RESPONSE_H
+#ifndef TEXT_ANALYSIS_RESPONSE_H
 #define TEXT_ANALYSIS_RESPONSE_H
 
 #include <string>
