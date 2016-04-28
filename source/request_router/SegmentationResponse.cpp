@@ -2,7 +2,6 @@
 #include "RequestRouter.h"
 #include "../segmentation/Segmentation.hpp"
 #include "../json/Json.hpp"
-#include "../storage/AzureStorageManager.h"
 
 #include <algorithm>
 #include <iostream>
@@ -51,13 +50,6 @@ cv::Mat GetImageLocal(const std::string& path)
     return cv::imread(GetExePath() + path);
 }
 
-cv::Mat GetImageFromAzure(const std::string& url)
-{
-    AzureStorageManager manager(GetExePath() + Rest::Azure::AZURE_KEY_RELATIVE_PATH);
-    auto buffer = manager.downloadToBuffer(url);
-    return cv::imdecode(cv::Mat(1, static_cast<int>(buffer.size()), CV_8UC1, buffer.data()), 1);
-}
-
 std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Mat (*GetImageByUrl)(const std::string&))
 {
     Json response;
@@ -97,10 +89,6 @@ std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Ma
     {
         CreateBadRequestError(status, response, "request body could not be read as valid json");
     }
-    catch (const AzureStorageError& e) // problem z chmurą azure
-    {
-        CreateBadRequestError(status, response, std::string("azure storage error: ") + e.what());
-    }
     catch (const std::exception& e) // nierozpoznany błąd
     {
         CreateBadRequestError(status, response, std::string("server could not handle segmentation request, reason: ") + e.what());
@@ -119,6 +107,6 @@ void registerSegmentationResponse(Router::RequestRouter& router)
 {
     router.registerEndPointService(Rest::Endpoint::SEGMENTATION_ENDPOINT, [](const std::string& body)
     {
-        return SegmentationResponse(body, GetImageFromAzure);
+        return SegmentationResponse(body, GetImageLocal);
     });
 }

@@ -49,16 +49,12 @@ workspace 'StudyBox_CV'
             includedirs {
                 'build/packages/opencv3.1.1.0/build/native/include',
                 'build/packages/boost.1.60.0.0/lib/native/include',
-                'build/packages/wastorage.v'..toolset..'.2.2.0/build/native/include',
-                'build/packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/build/native/include',
                 'build/packages/leptonica.1.73/lib/native/include',
                 'build/packages/tesseract.3.04/lib/native/include'
             }
             libdirs {
                 'build/packages/opencv3.1.1.0/build/native/lib/%{cfg.platform}/v'..toolset..'/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
                 'build/packages/boost_unit_test_framework-vc'..toolset..'.1.60.0.0/lib/native/address-model-%{string.sub(cfg.platform, -2)}/lib',
-                'build/packages/wastorage.v'..toolset..'.2.2.0/lib/native/v'..toolset..'/%{cfg.platform}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
-                'build/packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
                 'build/packages/leptonica-vc'..toolset..'.1.73/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
                 'build/packages/tesseract-vc'..toolset..'.3.04/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}'
             }
@@ -66,26 +62,21 @@ workspace 'StudyBox_CV'
                 'PATH=%PATH%;'..
                 '../packages/opencv3.1.redist.1.0/build/native/bin/%{cfg.platform}/v'..toolset..'/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
                 '../packages/boost_unit_test_framework-vc'..toolset..'.1.60.0.0/lib/native/address-model-%{string.sub(cfg.platform, -2)}/lib;'..
-                '../packages/wastorage.v'..toolset..'.2.2.0/lib/native/v'..toolset..'/%{cfg.platform}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
-                '../packages/cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
                 '../packages/leptonica-vc'..toolset..'.1.73/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
                 '../packages/tesseract-vc'..toolset..'.3.04/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}'
             }
 
             filter '*'
                 links {
-                    'wastorage',
                     'liblept',
                     'libtesseract'
                 }
             filter 'release or test'
                 links {
-                    'cpprest140_2_7',
                     'opencv_world310',
                 }
             filter 'debug'
                 links {
-                    'cpprest140d_2_7',
                     'opencv_world310d'
                 }
             filter 'test'
@@ -97,8 +88,6 @@ workspace 'StudyBox_CV'
                 postbuildcommands {
                     'xcopy /Y "$(SolutionDir)packages\\opencv3.1.redist.1.0\\build\\native\\bin\\%{cfg.platform}\\v'..toolset..'\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\opencv_world310.dll" "$(TargetDir)"',
                     'xcopy /Y "$(SolutionDir)packages\\boost_unit_test_framework-vc'..toolset..'.1.60.0.0\\lib\\native\\address-model-%{string.sub(cfg.platform, -2)}\\lib\\boost_unit_test_framework-vc'..toolset..'-mt-1_60.dll" "$(TargetDir)"',
-                    'xcopy /Y "$(SolutionDir)packages\\wastorage.v'..toolset..'.2.2.0\\lib\\native\\v'..toolset..'\\%{cfg.platform}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\wastorage.dll" "$(TargetDir)"',
-                    'xcopy /Y "$(SolutionDir)packages\\cpprestsdk.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.2.7.0\\lib\\native\\v'..toolset..'\\windesktop\\msvcstl\\dyn\\rt-dyn\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\cpprest140_2_7.dll" "$(TargetDir)"',
                     'xcopy /Y "$(SolutionDir)packages\\leptonica-vc'..toolset..'.1.73\\lib\\native\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\liblept.dll"',
                     'xcopy /Y "$(SolutionDir)packages\\tesseract-vc'..toolset..'.3.04\\lib\\native\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\libtesseract.dll"',
                     '"$(TargetDir)\\$(TargetName).exe" --result_code=no --report_level=short'
@@ -112,8 +101,6 @@ workspace 'StudyBox_CV'
                     <package id="boost_unit_test_framework-vc140" version="1.60.0.0" targetFramework="native"/>
                     <package id="opencv3.1" version="1.0" targetFramework="native"/>
                     <package id="opencv3.1.redist" version="1.0" targetFramework="native"/>
-                    <package id="wastorage.v140" version="2.2.0" targetFramework="native"/>
-                    <package id="cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn" version="2.7.0" targetFramework="native"/>
                     <package id="leptonica" version="1.73" targetFramework="native" />
                     <package id="leptonica-vc140" version="1.73" targetFramework="native" />
                     <package id="tesseract" version="3.04" targetFramework="native" />
@@ -162,8 +149,6 @@ workspace 'StudyBox_CV'
             links {
                 'ssl',
                 'crypto',
-                'cpprest',
-                'azurestorage',
                 'opencv_core',
                 'opencv_imgproc',
                 'opencv_highgui',
@@ -223,59 +208,6 @@ workspace 'StudyBox_CV'
                 file:close()
                 os.execute('sudo chmod +x '..tmp..'; sudo '..tmp)
                 os.execute('sudo rm -rf /opt/boost /opt/boost.tar.gz '..tmp)
-            end
-
-            if os.execute('sudo stat /usr/local/lib/libcpprest.so.2.7 > /dev/null 2>&1') ~= 0 then
-                print('Setting up "Rest"')
-                local tmp = os.tmpname()
-                local file = assert(io.open(tmp, 'w'))
-                file:write([[
-                    #!/bin/bash
-                    set -e
-                    apt-get --yes update
-                    apt-get --yes --force-yes install g++-4.8 g++ git make libssl-dev cmake libxml++2.6-dev libxml++2.6-doc uuid-dev
-                    cd /opt ; wget -O rest.tar.gz https://github.com/Microsoft/cpprestsdk/archive/v2.7.0.tar.gz
-                    mkdir rest ; tar -zxvf rest.tar.gz -C rest --strip-components 1
-                    cd rest/Release
-                    for config in debug release
-                    do
-                        mkdir build_$config ; cd build_$config
-                        cmake -D CMAKE_BUILD_TYPE=$config -D CMAKE_INSTALL_PREFIX=/usr/local ..
-                        make ; make install ; cd ..
-                    done
-                    ldconfig
-                ]])
-                file:close()
-                os.execute('sudo chmod +x '..tmp..'; sudo '..tmp)
-                os.execute('sudo rm -rf /opt/rest /opt/rest.tar.gz '..tmp)
-            end
-
-            if os.execute('sudo stat /usr/local/lib/libazurestorage.so.2.2 > /dev/null 2>&1') ~= 0 then
-                print('Setting up "Azure"')
-                local tmp = os.tmpname()
-                local file = assert(io.open(tmp, 'w'))
-                file:write([[
-                    #!/bin/bash
-                    set -e
-                    apt-get --yes update
-                    apt-get --yes --force-yes install g++-4.8 g++ git make libssl-dev cmake libxml++2.6-dev libxml++2.6-doc uuid-dev
-                    cd /opt ; wget -O azure.tar.gz https://github.com/Azure/azure-storage-cpp/archive/v2.2.0.tar.gz
-                    mkdir azure ; tar -zxvf azure.tar.gz -C azure --strip-components 1
-                    cd azure/Microsoft.WindowsAzure.Storage
-                    for config in debug release
-                    do
-                        mkdir build_$config ; cd build_$config
-                        cmake -D CMAKE_BUILD_TYPE=$config -D CMAKE_INSTALL_PREFIX=/usr/local ..
-                        make
-                        mv -v Binaries/* /usr/local/lib/ ; cd ..
-                    done
-                    cp -r includes/was /usr/local/include/
-                    cp -r includes/wascore /usr/local/include/
-                    ldconfig
-                ]])
-                file:close()
-                os.execute('sudo chmod +x '..tmp..'; sudo '..tmp)
-                os.execute('sudo rm -rf /opt/azure /opt/azure.tar.gz '..tmp)
             end
 
             if os.execute('sudo stat /usr/local/lib/libtesseract.so > /dev/null 2>&1') ~= 0 then
