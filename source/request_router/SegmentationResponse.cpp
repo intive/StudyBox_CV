@@ -2,6 +2,7 @@
 #include "RequestRouter.h"
 #include "../segmentation/Segmentation.hpp"
 #include "../json/Json.hpp"
+#include "../utility/DownloadFileFromHttp.h"
 
 #include <algorithm>
 #include <iostream>
@@ -50,6 +51,13 @@ cv::Mat GetImageLocal(const std::string& path)
     return cv::imread(GetExePath() + path);
 }
 
+cv::Mat GetImageFromUrl(const std::string& url)
+{
+    std::vector<unsigned char> buffer;
+    Utility::dlFileToBuffer(url, buffer);
+    return imdecode(cv::Mat(buffer), 1);
+}
+
 std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Mat (*GetImageByUrl)(const std::string&))
 {
     Json response;
@@ -89,6 +97,10 @@ std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Ma
     {
         CreateBadRequestError(status, response, "request body could not be read as valid json");
     }
+    catch (const cv::Exception&) // nieprawidłowy obrazek
+    {
+        CreateBadRequestError(status, response, "invalid or unsupported image format");
+    }
     catch (const std::exception& e) // nierozpoznany błąd
     {
         CreateBadRequestError(status, response, std::string("server could not handle segmentation request, reason: ") + e.what());
@@ -107,6 +119,6 @@ void registerSegmentationResponse(Router::RequestRouter& router)
 {
     router.registerEndPointService(Rest::Endpoint::SEGMENTATION_ENDPOINT, [](const std::string& body)
     {
-        return SegmentationResponse(body, GetImageLocal);
+        return SegmentationResponse(body, GetImageFromUrl);
     });
 }
