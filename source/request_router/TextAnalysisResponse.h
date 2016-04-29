@@ -5,7 +5,7 @@
 #include <utility>
 
 namespace Router {
-	class RequestRouter;
+    class RequestRouter;
 }
 
 //Tworzy odpowiedź na zapytanie analizy tekstu
