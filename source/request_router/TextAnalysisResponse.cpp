@@ -3,7 +3,7 @@
 #include "../httpserver/Socket.h"
 #include "../textanalysis/text_analysis.h"
 #include "../json/Json.hpp"
-
+#include "../text2flashcard/text2flashcard.h"
 
 #include <algorithm>
 #include <sstream>
@@ -14,14 +14,11 @@
 
 #include "RestApiLiterals.h"
 
-
-
-	void CreateBadRequestError(Http::Response::Status& status, Json& response, const std::string& errorMessage)
-	{
-		status = Http::Response::Status::BadRequest;
-		response[Rest::Response::STATUS] = 2;
-		response[Rest::Response::ERROR_DESCRIPTION] = errorMessage;
-	}
+static void CreateBadRequestError(Http::Response::Status& status, Json& response, const std::string& errorMessage)
+{
+	status = Http::Response::Status::BadRequest;
+	response[Rest::Response::ERROR_DESCRIPTION] = errorMessage;
+}
 
 
 std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
@@ -31,59 +28,30 @@ std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
 	try
 	{
 		Json request = Json::deserialize(body);
-
-		std::string text_for_analysis = request["text_for_analysis"];
-
-
-		if (text_for_analysis.empty()) // "text_for_analysis jest pusty
-		{
-			status = Http::Response::Status::BadRequest;
-			response["status"] = 0;
-			response["error_message"] = "Nie można było przeanalizować tekstu";
-			std::make_pair<std::string, int>(response.serialize(), static_cast<int>(status));
-		}
-		else
-		{
-			const std::string begin = "begin";
-			const std::string end = "end";
-			const std::string type = "type";
-			const std::string percentage_chance = "percentage_chance";
-			std::vector <Markers> markers;
-			markers = findQA(text_for_analysis);
-
-
-			if (!markers.empty())
-			{
-				Json result = Json::Array();
-				for (auto i = 0; i < markers.size(); i++)
-				{
-					Json object = {
-						{ begin , markers[i].getStart() },
-						{ end , markers[i].getEnd() },
-						{ type , (int)markers[i].getType() },
-						{ percentage_chance , markers[i].getPercentageChance() }
-					};
-					result.push_back(object);
-				}
-				
-				
-				response["results"] = result;
-				response["status"] = static_cast<int>(response["results"].size() > 0);
-				status = Http::Response::Status::Ok;
-			}
-		}
-
+        status = Http::Response::Status::Ok;
+        response[Rest::Response::TEXT_ANALYSIS_RESULTS] = *textToFlashcardJson(request[Rest::Request::TEXT_ANALYSIS_TEXT_FOR_ANALYSIS]).begin();
 	}
-
-
+    catch (const std::domain_error&) // nieprawidłowe typy
+    {
+        CreateBadRequestError(status, response, Rest::Response::ErrorStrings::BAD_JSON_TYPE);
+    }
+    catch (const std::out_of_range&) // odwołanie poza zasięg drzewa lub nieprawidłowa/niewspierana składnia JSON powodująca wyjście poza zasięg drzewa.
+    {
+        CreateBadRequestError(status, response, Rest::Response::ErrorStrings::UNKNOWN_JSON_FIELDS);
+        status = Http::Response::Status::InternalServerError;
+    }
+    catch (const std::range_error&) // nieprawidłowa składnia
+    {
+        CreateBadRequestError(status, response, Rest::Response::ErrorStrings::BAD_JSON);
+    }
 	catch (const std::exception& e) // nierozpoznany błąd
 	{
-		CreateBadRequestError(status, response, std::string("server could not handle request, reason: ") + e.what());
+		CreateBadRequestError(status, response, std::string(Rest::Response::ErrorStrings::UNKNOWN_ELABORATE) + e.what());
 		status = Http::Response::Status::InternalServerError;
 	}
 	catch (...) // nierozpoznany błąd (bez diagnostyki)
 	{
-		CreateBadRequestError(status, response, "server could not handle request, error unkown");
+		CreateBadRequestError(status, response, Rest::Response::ErrorStrings::UNKNOWN);
 		status = Http::Response::Status::InternalServerError;
 	}
 
@@ -92,7 +60,7 @@ std::pair<std::string, int> TextAnalysisResponse(const std::string& body)
 
 void registerTextAnalysisResponse(Router::RequestRouter& router)
 {
-	router.registerEndPointService("/api/analysis", [](const std::string& body)
+	router.registerEndPointService(Rest::Endpoint::TEXT_ANALYSIS_ENDPOINT, [](const std::string& body)
 	{
 		return TextAnalysisResponse(body);
 	});

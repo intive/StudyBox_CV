@@ -8,9 +8,6 @@ namespace Router {
 	class RequestRouter;
 }
 
-//Tworzy odpowiedź na błędne zapytanie
-void CreateBadRequestError(Http::Response::Status& status, Json& response, const std::string& errorMessage);
-
 //Tworzy odpowiedź na zapytanie analizy tekstu
 std::pair<std::string, int> TextAnalysisResponse(const std::string& body);
 

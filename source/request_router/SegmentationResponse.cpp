@@ -71,9 +71,7 @@ std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Ma
 
         if (action != Rest::Request::SEGMENTATION_ACTION) // "action" jest niezgodne z api.
         {
-            status = Http::Response::Status::BadRequest;
-            response[Rest::Response::STATUS] = 2;
-            response[Rest::Response::ERROR_DESCRIPTION] = "unrecognised action for segment api";
+            CreateBadRequestError(status, response, Rest::Response::ErrorStrings::BAD_ACTION);
         }
         else
         {
@@ -84,31 +82,31 @@ std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Ma
         }
 
     }
+    catch (const cv::Exception&) // nieprawidłowy obrazek
+    {
+        CreateBadRequestError(status, response, Rest::Response::ErrorStrings::BAD_IMAGE);
+    }
     catch (const std::domain_error&) // nieprawidłowe typy
     {
-        CreateBadRequestError(status, response, "request body contains invalid field types");
+        CreateBadRequestError(status, response, Rest::Response::ErrorStrings::BAD_JSON_TYPE);
     }
     catch (const std::out_of_range&) // odwołanie poza zasięg drzewa lub nieprawidłowa/niewspierana składnia JSON powodująca wyjście poza zasięg drzewa.
     {
-        CreateBadRequestError(status, response, "server could not handle request, possibly unsupported syntax");
+        CreateBadRequestError(status, response, Rest::Response::ErrorStrings::UNKNOWN_JSON_FIELDS);
         status = Http::Response::Status::InternalServerError;
     }
     catch (const std::range_error&) // nieprawidłowa składnia
     {
-        CreateBadRequestError(status, response, "request body could not be read as valid json");
-    }
-    catch (const cv::Exception&) // nieprawidłowy obrazek
-    {
-        CreateBadRequestError(status, response, "invalid or unsupported image format");
+        CreateBadRequestError(status, response, Rest::Response::ErrorStrings::BAD_JSON);
     }
     catch (const std::exception& e) // nierozpoznany błąd
     {
-        CreateBadRequestError(status, response, std::string("server could not handle segmentation request, reason: ") + e.what());
+        CreateBadRequestError(status, response, std::string(Rest::Response::ErrorStrings::UNKNOWN_ELABORATE) + e.what());
         status = Http::Response::Status::InternalServerError;
     }
     catch (...) // nierozpoznany błąd (bez diagnostyki)
     {
-        CreateBadRequestError(status, response, "server could not handle segmentation request, error unkown");
+        CreateBadRequestError(status, response, Rest::Response::ErrorStrings::UNKNOWN);
         status = Http::Response::Status::InternalServerError;
     }
 
