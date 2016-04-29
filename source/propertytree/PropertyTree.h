@@ -179,7 +179,7 @@ public:
     template<typename T = DataType, typename Converter = PropertyTreeInputConverter<T>, typename std::enable_if<std::is_same<T, KeyType>::value>::type* = nullptr>
     T get(Converter&& c = PropertyTreeInputConverter<T>()) const
     {
-        if (!data.empty())
+        if (type() == String || !data.empty())
         {
             return c(data);
         }
