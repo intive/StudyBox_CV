@@ -46,7 +46,7 @@ struct Tcp::StreamService::StreamServicePimpl
 Tcp::StreamService::StreamServicePimpl::StreamServicePimpl() : readFdsMaster()
 {
 #if defined(PATR_OS_WINDOWS)
-    static std::once_flag f;
+    thread_local std::once_flag f;
     std::call_once(f, []() {
         WSADATA wsaData;
         if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
@@ -59,7 +59,7 @@ Tcp::StreamService::StreamServicePimpl::StreamServicePimpl() : readFdsMaster()
 Tcp::StreamService::StreamServicePimpl::~StreamServicePimpl()
 {
 #if defined(PATR_OS_WINDOWS)
-    static std::once_flag f;
+    thread_local std::once_flag f;
     std::call_once(f, []() {
         WSACleanup();
     });
