@@ -4,11 +4,10 @@
 
 #include <cstdint>
 
-namespace {
-
 std::string Unescape(const std::string& str)
 {
     std::string newstr;
+
     for (auto it = str.begin(); it != str.end(); ++it)
     {
         char current = *it;
@@ -16,12 +15,12 @@ std::string Unescape(const std::string& str)
         {
         case '\\': newstr.append("\\\\"); break;
         case '"':  newstr.append("\\\""); break;
-        case '/':  newstr.append("\\/"); break;
-        case '\b':  newstr.append("\\\b"); break;
-        case '\f':  newstr.append("\\\f"); break;
-        case '\n':  newstr.append("\\\n"); break;
-        case '\r':  newstr.append("\\\r"); break;
-        case '\t':  newstr.append("\\\t"); break;
+        case '/':  newstr.append("/"); break;
+        case '\b':  newstr.append("\\b"); break;
+        case '\f':  newstr.append("\\f"); break;
+        case '\n':  newstr.append("\\n"); break;
+        case '\r':  newstr.append("\\r"); break;
+        case '\t':  newstr.append("\\t"); break;
         default:
             newstr.push_back(current);
         }
@@ -29,6 +28,8 @@ std::string Unescape(const std::string& str)
 
     return newstr;
 }
+
+namespace {
 
 void WriteJsonImpl(const PropertyTree& tree, std::ostream& stream, bool whitespace, int indent = 1)
 {
@@ -138,7 +139,7 @@ void Deduce(const PropertyTree& tree, ToObject&& toObject, ToArray&& toArray, Fu
     case PropertyTree::Value: DeduceNumericType(tree, func, std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
     case PropertyTree::Boolean: func(tree.get<bool>(), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
     case PropertyTree::Null: func(nullptr, std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
-    case PropertyTree::String: func(Unescape(tree.get<std::string>()), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
+    case PropertyTree::String: func(tree.get<std::string>(), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
     case PropertyTree::Array: func(toArray(tree), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
     case PropertyTree::Object: func(toObject(tree), std::forward<JsonObject>(object), std::forward<Args>(args)...); break;
     }

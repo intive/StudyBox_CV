@@ -3,12 +3,14 @@
 #include "httpserver/Server.h"
 #include "httpserver/Socket.h"
 #include "request_router/RequestRouter.h"
-#include "request_router/TextAnalysisRespose.h"
+#include "request_router/SegmentationResponse.h"
+#include "request_router/TextAnalysisResponse.h"
 
 
 void registerServices(Router::RequestRouter& router)
 {
-  registerTextAnalysisResponse(router);
+    registerSegmentationResponse(router);
+    registerTextAnalysisResponse(router);
 }
 
 
