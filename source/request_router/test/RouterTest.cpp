@@ -4,6 +4,7 @@
 #include "../RequestRouter.h"
 #include "../../httpserver/Server.h"
 #include "../SegmentationResponse.h"
+#include "../TextAnalysisResponse.h"
 
 
 BOOST_AUTO_TEST_SUITE(RequestRouter)
@@ -104,7 +105,6 @@ BOOST_AUTO_TEST_CASE(Routing)
     BOOST_CHECK(not_found_response.raw().find(R"({"error":"no service for /api/none"})") != std::string::npos);
 }
 
-
 BOOST_AUTO_TEST_CASE(SegmentationResponse)
 {
     auto response = ::SegmentationResponse(R"({
@@ -117,5 +117,18 @@ BOOST_AUTO_TEST_CASE(SegmentationResponse)
     BOOST_REQUIRE(static_cast<Http::Response::Status>(response.second) == Http::Response::Status::Ok);
 }
 
+BOOST_AUTO_TEST_CASE(TextAnalysisResponse)
+{
+    auto response = ::TextAnalysisResponse(R"({
+     "text_for_analysis": "jakis tekst do analizy?"
+})");
+
+    BOOST_TEST_MESSAGE(response.first);
+    BOOST_REQUIRE(static_cast<Http::Response::Status>(response.second) == Http::Response::Status::Ok);
+
+    response = ::TextAnalysisResponse(R"({
+     "text_for_analysis": "")");
+    BOOST_REQUIRE(static_cast<Http::Response::Status>(response.second) == Http::Response::Status::BadRequest);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
