@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(Scan1)
     testSeg.ScaleImage(2);
     testSeg.SetMorphEllipseSize(morphEllipseSize);
     testSeg.SetMorphRectSize(morphRectSize);
-    std::vector<RotatedRectangle> rectangles = testSeg.CreateRectangles();
+    std::vector<Rectangle> rectangles = testSeg.CreateRectangles();
     BOOST_REQUIRE(rectangles.size() != 0);
     BOOST_CHECK(rectangles.size() == 3);
 }
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(Scan2)
     testSeg.ScaleImage(2);
     testSeg.SetMorphEllipseSize(morphEllipseSize);
     testSeg.SetMorphRectSize(morphRectSize);
-    std::vector<RotatedRectangle> rectangles = testSeg.CreateRectangles();
+    std::vector<Rectangle> rectangles = testSeg.CreateRectangles();
     BOOST_REQUIRE(rectangles.size() != 0);
     BOOST_CHECK(rectangles.size() == 1);
 }
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(Scan3)
     testSeg.ScaleImage(2);
     testSeg.SetMorphEllipseSize(morphEllipseSize);
     testSeg.SetMorphRectSize(morphRectSize);
-    std::vector<RotatedRectangle> rectangles = testSeg.CreateRectangles();
+    std::vector<Rectangle> rectangles = testSeg.CreateRectangles();
     BOOST_REQUIRE(rectangles.size() != 0);
     BOOST_CHECK(rectangles.size() == 7);
 }
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(Scan4)
     testSeg.ScaleImage(2);
     testSeg.SetMorphEllipseSize(morphEllipseSize);
     testSeg.SetMorphRectSize(morphRectSize);
-    std::vector<RotatedRectangle> rectangles = testSeg.CreateRectangles();
+    std::vector<Rectangle> rectangles = testSeg.CreateRectangles();
     BOOST_REQUIRE(rectangles.size() != 0);
     BOOST_CHECK(rectangles.size() == 3);
 }
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(Scan5)
     testSeg.ScaleImage(2);
     testSeg.SetMorphEllipseSize(morphEllipseSize);
     testSeg.SetMorphRectSize(morphRectSize);
-    std::vector<RotatedRectangle> rectangles = testSeg.CreateRectangles();
+    std::vector<Rectangle> rectangles = testSeg.CreateRectangles();
     BOOST_REQUIRE(rectangles.size() != 0);
     BOOST_CHECK(rectangles.size() == 7);
 }
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(Scan6)
     testSeg.ScaleImage(2);
     testSeg.SetMorphEllipseSize(morphEllipseSize);
     testSeg.SetMorphRectSize(morphRectSize);
-    std::vector<RotatedRectangle> rectangles = testSeg.CreateRectangles();
+    std::vector<Rectangle> rectangles = testSeg.CreateRectangles();
     BOOST_REQUIRE(rectangles.size() != 0);
     BOOST_CHECK(rectangles.size() == 9);
 }
