@@ -191,6 +191,9 @@ const Json& Json::operator[](const char* arg) const
     if (!isObject())
         throw std::domain_error("type is not object");
 
+    if (value.object->find(arg) == value.object->end())
+        throw std::domain_error("element does not exist");
+
     return (*value.object)[arg];
 }
 
