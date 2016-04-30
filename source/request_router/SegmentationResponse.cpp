@@ -5,7 +5,6 @@
 #include "../utility/DownloadFileFromHttp.h"
 
 #include <algorithm>
-#include <iostream>
 #include <fstream>
 
 #include "../utility/GetExePath.h"

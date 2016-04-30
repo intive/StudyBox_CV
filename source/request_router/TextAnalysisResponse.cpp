@@ -1,16 +1,8 @@
 #include "RequestRouter.h"
-#include "../httpserver/Server.h"
-#include "../httpserver/Socket.h"
+#include "../httpserver/ServerUtilities.h"
 #include "../textanalysis/text_analysis.h"
 #include "../json/Json.hpp"
 #include "../text2flashcard/text2flashcard.h"
-
-#include <algorithm>
-#include <sstream>
-#include <iterator>
-#include <vector>
-#include <iostream>
-#include <fstream>
 
 #include "RestApiLiterals.h"
 #include "RequestUtilities.h"
