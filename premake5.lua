@@ -5,8 +5,6 @@ workspace 'StudyBox_CV'
     configurations { 'Debug', 'Release', 'Test' }
     targetdir 'bin/%{cfg.platform}/%{cfg.buildcfg}'
 
-    defines {'ABSOLUTE_PATH="' ..path.getabsolute('.').. '"'}
-	
     filter 'debug'
         flags 'Symbols'
         defines 'DEBUG'
@@ -15,11 +13,12 @@ workspace 'StudyBox_CV'
         defines 'NDEBUG'
 
     filter 'action:vs*'
-        defines 'WIN32'
+        defines { 'WIN32', 'NOMINMAX', 'NOGDI', 'ABSOLUTE_PATH="'..path.getabsolute('.')..'"' }
         platforms { 'Win32', 'x64' }
     filter 'action:not vs*'
         platforms { 'x32', 'x64' }
         buildoptions '-std=c++0x'
+        defines { 'ABSOLUTE_PATH=\\"'..path.getabsolute('.')..'\\"' }
 
     project 'StudyBox_CV'
         language 'C++'
