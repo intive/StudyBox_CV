@@ -69,9 +69,9 @@ void Ocr::fixErrors(std::string& text) const
 
     for (const Json& entry : dict)
     {
-        const std::string& fix = entry.cbegin().key();
+        const std::string& fix = entry.getKey();
 
-        for (const std::string& err : entry.cbegin().value())
+        for (const std::string& err : entry.getValue())
         {
             for (size_t pos = text.find(err); pos != end; pos = text.find(err))
             {
