@@ -3,13 +3,13 @@
 
 #include "../Ocr.hpp"
 
-const std::string& language = "pol+eng";
-const std::string& datapath = std::string(ABSOLUTE_PATH) + "/res/tessdata";
-const std::string& dictpath = datapath + "/custom.json";
+const std::string language = "pol+eng";
+const std::string datapath = std::string(ABSOLUTE_PATH) + "/res/tessdata";
+const std::string dictpath = datapath + "/custom.json";
 
-const std::string& imagepath = std::string(ABSOLUTE_PATH) + "/res/test/ocr_test.png";
-const std::string& imagetext = "This sentence is quite long\nand moderately complex.\n";
-const std::string& regiontext = imagetext.substr(0, imagetext.find_first_of("\n") + 1);
+const std::string imagepath = std::string(ABSOLUTE_PATH) + "/res/test/ocr_test.png";
+const std::string imagetext = "This sentence is quite long\nand moderately complex.\n";
+const std::string regiontext = imagetext.substr(0, imagetext.find_first_of("\n") + 1);
 
 /// Testy sprawdzające poprawność OCR
 BOOST_AUTO_TEST_SUITE(OcrTest)
