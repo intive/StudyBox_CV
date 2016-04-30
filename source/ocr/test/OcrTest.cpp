@@ -25,51 +25,95 @@ const std::string imagepath = std::string(ABSOLUTE_PATH) + "/res/test/ocr_test.p
 const std::string imagetext = "This sentence is quite long\nand moderately complex.\n";
 const std::string regiontext = imagetext.substr(0, imagetext.find_first_of("\n") + 1);
 
-// Funkcja przekierowuje podany strumień do strumienia pustego,
-// wywołuje przekazaną funkcję i przywraca podany strumień do stanu początkowego
-void suppress(FILE* stream, std::function<void()> func)
+// Klasa przekierowująca strumień,
+// wykorzystuje wzorzec RAII do zarządzania zasobami
+class StreamRedirector
 {
-    fflush(stream);
-    int fd = dup(fileno(stream));
-    if (!freopen(NULL_STREAM, "w", stream))
+public:
+    // Konstruktor przekierowujący strumień źródłowy pod wskazane miejsce
+    StreamRedirector(FILE * const src, const char * const dst)
+        : src(src)
+        , oldFd(dup(srcFd))
+        , srcFd(fileno(src))
     {
-        std::cerr << "Could not redirect stream." << std::endl;
-    }
-    func();
-    fflush(stream);
-    dup2(fd, fileno(stream));
-    close(fd);
-}
+        if (srcFd == -1)
+        {
+            std::cerr << "Could not retrieve source stream file descriptor" << std::endl;
+            return;
+        }
 
-/// Testy sprawdzające poprawność OCR
-BOOST_AUTO_TEST_SUITE(OcrTest)
+        if (oldFd == -1)
+        {
+            std::cerr << "Could not duplicate source stream file descriptor" << std::endl;
+            return;
+        }
+
+        fflush(src);
+
+        if (!freopen(dst, "w", src))
+        {
+            std::cerr << "Could not redirect stream." << std::endl;
+        }
+    }
+
+    // Destruktor odpowiedzialny za zwolnienie zasobów
+    ~StreamRedirector()
+    {
+        fflush(src);
+
+        if (oldFd != -1 && srcFd != -1 && dup2(oldFd, srcFd) == -1)
+        {
+            std::cerr << "Could not restore stream to initial state." << std::endl;
+        }
+
+        if (oldFd != -1)
+        {
+            close(oldFd);
+        }
+    }
+
+protected:
+    FILE * const src;
+    const int srcFd;
+    const int oldFd;
+};
+
+// Boost fixture dla testów sprawdzających poprawność błędów inicjalizacji OCR
+class SetupFailureFixture : public StreamRedirector
+{
+public:
+    SetupFailureFixture()
+        : StreamRedirector(stderr, NULL_STREAM)
+    {
+
+    }
+};
+
+/// Testy sprawdzające poprawność błędów inicjalizacji OCR
+BOOST_FIXTURE_TEST_SUITE(OcrTestSetupFailures, SetupFailureFixture)
 
 /// Sprawdza poprawność inicjalizacji OCR dla niepoprawnej ścieżki z danymi wyuczonymi
 BOOST_AUTO_TEST_CASE(SetupFailureData)
 {
-    suppress(stderr, [](void)
-    {
-        BOOST_CHECK_THROW(Ocr("invalid_datapath"), std::runtime_error);
-    });
+    BOOST_CHECK_THROW(Ocr("invalid_datapath"), std::runtime_error);
 }
 
 /// Sprawdza poprawność inicjalizacji OCR dla niepoprawnego języka
 BOOST_AUTO_TEST_CASE(SetupFailureLanguage)
 {
-    suppress(stderr, [](void)
-    {
-        BOOST_CHECK_THROW(Ocr(datapath, "invalid_language"), std::runtime_error);
-    });
+    BOOST_CHECK_THROW(Ocr(datapath, "invalid_language"), std::runtime_error);
 }
 
 /// Sprawdza poprawność inicjalizacji OCR dla niepoprawnej ścieżki z słownikiem
 BOOST_AUTO_TEST_CASE(SetupFailureDict)
 {
-    suppress(stderr, [](void)
-    {
-        BOOST_CHECK_THROW(Ocr(datapath, language, "invalid_dictpath"), std::runtime_error);
-    });
+    BOOST_CHECK_THROW(Ocr(datapath, language, "invalid_dictpath"), std::runtime_error);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
+
+/// Testy sprawdzające poprawność OCR
+BOOST_AUTO_TEST_SUITE(OcrTest)
 
 /// Sprawdza poprawność inicjalizacji OCR
 BOOST_AUTO_TEST_CASE(SetupSuccess)
