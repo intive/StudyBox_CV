@@ -248,10 +248,13 @@ public:
     const_iterator cend() const;
 
     // Metoda zwraca pierwszy klucz obiektu
-    std::string getKey() const;
+    const std::string& getKey() const;
 
     // Metoda zwraca pierwszą wartość obiektu
-    Json getValue() const;
+    Json& getValue();
+
+    // Metoda zwraca pierwszą wartość obiektu
+    const Json& getValue() const;
 
     // Metoda zwraca typ obiektu
     const Type getType() const;

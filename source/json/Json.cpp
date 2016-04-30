@@ -495,7 +495,7 @@ Json::const_iterator Json::cend() const
 }
 
 // Metoda zwraca pierwszy klucz obiektu
-std::string Json::getKey() const
+const std::string& Json::getKey() const
 {
     if (!isObject())
         throw std::domain_error("invalid type");
@@ -503,17 +503,23 @@ std::string Json::getKey() const
 }
 
 // Metoda zwraca pierwszą wartość obiektu
-Json Json::getValue() const
+Json& Json::getValue()
 {
     switch (type)
     {
     case Type::Array:
-        return *value.array->cbegin();
+        return *value.array->begin();
     case Type::Object:
-        return value.object->cbegin()->second;
+        return value.object->begin()->second;
     default:
         throw std::domain_error("invalid type");
     }
+}
+
+// Metoda zwraca pierwszą wartość obiektu
+const Json& Json::getValue() const
+{
+    return const_cast<Json*>(this)->getValue();
 }
 
 // Metoda zwraca typ obiektu
