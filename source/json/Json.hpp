@@ -247,6 +247,12 @@ public:
     // Metoda zwraca stały iterator na koniec kontenera
     const_iterator cend() const;
 
+    // Metoda zwraca pierwszy klucz obiektu
+    std::string getKey() const;
+
+    // Metoda zwraca pierwszą wartość obiektu
+    Json getValue() const;
+
     // Metoda zwraca typ obiektu
     const Type getType() const;
 
