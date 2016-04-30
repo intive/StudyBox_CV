@@ -1,7 +1,7 @@
 #include "text2flashcard.h"
 #include <vector>
 
-Json textToFlashcardJson(const std::string& txt)
+Json::Array textToFlashcardJson(const std::string& txt)
 {
     
     const std::string begin = "begin";
@@ -24,9 +24,6 @@ Json textToFlashcardJson(const std::string& txt)
         };
         array.push_back(object);
     }
-    Json final = {
-        { "result" , array }
-    };
 
-    return final;
+    return array;
 }

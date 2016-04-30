@@ -3,33 +3,45 @@
 
 namespace Rest {
 
-namespace Azure {
+    namespace Endpoint {
 
-constexpr auto AZURE_KEY_RELATIVE_PATH = "keys.txt";
+    constexpr auto SEGMENTATION_ENDPOINT = "/api/segment";
+    constexpr auto TEXT_ANALYSIS_ENDPOINT = "/api/analysis";
 
-}
+    } // namespace Endpoint
 
-namespace Endpoint {
+    namespace Response {
 
-constexpr auto SEGMENTATION_ENDPOINT = "/api/segment";
+    constexpr auto STATUS = "status";
+    constexpr auto ERROR_DESCRIPTION = "error_description";
 
-}
+    constexpr auto TEXT_ANALYSIS_RESULTS = "results";
 
-namespace Response {
+    constexpr auto SEGMENTATION_COORDINATES = "coordinates";
 
-constexpr auto STATUS = "status";
-constexpr auto ERROR_DESCRIPTION = "error_description";
-constexpr auto SEGMENTATION_COORDINATES = "coordinates";
+        namespace ErrorStrings {
 
-} // namespace Response
+            constexpr auto BAD_ACTION = "unrecognised action for current api";
+            constexpr auto BAD_JSON_TYPE = "request body contains invalid field types";
+            constexpr auto UNKNOWN_JSON_FIELDS = "server could not handle request, invalid fields specified or possibly unsupported syntax";
+            constexpr auto BAD_JSON = "request body could not be read as valid json";
+            constexpr auto UNKNOWN_ELABORATE = "server could not handle request, reason: ";
+            constexpr auto UNKNOWN = "server could not handle request, error unkown";
+            constexpr auto BAD_IMAGE = "invalid or unsupported image format";
 
-namespace Request {
+        }
 
-constexpr auto URL = "url";
-constexpr auto ACTION = "action";
-constexpr auto SEGMENTATION_ACTION = "Segmentation";
+    } // namespace Response
 
-} // namespace Request
+    namespace Request {
+
+        constexpr auto URL = "url";
+        constexpr auto ACTION = "action";
+
+        constexpr auto TEXT_ANALYSIS_TEXT_FOR_ANALYSIS = "text_for_analysis";
+        constexpr auto SEGMENTATION_ACTION = "Segmentation";
+
+    } // namespace Request
 
 } // namespace Rest
 

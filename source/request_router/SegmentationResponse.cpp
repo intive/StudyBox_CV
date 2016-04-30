@@ -5,11 +5,11 @@
 #include "../utility/DownloadFileFromHttp.h"
 
 #include <algorithm>
-#include <iostream>
 #include <fstream>
 
 #include "../utility/GetExePath.h"
 #include "RestApiLiterals.h"
+#include "RequestUtilities.h"
 
 namespace {
 
@@ -38,12 +38,6 @@ namespace {
         return result;
     }
 
-    void CreateBadRequestError(Http::Response::Status& status, Json& response, const std::string& errorMessage)
-    {
-        status = Http::Response::Status::BadRequest;
-        response[Rest::Response::STATUS] = 2;
-        response[Rest::Response::ERROR_DESCRIPTION] = errorMessage;
-    }
 }
 
 cv::Mat GetImageLocal(const std::string& path)
@@ -60,59 +54,34 @@ cv::Mat GetImageFromUrl(const std::string& url)
 
 std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Mat (*GetImageByUrl)(const std::string&))
 {
-    Json response;
-    Http::Response::Status status;
-    try
+    return GenericRequestErrorHandler(
+        [&](Http::ResponseStatus& status, Json& response)
     {
-        Json request = Json::deserialize(body);
-
-        std::string url = request[Rest::Request::URL];
-        std::string action = request[Rest::Request::ACTION];
-
-        if (action != Rest::Request::SEGMENTATION_ACTION) // "action" jest niezgodne z api.
+        try
         {
-            status = Http::Response::Status::BadRequest;
-            response[Rest::Response::STATUS] = 2;
-            response[Rest::Response::ERROR_DESCRIPTION] = "unrecognised action for segment api";
+            Json request = Json::deserialize(body);
+
+            std::string url = request[Rest::Request::URL];
+            std::string action = request[Rest::Request::ACTION];
+
+            if (action != Rest::Request::SEGMENTATION_ACTION) // "action" jest niezgodne z api.
+            {
+                CreateBadRequestError(status, response, Rest::Response::ErrorStrings::BAD_ACTION);
+            }
+            else
+            {
+                auto image = GetImageByUrl(url);
+                response[Rest::Response::SEGMENTATION_COORDINATES] = GetSegmentsByImage(image);
+                response[Rest::Response::STATUS] = static_cast<int>(response[Rest::Response::SEGMENTATION_COORDINATES].size() > 0);
+                status = Http::Response::Status::Ok;
+            }
+
         }
-        else
+        catch (const cv::Exception&) // nieprawidłowy obrazek
         {
-            auto image = GetImageByUrl(url);
-            response[Rest::Response::SEGMENTATION_COORDINATES] = GetSegmentsByImage(image);
-            response[Rest::Response::STATUS] = static_cast<int>(response[Rest::Response::SEGMENTATION_COORDINATES].size() > 0);
-            status = Http::Response::Status::Ok;
+            CreateBadRequestError(status, response, Rest::Response::ErrorStrings::BAD_IMAGE);
         }
-
-    }
-    catch (const std::domain_error&) // nieprawidłowe typy
-    {
-        CreateBadRequestError(status, response, "request body contains invalid field types");
-    }
-    catch (const std::out_of_range&) // odwołanie poza zasięg drzewa lub nieprawidłowa/niewspierana składnia JSON powodująca wyjście poza zasięg drzewa.
-    {
-        CreateBadRequestError(status, response, "server could not handle request, possibly unsupported syntax");
-        status = Http::Response::Status::InternalServerError;
-    }
-    catch (const std::range_error&) // nieprawidłowa składnia
-    {
-        CreateBadRequestError(status, response, "request body could not be read as valid json");
-    }
-    catch (const cv::Exception&) // nieprawidłowy obrazek
-    {
-        CreateBadRequestError(status, response, "invalid or unsupported image format");
-    }
-    catch (const std::exception& e) // nierozpoznany błąd
-    {
-        CreateBadRequestError(status, response, std::string("server could not handle segmentation request, reason: ") + e.what());
-        status = Http::Response::Status::InternalServerError;
-    }
-    catch (...) // nierozpoznany błąd (bez diagnostyki)
-    {
-        CreateBadRequestError(status, response, "server could not handle segmentation request, error unkown");
-        status = Http::Response::Status::InternalServerError;
-    }
-
-    return std::make_pair(response.serialize(), static_cast<int>(status));
+    });
 }
 
 void registerSegmentationResponse(Router::RequestRouter& router)
