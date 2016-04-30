@@ -122,12 +122,17 @@ BOOST_AUTO_TEST_CASE(TextAnalysisResponse)
     auto response = ::TextAnalysisResponse(R"({
      "text_for_analysis": "jakis tekst do analizy?"
 })");
-
     BOOST_TEST_MESSAGE(response.first);
     BOOST_REQUIRE(static_cast<Http::Response::Status>(response.second) == Http::Response::Status::Ok);
 
     response = ::TextAnalysisResponse(R"({
      "text_for_analysis": "")");
+    BOOST_REQUIRE(static_cast<Http::Response::Status>(response.second) == Http::Response::Status::BadRequest);
+
+    response = ::TextAnalysisResponse(R"({
+     "invalid_field": "jakis tekst do analizy?"
+})");
+    BOOST_TEST_MESSAGE(response.first);
     BOOST_REQUIRE(static_cast<Http::Response::Status>(response.second) == Http::Response::Status::BadRequest);
 }
 
