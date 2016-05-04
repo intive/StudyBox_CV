@@ -3,14 +3,14 @@
 #include "httpserver/Server.h"
 #include "httpserver/Socket.h"
 #include "request_router/RequestRouter.h"
+#include "request_router/SegmentationResponse.h"
+#include "request_router/TextAnalysisResponse.h"
 
 
 void registerServices(Router::RequestRouter& router)
 {
-    router.registerEndPointService("/api/test", [](const std::string& s)
-    {
-        return std::make_pair<std::string, int>(R"({"test":"ok"})", 200);
-    });
+    registerSegmentationResponse(router);
+    registerTextAnalysisResponse(router);
 }
 
 

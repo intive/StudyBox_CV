@@ -94,7 +94,7 @@ bool checkIfNoSpaces(std::vector<Markers>& markersVector, const std::string& tex
 
 std::vector<Markers> findQA(std::string text)
 {
-    std::transform(text.begin(), text.end(),text.begin(), std::tolower);
+    std::transform(text.begin(), text.end(), text.begin(), (int(*)(int))std::tolower);
     std::vector<Markers> markersVector;
     if (text.empty())
         return markersVector;

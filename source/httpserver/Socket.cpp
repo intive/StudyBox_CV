@@ -46,7 +46,7 @@ struct Tcp::StreamService::StreamServicePimpl
 Tcp::StreamService::StreamServicePimpl::StreamServicePimpl() : readFdsMaster()
 {
 #if defined(PATR_OS_WINDOWS)
-    static std::once_flag f;
+    thread_local std::once_flag f;
     std::call_once(f, []() {
         WSADATA wsaData;
         if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
@@ -59,7 +59,7 @@ Tcp::StreamService::StreamServicePimpl::StreamServicePimpl() : readFdsMaster()
 Tcp::StreamService::StreamServicePimpl::~StreamServicePimpl()
 {
 #if defined(PATR_OS_WINDOWS)
-    static std::once_flag f;
+    thread_local std::once_flag f;
     std::call_once(f, []() {
         WSACleanup();
     });
@@ -566,13 +566,13 @@ Tcp::Socket Tcp::EndpointImplementation::connect(StreamServiceInterface & servic
         if (fd == -1)
             continue;
 
-        if (::connect(fd, s->ai_addr, s->ai_addrlen) == -1)
+        if (::connect(fd, s->ai_addr, (int)s->ai_addrlen) == -1)
         {
-            SocketImplementation(service, fd); // zamyka połączenie
+            SocketImplementation(service, (int)fd); // zamyka połączenie
         }
         else
         {
-            return Socket(std::unique_ptr<SocketInterface>(new SocketImplementation(service, fd)));
+            return Socket(std::unique_ptr<SocketInterface>(new SocketImplementation(service, (int)fd)));
         }
     }
 

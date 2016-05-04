@@ -1,8 +1,9 @@
 ﻿#ifndef PATR_DLHTTPFILE_UTILITY_H
 #define PATR_DLHTTPFILE_UTILITY_H
 
-
+#include <string>
 #include <vector>
+#include <functional>
 
 namespace Utility 
 {
@@ -33,7 +34,7 @@ namespace Utility
      * @param func lambda, która przyjmuje Tcp::Buffer&, uzupełnia go i zwraca ilość wrzuconych danych
      * Przeznaczenie raczej testowe - napisanie lambdy, która podaje dane celem sprawdzenia wyodrębnienia ciała
      */
-    void fetchData(std::vector<unsigned char>& buffer, std::function<int(Tcp::Buffer&)> func);
+    void fetchData(std::vector<unsigned char>& buffer, std::function<int(std::pair<char* /* data */, int /* size */>&)> func);
 }
 
 #endif //PATR_DLHTTPFILE_UTILITY_H

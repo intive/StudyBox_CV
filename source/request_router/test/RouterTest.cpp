@@ -3,6 +3,8 @@
 #include <boost/test/unit_test.hpp>
 #include "../RequestRouter.h"
 #include "../../httpserver/Server.h"
+#include "../SegmentationResponse.h"
+#include "../TextAnalysisResponse.h"
 
 
 BOOST_AUTO_TEST_SUITE(RequestRouter)
@@ -19,7 +21,7 @@ struct FuncObj
 class TestRouter : public Router::RequestRouter
 {
 public:
-    unsigned long size() { return services.size(); }
+    size_t size() { return services.size(); }
 };
 
 
@@ -101,6 +103,37 @@ BOOST_AUTO_TEST_CASE(Routing)
     auto not_found_request = getTestRequest("/api/none", "{\"test\":\"router\"}");
     auto not_found_response = rr.routeRequest(not_found_request);
     BOOST_CHECK(not_found_response.raw().find(R"({"error":"no service for /api/none"})") != std::string::npos);
+}
+
+BOOST_AUTO_TEST_CASE(SegmentationResponse)
+{
+    auto response = ::SegmentationResponse(R"({
+        "url": "../../../res/test/SegmentationResponse.png",
+        "action" : "Segmentation"
+
+    })", GetImageLocal);
+
+    BOOST_TEST_MESSAGE(response.first);
+    BOOST_REQUIRE(static_cast<Http::Response::Status>(response.second) == Http::Response::Status::Ok);
+}
+
+BOOST_AUTO_TEST_CASE(TextAnalysisResponse)
+{
+    auto response = ::TextAnalysisResponse(R"({
+     "text_for_analysis": "jakis tekst do analizy?"
+})");
+    BOOST_TEST_MESSAGE(response.first);
+    BOOST_REQUIRE(static_cast<Http::Response::Status>(response.second) == Http::Response::Status::Ok);
+
+    response = ::TextAnalysisResponse(R"({
+     "text_for_analysis": "")");
+    BOOST_REQUIRE(static_cast<Http::Response::Status>(response.second) == Http::Response::Status::BadRequest);
+
+    response = ::TextAnalysisResponse(R"({
+     "invalid_field": "jakis tekst do analizy?"
+})");
+    BOOST_TEST_MESSAGE(response.first);
+    BOOST_REQUIRE(static_cast<Http::Response::Status>(response.second) == Http::Response::Status::BadRequest);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

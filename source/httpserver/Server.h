@@ -33,6 +33,7 @@ namespace Http {
 enum class ResponseStatus;
 class Response;
 class Request;
+
 class HandlerStrategy;
 
 /// Klasa enkapsulująca połączenie z klientem.
@@ -147,8 +148,11 @@ public:
 class ThreadedHandlerStrategy : public HandlerStrategy
 {
 public:
-
-    ThreadedHandlerStrategy(RequestHandler handler);
+    /// Tworzy obiekt obsługujący kolejkę maxRequests zapytań za pomocą podanej funkcji na nThreads wątkach.
+    /**
+     * @param nThreads wartość 0 ustawia liczbę wątków równą wykrytej liczbie procesorów.
+     */
+    ThreadedHandlerStrategy(RequestHandler handler, std::size_t maxRequests = 5000U,  std::size_t nThreads = 0U);
 
     /// Przekazuje zadanie do oddzielnego wątku.
     void handle(ConnectionResponse response) override;

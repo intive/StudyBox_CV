@@ -187,7 +187,7 @@ void Http::Connection::write()
     globalHandler.stop(shared_from_this());
 }
 
-Http::ThreadedHandlerStrategy::ThreadedHandlerStrategy(RequestHandler handler) : handler(handler)
+Http::ThreadedHandlerStrategy::ThreadedHandlerStrategy(RequestHandler handler, std::size_t maxRequests, std::size_t nThreads) : handler(handler), pool(nThreads ? nThreads : std::thread::hardware_concurrency(), maxRequests)
 {
 }
 

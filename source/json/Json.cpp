@@ -191,6 +191,9 @@ const Json& Json::operator[](const char* arg) const
     if (!isObject())
         throw std::domain_error("type is not object");
 
+    if (value.object->find(arg) == value.object->end())
+        throw std::domain_error("element does not exist");
+
     return (*value.object)[arg];
 }
 
@@ -272,7 +275,7 @@ std::ostream& operator<<(std::ostream& out, const Json& arg)
         break;
     }
     case Json::Type::String:
-        out << "\"" << *arg.value.string << "\"";
+        out << "\"" << Unescape(*arg.value.string) << "\"";
         break;
     case Json::Type::Boolean:
         out << std::boolalpha << arg.value.boolean;
@@ -492,6 +495,34 @@ Json::const_iterator Json::cend() const
     default:
         throw std::domain_error("invalid type");
     }
+}
+
+// Metoda zwraca pierwszy klucz obiektu
+const std::string& Json::getKey() const
+{
+    if (!isObject())
+        throw std::domain_error("invalid type");
+    return value.object->cbegin()->first;
+}
+
+// Metoda zwraca pierwszą wartość obiektu
+Json& Json::getValue()
+{
+    switch (type)
+    {
+    case Type::Array:
+        return *value.array->begin();
+    case Type::Object:
+        return value.object->begin()->second;
+    default:
+        throw std::domain_error("invalid type");
+    }
+}
+
+// Metoda zwraca pierwszą wartość obiektu
+const Json& Json::getValue() const
+{
+    return const_cast<Json*>(this)->getValue();
 }
 
 // Metoda zwraca typ obiektu
