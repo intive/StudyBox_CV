@@ -1,10 +1,12 @@
 #include "imageToText.h"
+#include <iostream>
+#include <opencv2/highgui/highgui.hpp>
+
 //#include <string>
 int main(int argc, char* argv[])
 {
-    cv::Mat imgg = cv::imread("scn1.jpg");
-    //imgg = binarizeImage(imgg);
-    imageToText(imgg);
-    cv::waitKey(1);
+    std::string str = imageToText("https://i.imgur.com/0VwUJ7q.jpg");
+    std::cout << str << std::endl;
+    getchar();
     return 0;
 }

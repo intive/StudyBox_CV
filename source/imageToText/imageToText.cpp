@@ -7,18 +7,28 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include "../utility/DownloadFileFromHttp.h"
+#include <time.h>
+#include "../httpserver/Predef.h"
+
+#if defined(PATR_OS_WINDOWS)
+#include "winPathTessData.h"
+#else
+#include "linuxPathTessData.h"
+#endif
 
 
 //std::string imageToString(const cv::Mat& image)
 std::string imageToText(const std::string& address)
 {
+    std::string tessData;
     std::string textFromPage;
-    std::string tmpName = std::tmpnam(nullptr);
+    std::string tmpName = ABSOLUTE_PATH;
+    tmpName = getAbsolutePath(tmpName);
+    tmpName += getRandomName();
     Utility::dlFileToFile(address, tmpName); // zapis do pliku
     std::string text;
     cv::Mat textImage;
     textImage = cv::imread(tmpName);
-    //textImage = binarizeImage(textImage);
     Segmentation seg;
     seg.SetImage(textImage);
     seg.ScaleImage(2);
@@ -27,14 +37,16 @@ std::string imageToText(const std::string& address)
     std::vector<Rectangle> rectangles = seg.CreateRectangles();
 
     textImage = binarizeImage(textImage);
-     Ocr *ocr = new Ocr("C:\\Users\\Mateusz\\Documents\\Visual Studio 2015\\Projects\\blstream\\StudyBox_CV\\res\\tessdata");
-     ocr->setImage(textImage);
-     for (size_t i = 0; i < rectangles.size();i++)
-     {
-         text = ocr->recognize(rectangles[i]);
-         textFromPage = textFromPage + text;
-     }
-     std::cout << text << std::endl;
+
+    tessData = ABSOLUTE_PATH;
+    tessData = getPathTessData(tessData);
+    Ocr *ocr = new Ocr(tessData);
+    ocr->setImage(textImage);
+    for (size_t i = 0; i < rectangles.size();i++)
+    {
+        text = ocr->recognize(rectangles[i]);
+        textFromPage = textFromPage + text;
+    }
     return textFromPage;
 }
 
@@ -50,4 +62,16 @@ cv::Mat binarizeImage(const cv::Mat& image)
     //cv::adaptiveThreshold(img, img, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 11, 2);
     //cv::adaptiveThreshold(image,img, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 11, 2);
     return img2;
+}
+
+
+std::string getRandomName()
+{
+    srand(time(NULL));
+    std::string name;
+    for(int i=0;i<10;i++)
+    {
+        name = name + (char)('a'+rand() % 26);
+    }
+    return name;
 }

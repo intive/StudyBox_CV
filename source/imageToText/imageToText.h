@@ -19,4 +19,9 @@ std::string imageToText(const std::string& address);
 * return cv::Mat zbinaryzowany, ktory ma ulatwic odczytanie z niego tekstu
 */
 cv::Mat binarizeImage(const cv::Mat& image);
+/// Generowanie losowej nazwy pliku
+/**
+* return std::string losowa nazwa pliku
+*/
+std::string getRandomName();
 #endif
