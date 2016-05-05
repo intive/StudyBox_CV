@@ -27,7 +27,7 @@ namespace
     const string header_separator = "\r\n\r\n";
     const string new_line = "\r\n";
     constexpr auto default_port = "80";
-    const auto location_rgx = regex{ R"c((?:Location\:)\s+(.+[^\r\n])(?:\r\n))c" };
+    const auto location_rgx = regex{ R"c((?:[L|l]ocation\:)\s+(.+[^\r\n])(?:\r\n))c" };
     const auto http_response_rgx = regex{ R"(^HTTP\/[\d.]+\s+(\d+)\s+(.*)$)" };
     constexpr int error_code = 400;
     constexpr int redirect_code = 300;
