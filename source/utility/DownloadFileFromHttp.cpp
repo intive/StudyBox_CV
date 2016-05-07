@@ -178,23 +178,8 @@ namespace Utility
 
 namespace
 {
-    void dlFromHttps(string domain, string endpoint, vector<unsigned char>& buffer) 
+    void dlFromStreamService(const string& domain, const string& port, const string& endpoint, vector<unsigned char>& buffer, Tcp::StreamService& service)
     {
-        Tcp::SslStreamService service;
-        auto sock = service.getFactory()->resolve(domain, ssl_port)->connect(service);
-        const auto req = prepareRequest(domain, endpoint);
-        makeRequest(sock, req);
-
-        Utility::fetchData(buffer, [&sock](Tcp::Buffer& b) -> int
-        {
-            return sock.readSome(b);
-        });
-    }
-
-
-    void dlFromHttp(string domain, string port, string endpoint, vector<unsigned char>& buffer)
-    {
-        Tcp::StreamService service;
         auto sock = service.getFactory()->resolve(domain, port)->connect(service);
         const auto req = prepareRequest(domain, endpoint);
         makeRequest(sock, req);
@@ -214,14 +199,21 @@ namespace Utility
     {
         auto result = getDomainPortEndpoint(url);
         string domain = get<0>(result);
+        string port = get<1>(result);
         string endpoint = get<2>(result);
 
-        bool is_https = url.find(https) != std::string::npos;
+        bool is_https = url.find(https) != std::string::npos || port == ssl_port;
 
         if (is_https)
-            dlFromHttps(domain, endpoint, buffer);
+        {
+            Tcp::SslStreamService service;
+            dlFromStreamService(domain, ssl_port, endpoint, buffer, service);
+        }
         else
-            dlFromHttp(domain, get<1>(result), endpoint, buffer);        
+        {
+            Tcp::StreamService service;
+            dlFromStreamService(domain, port, endpoint, buffer, service);
+        }
     }
 
 
