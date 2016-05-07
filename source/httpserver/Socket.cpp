@@ -749,7 +749,7 @@ Tcp::SslContext::SslContext() : method(SSLv23_client_method()), context(SSL_CTX_
     if (context == NULL)
     {
         ERR_print_errors_fp(stderr);
-        abort();
+        throw std::runtime_error("failed to initialize openssl context");
     }
 }
 
@@ -771,6 +771,12 @@ Tcp::SslContext::SslContextInit::SslContextInit()
     OPENSSL_config(NULL);
 }
 
+Tcp::SslContext::SslContextInit::~SslContextInit()
+{
+    ERR_free_strings();
+    EVP_cleanup();
+}
+
 Tcp::SslConnection::SslConnection(SSL* ssl, Tcp::SocketInterface::HandleType handle) : ssl(ssl), handle(handle)
 {
     if (!SSL_set_fd(ssl, handle))
@@ -781,6 +787,7 @@ Tcp::SslConnection::SslConnection(SSL* ssl, Tcp::SocketInterface::HandleType han
 
 Tcp::SslConnection::~SslConnection()
 {
+    SSL_shutdown(ssl);
     SSL_free(ssl);
 }
 

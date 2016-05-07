@@ -597,6 +597,7 @@ private:
     struct SslContextInit
     {
         SslContextInit();
+        ~SslContextInit();
     } init;
 
     const SSL_METHOD* method;
