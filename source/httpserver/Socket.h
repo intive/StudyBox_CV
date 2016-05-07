@@ -13,7 +13,10 @@
 #include <chrono>
 
 #include "Predef.h"
-
+#if defined(PATR_OS_WINDOWS)
+#define _WINSOCKAPI_
+#    include <winsock2.h>
+#endif
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
