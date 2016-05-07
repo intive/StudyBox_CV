@@ -51,26 +51,31 @@ workspace 'StudyBox_CV'
                 'build/packages/opencv3.1.1.0/build/native/include',
                 'build/packages/boost.1.60.0.0/lib/native/include',
                 'build/packages/leptonica.1.73/lib/native/include',
-                'build/packages/tesseract.3.04/lib/native/include'
+                'build/packages/tesseract.3.04/lib/native/include',
+				'build/packages/openssl.v140.windesktop.msvcstl.dyn.rt-dyn.%{cfg.platform == "Win32" and "x86" or "x64"}.1.0.2.0/build/native/include'
             }
             libdirs {
                 'build/packages/opencv3.1.1.0/build/native/lib/%{cfg.platform}/v'..toolset..'/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
                 'build/packages/boost_unit_test_framework-vc'..toolset..'.1.60.0.0/lib/native/address-model-%{string.sub(cfg.platform, -2)}/lib',
                 'build/packages/leptonica-vc'..toolset..'.1.73/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
-                'build/packages/tesseract-vc'..toolset..'.3.04/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}'
+                'build/packages/tesseract-vc'..toolset..'.3.04/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}',
+				'build/packages/openssl.v140.windesktop.msvcstl.dyn.rt-dyn.%{cfg.platform == "Win32" and "x86" or "x64"}.1.0.2.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{string.lower(cfg.buildcfg == "Test" and "Release" or cfg.buildcfg)}'
             }
             debugenvs {
                 'PATH=%PATH%;'..
                 '../packages/opencv3.1.redist.1.0/build/native/bin/%{cfg.platform}/v'..toolset..'/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
                 '../packages/boost_unit_test_framework-vc'..toolset..'.1.60.0.0/lib/native/address-model-%{string.sub(cfg.platform, -2)}/lib;'..
                 '../packages/leptonica-vc'..toolset..'.1.73/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
-                '../packages/tesseract-vc'..toolset..'.3.04/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}'
+                '../packages/tesseract-vc'..toolset..'.3.04/lib/native/%{cfg.platform == "Win32" and "x86" or "x64"}/%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg};'..
+				'../packages/openssl.v140.windesktop.msvcstl.dyn.rt-dyn.%{cfg.platform == "Win32" and "x86" or "x64"}.1.0.2.0/lib/native/v'..toolset..'/windesktop/msvcstl/dyn/rt-dyn/%{cfg.platform == "Win32" and "x86" or "x64"}/%{string.lower(cfg.buildcfg == "Test" and "Release" or cfg.buildcfg)}'
             }
 
             filter '*'
                 links {
                     'liblept',
-                    'libtesseract'
+                    'libtesseract',
+					'libeay32',
+					'ssleay32'
                 }
             filter 'release or test'
                 links {
@@ -91,6 +96,8 @@ workspace 'StudyBox_CV'
                     'xcopy /Y "$(SolutionDir)packages\\boost_unit_test_framework-vc'..toolset..'.1.60.0.0\\lib\\native\\address-model-%{string.sub(cfg.platform, -2)}\\lib\\boost_unit_test_framework-vc'..toolset..'-mt-1_60.dll" "$(TargetDir)"',
                     'xcopy /Y "$(SolutionDir)packages\\leptonica-vc'..toolset..'.1.73\\lib\\native\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\liblept.dll"',
                     'xcopy /Y "$(SolutionDir)packages\\tesseract-vc'..toolset..'.3.04\\lib\\native\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\libtesseract.dll"',
+					'xcopy /Y "$(SolutionDir)packages\\openssl.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.%{cfg.platform == "Win32" and "x86" or "x64"}.1.0.2.0\\lib\\native\\v'..toolset..'\\windesktop\\msvcstl\\dyn\\rt-dyn\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{string.lower(cfg.buildcfg == "Test" and "Release" or cfg.buildcfg)}\\libeay32.dll" "$(TargetDir)"',
+					'xcopy /Y "$(SolutionDir)packages\\openssl.v'..toolset..'.windesktop.msvcstl.dyn.rt-dyn.%{cfg.platform == "Win32" and "x86" or "x64"}.1.0.2.0\\lib\\native\\v'..toolset..'\\windesktop\\msvcstl\\dyn\\rt-dyn\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{string.lower(cfg.buildcfg == "Test" and "Release" or cfg.buildcfg)}\\ssleay32.dll" "$(TargetDir)"',
                     '"$(TargetDir)\\$(TargetName).exe" --result_code=no --report_level=short'
                 }
 
@@ -106,6 +113,10 @@ workspace 'StudyBox_CV'
                     <package id="leptonica-vc140" version="1.73" targetFramework="native" />
                     <package id="tesseract" version="3.04" targetFramework="native" />
                     <package id="tesseract-vc140" version="3.04" targetFramework="native" />
+					<package id="openssl" version="1.0.2.0" targetFramework="native" />
+					<package id="openssl.v140.windesktop.msvcstl.dyn.rt-dyn" version="1.0.2.0" targetFramework="native" />
+					<package id="openssl.v140.windesktop.msvcstl.dyn.rt-dyn.x64" version="1.0.2.0" targetFramework="native" />
+					<package id="openssl.v140.windesktop.msvcstl.dyn.rt-dyn.x86" version="1.0.2.0" targetFramework="native" />
                 </packages>]]
             file:write(config)
             file:close()
