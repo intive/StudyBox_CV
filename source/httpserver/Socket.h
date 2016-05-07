@@ -12,6 +12,11 @@
 #include <functional>
 #include <chrono>
 
+#include "Predef.h"
+
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 struct addrinfo;
 
 /// Przestrzeń dla klas i funkcji związanych z niskopoziomową komunikacją TCP/IP.
@@ -558,6 +563,55 @@ private:
     SocketService service;
 };
 
+/// Tworzy połączenie ssl.
+/**
+ * Odpowiedzialne za handshake i szyfrowanie/deszyfrowanie.
+ */
+class SslConnection
+{
+public:
+    SslConnection(SSL* ssl, Tcp::SocketInterface::HandleType handle);
+    ~SslConnection();
+
+    int sslRead(Tcp::Buffer& buffer);
+    int sslWrite(const Tcp::ConstBuffer& buffer);
+
+private:
+    SSL* ssl;
+    Tcp::SocketInterface::HandleType handle;
+};
+
+/// Tworzy kontekst Openssl
+class SslContext
+{
+public:
+    SslContext();
+    ~SslContext();
+
+    SslConnection connection(Tcp::SocketInterface::HandleType handle);
+
+private:
+    struct SslContextInit
+    {
+        SslContextInit();
+    } init;
+
+    const SSL_METHOD* method;
+    SSL_CTX* context;
+};
+
+/// Pozwala na połączenie z gniazdem i komunikację poprzez ssl.
+class SslEndpointImplementation : public EndpointImplementation
+{
+public:
+    SslEndpointImplementation(const std::string& address, const std::string& port, SslContext& context);
+
+    Socket connect(StreamServiceInterface& service) const override;
+
+private:
+    SslContext& sslContext;
+};
+
 
 /// Interfejs do tworzenia implementacji interfejsów dla danego serwisu.
 class ServiceFactory
@@ -628,6 +682,17 @@ private:
     StreamService& service;
 };
 
+class SslStreamServiceFactory : public StreamServiceFactory
+{
+public:
+    SslStreamServiceFactory(StreamService& service, SslContext& context);
+
+    virtual std::unique_ptr<EndpointInterface> resolve(const std::string & host, const std::string & port) override;
+
+private:
+    SslContext& context;
+};
+
 /// Klasa do demultipleksacji połączeń oraz asynchronicznej komunikacji z innymi serwisami.
 /**
  * Demultipleksacji podlegają sygnały gotowości do odczytu, zapisu oraz nowych połaczeń.
@@ -661,6 +726,15 @@ private:
     std::unique_ptr<StreamServicePimpl> pimpl;
 };
 
+/// Pozwala na utworzenie połączenia z serwerem https.
+class SslStreamService : public StreamService
+{
+public:
+    std::unique_ptr<ServiceFactory> getFactory() override;
+
+private:
+    SslContext context;
+};
 
 
 /// Frontend użytkownika dla klasy nasłuchującej nowych połączeń.
@@ -810,6 +884,20 @@ public:
 
 private:
     bool closed;
+};
+
+
+/// Tworzy implementację gniazda korzystającą z funkcji openssl.
+class SslSocketImplementation : public SocketImplementation
+{
+public:
+    SslSocketImplementation(StreamServiceInterface& service, HandleType handle, SslContext& ssl);
+
+    int readSome(BufferType& buffer) override;
+    int writeSome(const ConstBufferType& buffer) override;
+
+private:
+    SslConnection connection;
 };
 
 } // namespace Tcp
