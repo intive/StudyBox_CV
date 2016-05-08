@@ -241,8 +241,7 @@ Tcp::SocketImplementation::SocketImplementation(StreamServiceInterface& service,
 
 Tcp::SocketImplementation::~SocketImplementation()
 {
-    if (!closed)
-        close();
+    close();
 }
 
 int Tcp::SocketImplementation::read(BufferType & buffer)
@@ -309,10 +308,11 @@ int Tcp::SocketImplementation::writeSome(const ConstBufferType & buffer)
 
 void Tcp::SocketImplementation::close()
 {
+    if (!closed)
 #if defined(PATR_OS_WINDOWS)
-    ::closesocket(handle());
+        ::closesocket(handle());
 #elif defined(PATR_OS_UNIX)
-    ::close(handle());
+        ::close(handle());
 #endif
 }
 
@@ -777,7 +777,7 @@ Tcp::SslContext::SslContextInit::~SslContextInit()
     EVP_cleanup();
 }
 
-Tcp::SslConnection::SslConnection(SSL* ssl, Tcp::SocketInterface::HandleType handle) : ssl(ssl), handle(handle)
+Tcp::SslConnection::SslConnection(SSL* ssl, Tcp::SocketInterface::HandleType handle) : closed(false), ssl(ssl), handle(handle)
 {
     if (!SSL_set_fd(ssl, handle))
         throw SocketError("failed to open ssl socket");
@@ -785,10 +785,14 @@ Tcp::SslConnection::SslConnection(SSL* ssl, Tcp::SocketInterface::HandleType han
     SSL_connect(ssl);
 }
 
+Tcp::SslConnection::SslConnection(SslConnection&& other) : closed(false), ssl(other.ssl), handle(other.handle)
+{
+    other.closed = true;
+}
+
 Tcp::SslConnection::~SslConnection()
 {
-    SSL_shutdown(ssl);
-    SSL_free(ssl);
+    close();
 }
 
 int Tcp::SslConnection::sslRead(Tcp::Buffer& buffer)
@@ -806,6 +810,15 @@ int Tcp::SslConnection::sslWrite(const Tcp::ConstBuffer& buffer)
     return i;
 }
 
+void Tcp::SslConnection::close()
+{
+    if (!closed)
+    {
+        SSL_shutdown(ssl);
+        SSL_free(ssl);
+    }
+}
+
 Tcp::SslSocketImplementation::SslSocketImplementation(StreamServiceInterface& service, HandleType handle, SslContext& ssl) : SocketImplementation(service, handle), connection(ssl.connection(handle))
 {
 }
@@ -818,6 +831,12 @@ int Tcp::SslSocketImplementation::readSome(BufferType& buffer)
 int Tcp::SslSocketImplementation::writeSome(const ConstBufferType& buffer)
 {
     return connection.sslWrite(buffer);
+}
+
+void Tcp::SslSocketImplementation::close()
+{
+    connection.close();
+    SocketImplementation::close();
 }
 
 Tcp::SslStreamServiceFactory::SslStreamServiceFactory(StreamService& service, SslContext& context) : StreamServiceFactory(service), context(context)

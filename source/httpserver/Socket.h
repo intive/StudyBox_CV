@@ -570,22 +570,28 @@ private:
 /**
  * Odpowiedzialne za handshake i szyfrowanie/deszyfrowanie.
  */
-class SslConnection
+class SslConnection : public NonCopyable
 {
 public:
     SslConnection(SSL* ssl, Tcp::SocketInterface::HandleType handle);
+    /// Powoduje przeniesienie odpowiedzialności za zamknięcie połączenia.
+    SslConnection(SslConnection&& other);
     ~SslConnection();
 
     int sslRead(Tcp::Buffer& buffer);
     int sslWrite(const Tcp::ConstBuffer& buffer);
 
+    void close();
+
 private:
+    bool closed;
+
     SSL* ssl;
     Tcp::SocketInterface::HandleType handle;
 };
 
 /// Tworzy kontekst Openssl
-class SslContext
+class SslContext : public NonCopyable
 {
 public:
     SslContext();
@@ -864,7 +870,7 @@ private:
 
 
 /// Klasa zawierająca szczegóły implementacyjne gniazda TCP.
-class SocketImplementation : public SocketInterface
+class SocketImplementation : public SocketInterface, public NonCopyable
 {
 public:
     typedef SocketService::HandleType HandleType;
@@ -899,6 +905,8 @@ public:
 
     int readSome(BufferType& buffer) override;
     int writeSome(const ConstBufferType& buffer) override;
+
+    void close() override;
 
 private:
     SslConnection connection;
