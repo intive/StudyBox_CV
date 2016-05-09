@@ -206,12 +206,12 @@ namespace Utility
 
         if (is_https)
         {
-            Tcp::SslStreamService service;
+            thread_local Tcp::SslStreamService service;
             dlFromStreamService(domain, ssl_port, endpoint, buffer, service);
         }
         else
         {
-            Tcp::StreamService service;
+            thread_local Tcp::StreamService service;
             dlFromStreamService(domain, port, endpoint, buffer, service);
         }
     }
