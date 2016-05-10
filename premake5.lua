@@ -235,11 +235,46 @@ workspace 'StudyBox_CV'
         end
 
 newaction {
-   trigger = 'clean',
-   description = 'Removes build and bin directories',
-   execute = function()
-      os.rmdir('./build')
-      os.rmdir('./bin')
-      print('Done')
-   end
+    trigger = 'clean',
+    description = 'Removes build and bin directories',
+    execute = function()
+        os.rmdir('./build')
+        os.rmdir('./bin')
+        print('Done')
+    end
+}
+
+premake.override(premake.main, "postAction", function(base)
+    base()
+    io.flush()
+
+    if _OPTIONS['build'] == 'all' then
+
+    elseif _OPTIONS['build'] == 'app' then
+
+    elseif _OPTIONS['build'] == 'test' then
+
+    end
+
+    if _OPTIONS['test'] then
+        print('Running tests...');
+        io.flush()
+        os.execute('"'..path.getabsolute('.')..'/bin/x64/Test/StudyBox_CV"')
+    end
+end)
+
+newoption {
+    trigger = 'build',
+    value = 'build',
+    description = 'Build configuration',
+    allowed = {
+        {'all', 'All'},
+        {'app', 'Application'},
+        {'test', 'Test'}
+    }
+}
+
+newoption {
+    trigger = 'test',
+    description = 'Build and execute tests'
 }
