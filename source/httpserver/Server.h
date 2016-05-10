@@ -15,6 +15,8 @@
 
 //#include "Socket.h"
 
+#include "../utility/ThreadPool.h"
+
 namespace Tcp {
 
 class Socket;
@@ -78,42 +80,7 @@ private:
     //Request request;
 };
 
-/// Klasa odpowiedzialna za rozdział zadań do odpowiednich wątków.
-class ConnectionPool
-{
-public:
-    typedef std::function<void()> RequestHandler;
-
-    /// Tworzy nowy obiekt o określonym maksymalnym obciążeniu.
-    /**
-     * Liczba wątków dedukowana jest na podstawie wykrytej liczby procesorów.
-     */
-    ConnectionPool(std::size_t maxLoad = 5000);
-    /// Tworzy nowy obiekt o określonych parametrach.
-    ConnectionPool(std::size_t maxThreads, std::size_t maxLoad = 5000);
-
-    ~ConnectionPool();
-
-    /// dodaje zadanie do rozdzielenia.
-    /**
-     * @return czy zadanie zostało dodane do kolejki czy nie.
-     */
-    bool add(RequestHandler handler);
-
-private:
-    std::size_t maxThreads;
-    std::size_t maxLoad;
-
-    std::vector<std::thread> workers;
-    std::queue<std::function<void()>> jobs;
-
-    // synchronization
-    std::mutex mutex;
-    std::condition_variable condition;
-    bool stop;
-};
-
-
+using ConnectionPool = Utility::ThreadPool<std::function<void()>, void>;
 
 using ConnectionPtr = std::shared_ptr<Connection>;
 
