@@ -89,8 +89,8 @@ workspace 'StudyBox_CV'
                 postbuildcommands {
                     'xcopy /Y "$(SolutionDir)packages\\opencv3.1.redist.1.0\\build\\native\\bin\\%{cfg.platform}\\v'..toolset..'\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\opencv_world310.dll" "$(TargetDir)"',
                     'xcopy /Y "$(SolutionDir)packages\\boost_unit_test_framework-vc'..toolset..'.1.60.0.0\\lib\\native\\address-model-%{string.sub(cfg.platform, -2)}\\lib\\boost_unit_test_framework-vc'..toolset..'-mt-1_60.dll" "$(TargetDir)"',
-                    'xcopy /Y "$(SolutionDir)packages\\leptonica-vc'..toolset..'.1.73\\lib\\native\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\liblept.dll"',
-                    'xcopy /Y "$(SolutionDir)packages\\tesseract-vc'..toolset..'.3.04\\lib\\native\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\libtesseract.dll"',
+                    'xcopy /Y "$(SolutionDir)packages\\leptonica-vc'..toolset..'.1.73\\lib\\native\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\liblept.dll" "$(TargetDir)"',
+                    'xcopy /Y "$(SolutionDir)packages\\tesseract-vc'..toolset..'.3.04\\lib\\native\\%{cfg.platform == "Win32" and "x86" or "x64"}\\%{cfg.buildcfg == "Test" and "Release" or cfg.buildcfg}\\libtesseract.dll" "$(TargetDir)"',
                     '"$(TargetDir)\\$(TargetName).exe" --result_code=no --report_level=short'
                 }
 
