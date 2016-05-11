@@ -158,7 +158,7 @@ public:
     {
         using namespace std::placeholders;
         LoggerInfo info = { loggerCount++, std::forward<String>(name) };
-        return BasicLogger<Formatter>(std::bind(target, std::ref(target), _1, _2, _3, _4), level, std::move(info), std::forward<Formatter>(formatter));
+        return BasicLogger<Formatter>(std::bind(&Target::operator(), std::ref(target), _1, _2, _3, _4), level, std::move(info), std::forward<Formatter>(formatter));
     }
 
     /// Tworzy nowy obiekt loggera z podaną nazwą, poziomem obsługi zdarzeń równym podanemu w konstruktorze obiektu oraz funkcją formatującą.
@@ -167,7 +167,7 @@ public:
     {
         using namespace std::placeholders;
         LoggerInfo info = { loggerCount++, std::forward<String>(name) };
-        return BasicLogger<Formatter>(std::bind(target, std::ref(target), _1, _2, _3, _4), globalLevel, std::move(info), std::forward<Formatter>(formatter));
+        return BasicLogger<Formatter>(std::bind(&Target::operator(), std::ref(target), _1, _2, _3, _4), globalLevel, std::move(info), std::forward<Formatter>(formatter));
     }
 
     /// Tworzy nowy obiekt loggera z podaną nazwą, poziomem obsługi zdarzeń oraz domyślnym obiektem typu Formatter.
@@ -176,7 +176,7 @@ public:
     {
         using namespace std::placeholders;
         LoggerInfo info = { loggerCount++, std::forward<String>(name) };
-        return BasicLogger<Formatter>(std::bind(target, std::ref(target), _1, _2, _3, _4), level, std::move(info));
+        return BasicLogger<Formatter>(std::bind(&Target::operator(), std::ref(target), _1, _2, _3, _4), level, std::move(info));
     }
 
     /// Tworzy nowy obiekt loggera z podaną nazwą, poziomem obsługi zdarzeń oraz domyślnym obiektem formatującym.

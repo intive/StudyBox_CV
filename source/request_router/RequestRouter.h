@@ -24,6 +24,7 @@ namespace Router
 
     public:
         RequestRouter(LogManager& logManager);
+        RequestRouter();
         ~RequestRouter()                               = default;
         RequestRouter(RequestRouter&&)                 = default;
         RequestRouter& operator=(RequestRouter&&)      = default;

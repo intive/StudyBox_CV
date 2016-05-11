@@ -51,6 +51,9 @@ namespace Router
         }
     }
 
+    RequestRouter::RequestRouter() : logger([](LogConfig::LogLevel, std::string, LoggerInfo, bool){}, LogConfig::Severity::all, LoggerInfo(0, "RequestRouter"))
+    {
+    }
 
     RequestRouter::RequestRouter(LogManager& logManager) : logger(logManager.get("Request Router"))
     {
