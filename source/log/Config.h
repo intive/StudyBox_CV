@@ -1,6 +1,8 @@
 #ifndef PATR_LOG_CONFIG_H
 #define PATR_LOG_CONFIG_H
 
+#include <sstream>
+
 #include <functional>
 
 #include <type_traits>
