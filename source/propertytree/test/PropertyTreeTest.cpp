@@ -92,9 +92,11 @@ BOOST_AUTO_TEST_CASE(ConversionIntegrity)
     BOOST_REQUIRE_NO_THROW(ReadJson(out, iss));
     BOOST_TEST((tree == out));
     out = PropertyTree();
-    oss = std::ostringstream();
+    oss.str("");
+    oss.clear();
     WriteJson(tree, oss, false);
-    iss = std::istringstream(oss.str());
+    iss.clear();
+    iss.str(oss.str());
     BOOST_REQUIRE_NO_THROW(ReadJson(out, iss));
     BOOST_TEST((tree == out));
 }
