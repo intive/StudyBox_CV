@@ -283,6 +283,15 @@ workspace 'StudyBox_CV'
 
 -- Premake overrides --
 
+premake.override(premake.main, 'preAction', function(base)
+    base()
+
+    if _OPTIONS['clean'] then
+        os.rmdir('./build')
+        os.rmdir('./bin')
+    end
+end)
+
 premake.override(premake.main, 'postAction', function(base)
     base()
 
@@ -314,6 +323,11 @@ newoption {
         { 'app', 'Application' },
         { 'test', 'Test' }
     }
+}
+
+newoption {
+    trigger = 'clean',
+    description = 'Remove build and bin directories'
 }
 
 -- Extra actions --
