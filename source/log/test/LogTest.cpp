@@ -1,7 +1,8 @@
+#define _CRT_SECURE_NO_WARNINGS
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 #include <map>
+#include <array>
 #include "../Logger.h"
 
 BOOST_AUTO_TEST_SUITE(LogTests)
