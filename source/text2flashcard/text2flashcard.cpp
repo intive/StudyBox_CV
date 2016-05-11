@@ -1,7 +1,7 @@
 #include "text2flashcard.h"
 #include <vector>
 
-Json::Array textToFlashcardJson(const std::string& txt)
+Json::Array textToMarkersJson(const std::string& txt)
 {
     
     const std::string begin = "begin";
