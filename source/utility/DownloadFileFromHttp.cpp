@@ -27,6 +27,8 @@ namespace
     const string header_separator = "\r\n\r\n";
     const string new_line = "\r\n";
     constexpr auto default_port = "80";
+    constexpr auto ssl_port = "443";
+    constexpr auto https = "https://";
     const auto location_rgx = regex{ R"c((?:[L|l]ocation\:)\s+(.+[^\r\n])(?:\r\n))c" };
     const auto http_response_rgx = regex{ R"(^HTTP\/[\d.]+\s+(\d+)\s+(.*)$)" };
     constexpr int error_code = 400;
@@ -99,7 +101,18 @@ namespace
     {
         return "GET " + endpoint + " HTTP/1.0\r\n"
             + "Host: " + domain + "\r\n"
-            + "Accept: */*\r\n\r\n";;
+            + "User-Agent: curl/7.43.0\r\n"
+            + "Accept: */*\r\n\r\n";
+    }
+
+
+    void makeRequest(Tcp::Socket& sock, const std::string& request)
+    {
+        auto sent = sock.write(Tcp::MakeBuffer(request));
+        if (sent == 0)
+        {
+            throw runtime_error("Request fail: " + string{ strerror(errno) });
+        }
     }
 }
 
@@ -161,8 +174,27 @@ namespace Utility
             }
         }
     }
+}
+
+namespace
+{
+    void dlFromStreamService(const string& domain, const string& port, const string& endpoint, vector<unsigned char>& buffer, Tcp::StreamService& service)
+    {
+        auto sock = service.getFactory()->resolve(domain, port)->connect(service);
+        const auto req = prepareRequest(domain, endpoint);
+        makeRequest(sock, req);
+
+        Utility::fetchData(buffer, [&sock](Tcp::Buffer& b) -> int
+        {
+            return sock.readSome(b);
+        });
+    }
+}
 
 
+
+namespace Utility 
+{
     void dlFileToBuffer(const string& url, vector<unsigned char>& buffer)
     {
         auto result = getDomainPortEndpoint(url);
@@ -170,21 +202,18 @@ namespace Utility
         string port = get<1>(result);
         string endpoint = get<2>(result);
 
-        Tcp::StreamService service;
-        auto sock = service.getFactory()->resolve(domain, port)->connect(service);
+        bool is_https = url.find(https) != std::string::npos || port == ssl_port;
 
-        const auto req = prepareRequest(domain, endpoint);
-
-        auto sent = sock.write(Tcp::MakeBuffer(req));
-        if (sent == 0)
+        if (is_https)
         {
-            throw runtime_error("Request fail: " + string{ strerror(errno) });
+            thread_local Tcp::SslStreamService service;
+            dlFromStreamService(domain, ssl_port, endpoint, buffer, service);
         }
-
-        fetchData(buffer, [&sock](Tcp::Buffer& b) -> int
+        else
         {
-            return sock.readSome(b);
-        });
+            thread_local Tcp::StreamService service;
+            dlFromStreamService(domain, port, endpoint, buffer, service);
+        }
     }
 
 
