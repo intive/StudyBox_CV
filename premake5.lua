@@ -296,7 +296,18 @@ premake.override(premake.main, 'postAction', function(base)
     base()
 
     if action.os.type() == 'linux' then
-
+        local config = {}
+        if _OPTIONS['build'] == 'all' then
+            config = { 'release', 'debug', 'test' }
+        elseif _OPTIONS['build'] == 'app' then
+            config = { 'release' }
+        elseif _OPTIONS['build'] == 'test' or _OPTIONS['test'] then
+            config = { 'test' }
+        end
+        for k,v in pairs(config) do
+            print()
+            os.execute('cd build ; make config='..v..'_x64')
+        end
     elseif action.os.type() == 'windows' then
 
     end
