@@ -6,6 +6,7 @@
 #include <ctime>
 #include <locale>
 
+/// Zawiera informacje o obiekcie wysyłającym wiadomość.
 class LoggerInfo
 {
 public:
@@ -19,7 +20,7 @@ private:
     std::string loggerName;
 };
 
-
+/// Zawiera informacje o źródłowym wątku, z którego wysłana została wiadomość.
 class ThreadInfo
 {
 public:
@@ -33,6 +34,7 @@ private:
     std::size_t threadNumber;
 };
 
+/// Zawiera informacje o poziomie zgłaszanej wiadomości.
 class ErrorLevel
 {
 public:
@@ -45,6 +47,7 @@ private:
     LogConfig::LogLevel level;
 };
 
+/// Zawiera informacje o czasie w danym dniu.
 class Time
 {
 public:
@@ -59,6 +62,7 @@ private:
     std::tm* time;
 };
 
+/// Zawiera informacje o dacie.
 class Date
 {
 private:
@@ -78,6 +82,7 @@ public:
     const Time time;
 };
 
+/// Zawiera datę i dane podstawowe.
 class Timestamp
 {
 private:
@@ -90,6 +95,7 @@ public:
     const Date date;
 };
 
+/// Zawiera informacje o źródle wiadomości.
 class Attributes
 {
 public:
@@ -99,6 +105,7 @@ public:
     const LoggerInfo logger;
 };
 
+/// Zawiera informacje o wiadomości i jej zawartość.
 class Message
 {
 public:

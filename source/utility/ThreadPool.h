@@ -11,6 +11,12 @@
 
 namespace Utility {
 
+/// Klasa tworzy pulê w¹tków, które wykonuj¹ zadania dodane poprzez metodê add.
+/**
+ * Job to typ zadañ przekazywanych do obiektu.
+ * Handler to typ odpowiedzialny za obs³ugê zadañ. Typ void oznacza, ¿e Job nie potrzebuje obiektu obs³uguj¹cego.
+ * Klasa wykorzystuje EBCO w celu zmniejszenia wielkoœci obiektu.
+ */
 template<typename Job, typename Handler>
 class ThreadPool : private std::conditional<std::is_void<Handler>::value, std::true_type, Handler>::type
 {
@@ -18,18 +24,24 @@ public:
     typedef Handler HandlerType;
     typedef Job JobType;
 
+    /// Tworzy obiekt wykorzystuj¹cy Handler.
     template<typename... HandlerArgs, typename H = Handler, typename std::enable_if<!std::is_void<H>::value>::type* = nullptr>
     ThreadPool(std::size_t maxThreads, std::size_t maxLoad, HandlerArgs&&... args) : Handler(std::forward<HandlerArgs>(args)...), maxThreads(maxThreads), maxLoad(maxLoad), stop(false)
     {
         start();
     }
 
+    /// Tworzy obiekt nie wykorzystuj¹cy Handlera (= void).
     template<typename... HandlerArgs, typename H = Handler, typename std::enable_if<std::is_void<H>::value>::type* = nullptr>
     ThreadPool(std::size_t maxThreads, std::size_t maxLoad, HandlerArgs&&... args) : maxThreads(maxThreads), maxLoad(maxLoad), stop(false)
     {
         start();
     }
 
+    /// Zatrzymuje pracê w¹tków.
+    /**
+     * Obiekt nie ulegnie zniszczeniu dopóki obecnie wykonywane zadania nie zostan¹ zakoñczone.
+     */
     ~ThreadPool()
     {
         {
@@ -41,6 +53,10 @@ public:
             worker.join();
     }
 
+    /// Dodaje zadanie do puli zadañ.
+    /**
+     * @return false, je¿eli obci¹¿enie obiektu przekracza okreœlon¹ wartoœæ.
+     */
     template<typename JobT>
     bool add(JobT&& job)
     {
@@ -61,6 +77,7 @@ public:
 
 private:
 
+    /// Rozpoczyna pracê w¹tków.
     void start()
     {
         for (size_t i = 0; i < maxThreads; ++i)
@@ -87,12 +104,14 @@ private:
         );
     }
 
+    /// Wywo³uje zadanie bez wykorzystania obiektu obs³uguj¹cego.
     template<typename H = Handler, typename std::enable_if<std::is_void<H>::value>::type* = nullptr>
     void call(Job&& job)
     {
         std::move(job)();
     }
 
+    /// Wywo³uje zadanie z wykorzystaniem obiektu obs³uguj¹cego.
     template<typename H = Handler, typename std::enable_if<!std::is_void<H>::value>::type* = nullptr>
     void call(Job&& job)
     {

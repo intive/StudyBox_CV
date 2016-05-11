@@ -10,6 +10,7 @@
 
 #include "../utility/ThreadPool.h"
 
+/// Odpowiedzialny za obsługę wiadomości wysyłanych przez loggery.
 class LogTargetImpl
 {
 public:
@@ -23,14 +24,17 @@ public:
         bool flush;
     };
 
+    /// Tworzy nowy obiekt wykorzystujący podany strumień oraz funkcję formatującą rozkład wiadomości.
     LogTargetImpl(std::ostream& stream, LogConfig::Layout layout);
 
+    /// Dokonuje obsługi wiadomości.
     void operator ()(Message&& message);
 
 private:
-
+    /// Przygotowuje wiadomość do zapisu.
     std::string prepare(Message&& message);
 
+    /// Zwraca zarejestrowany numer wątku.
     std::size_t getThreadNumber(std::thread::id id);
 
     std::size_t messageCounter;
@@ -39,15 +43,17 @@ private:
     LogConfig::Layout layout;
 };
 
-
+/// Odpowiedzialny za demultipleksację wiadomości wysyłanych przez loggery.
 class LogTarget
 {
 private:
     typedef LogTargetImpl::Message Message;
 
 public:
+    /// Przekierowuje wartości do implementacji.
     LogTarget(std::ostream& stream, LogConfig::Layout layout, LogConfig::Timer timer);
 
+    /// Informuje implementację o nowej wiadomości.
     void notify(LogConfig::LogLevel level, std::string message, LoggerInfo info, bool flushFlag);
 
 private:
