@@ -6,6 +6,7 @@
 #include "request_router/SegmentationResponse.h"
 #include "request_router/TextAnalysisResponse.h"
 
+#include "log/Logger.h"
 
 void registerServices(Router::RequestRouter& router)
 {
@@ -16,7 +17,16 @@ void registerServices(Router::RequestRouter& router)
 
 int main()
 {
-    Router::RequestRouter router;
+    LogManager manager(std::cout, LogConfig::severity >= LogConfig::LogLevel::Trace,
+        [](Attributes&& attributes, Message&& message)
+    {
+        return attributes.timestamp.date.toIso8601() + '|' + std::to_string(attributes.thread.number()) + '|' + attributes.logger.name() +  ": " + message.what();
+    },
+        []
+    {
+        return std::time(nullptr);
+    });
+    Router::RequestRouter router(manager);
     registerServices(router);
 
     try

@@ -6,6 +6,8 @@
 #include <functional>
 #include "../httpserver/ServerUtilities.h"
 
+#include "../log/Logger.h"
+
 namespace Router
 {
     class RequestRouter
@@ -21,7 +23,7 @@ namespace Router
         std::map<std::string, EndpointHandler> services;
 
     public:
-        RequestRouter()                                = default;
+        RequestRouter(LogManager& logManager);
         ~RequestRouter()                               = default;
         RequestRouter(RequestRouter&&)                 = default;
         RequestRouter& operator=(RequestRouter&&)      = default;
@@ -52,6 +54,9 @@ namespace Router
          *   json z wiadomością o "internal server error" jeżeli złapano wyjątek podczas działania handlera.
          */
         Http::Response routeRequest(const Http::Request& request);
+
+    private:
+        BasicLogger<LogTarget, StringStreamFormatter> logger;
     };
 }
 
