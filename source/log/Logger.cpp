@@ -36,7 +36,7 @@ LogTarget::LogTarget(std::ostream& stream, LogConfig::Layout layout, LogConfig::
 {
 }
 
-void LogTarget::notify(LogConfig::LogLevel level, std::string message, LoggerInfo info, bool flushFlag)
+void LogTarget::operator ()(LogConfig::LogLevel level, std::string message, LoggerInfo info, bool flushFlag)
 {
     impl.add(Message{ level, timer(), message, std::this_thread::get_id(), std::move(info), flushFlag });
 }

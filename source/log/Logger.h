@@ -54,7 +54,7 @@ public:
     LogTarget(std::ostream& stream, LogConfig::Layout layout, LogConfig::Timer timer);
 
     /// Informuje implementację o nowej wiadomości.
-    void notify(LogConfig::LogLevel level, std::string message, LoggerInfo info, bool flushFlag);
+    void operator ()(LogConfig::LogLevel level, std::string message, LoggerInfo info, bool flushFlag);
 
 private:
     Utility::ThreadPool<Message, LogTargetImpl> impl;

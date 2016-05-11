@@ -56,7 +56,7 @@ namespace Router
         Http::Response routeRequest(const Http::Request& request);
 
     private:
-        BasicLogger<LogTarget, StringStreamFormatter> logger;
+        BasicLogger<StringStreamFormatter> logger;
     };
 }
 

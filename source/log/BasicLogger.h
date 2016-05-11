@@ -7,10 +7,11 @@
 #include <sstream>
 
 /// Klasa pozwalająca na opóźnienie wysłania wiadomości do loggera.
-template<typename Target>
 class LoggerOstream
 {
 public:
+    typedef std::function<void(LogConfig::LogLevel, std::string, LoggerInfo, bool)> Target;
+
     LoggerOstream(LogConfig::Severity::LevelType severity, LogConfig::LogLevel level, Target& target, LoggerInfo& info, bool flushFlag) : target(target), severity(severity), level(level), info(info), flushFlag(flushFlag)
     {
     }
@@ -34,7 +35,7 @@ public:
     {
         if (severity & level)
         {
-            target.notify(level, std::move(stream.str()), info, flushFlag);
+            target(level, std::move(stream.str()), info, flushFlag);
         }
     }
 
@@ -49,15 +50,15 @@ private:
 
 /// Podstawowa klasa odpowiedzialna za stworzenie front-endu dla użytkownika do logowania wiadomości.
 /**
- * Target musi implementować funkcję void notify(LogConfig::LogLevel level, std::string message, LoggerInfo info, bool flushFlag).
+ * Target musi implementować funkcję void operator ()(LogConfig::LogLevel level, std::string message, LoggerInfo info, bool flushFlag).
  * Formatter musi implementować funkcję std::string format(Args...).
  * Wykorzystuje EBCO w celu zaoszczędzenia miejsca w przypadku klasy nie mającej stanu.
  */
-template<typename Target, typename Formatter>
+template<typename Formatter>
 class BasicLogger : private Formatter
 {
 public:
-
+    typedef LoggerOstream::Target Target;
     /// Tworzy obiekt do logowania zdarzeń.
     /**
      * @param target obiekt odpowiedzialny za back-end logowania.
@@ -65,8 +66,8 @@ public:
      * @param info informacje dot. loggera.
      * @param formatterArgs... opcjonalne argumenty do obiektu formatującego logowaną wiadomość.
      */
-    template<typename LoggerInfoU, typename... U>
-    BasicLogger(Target& target, LogConfig::Severity::LevelType level, LoggerInfoU&& info, U&&... formatterArgs) : Formatter(std::forward<U>(formatterArgs)...), target(target), severity(level), loggerInfo(std::forward<LoggerInfoU>(info)), flushFlag(false)
+    template<typename TargetU, typename LoggerInfoU, typename... U>
+    BasicLogger(TargetU&& target, LogConfig::Severity::LevelType level, LoggerInfoU&& info, U&&... formatterArgs) : Formatter(std::forward<U>(formatterArgs)...), target(std::forward<TargetU>(target)), severity(level), loggerInfo(std::forward<LoggerInfoU>(info)), flushFlag(false)
     {
     }
 
@@ -105,17 +106,17 @@ public:
     {
         if (severity & level)
         {
-            target.notify(level, std::move(Formatter::format(std::forward<Ts>(ts)...)), loggerInfo, flushFlag);
+            target(level, std::move(Formatter::format(std::forward<Ts>(ts)...)), loggerInfo, flushFlag);
             flushFlag = false;
         }
     }
 
-    LoggerOstream<Target> log(LogConfig::LogLevel level)
+    LoggerOstream log(LogConfig::LogLevel level)
     {
-        return LoggerOstream<Target>(severity, level, target, loggerInfo, flushFlag);
+        return LoggerOstream(severity, level, target, loggerInfo, flushFlag);
     }
 
-    LoggerOstream<Target> operator ()(LogConfig::LogLevel level)
+    LoggerOstream operator ()(LogConfig::LogLevel level)
     {
         return log(level);
     }
@@ -128,7 +129,7 @@ public:
     }
 
 private:
-    Target& target;
+    Target target;
     LogConfig::Severity::LevelType severity;
     LoggerInfo loggerInfo;
     bool flushFlag;
@@ -153,46 +154,50 @@ public:
 
     /// Tworzy nowy obiekt loggera z podaną nazwą, poziomem obsługi zdarzeń oraz funkcją formatującą.
     template<typename Formatter, typename String>
-    BasicLogger<Target, Formatter> get(String&& name, LogConfig::Severity level, Formatter&& formatter)
+    BasicLogger<Formatter> get(String&& name, LogConfig::Severity level, Formatter&& formatter)
     {
+        using namespace std::placeholders;
         LoggerInfo info = { loggerCount++, std::forward<String>(name) };
-        return BasicLogger<Target, Formatter>(target, level, std::move(info), std::forward<Formatter>(formatter));
+        return BasicLogger<Formatter>(std::bind(target, std::ref(target), _1, _2, _3, _4), level, std::move(info), std::forward<Formatter>(formatter));
     }
 
     /// Tworzy nowy obiekt loggera z podaną nazwą, poziomem obsługi zdarzeń równym podanemu w konstruktorze obiektu oraz funkcją formatującą.
     template<typename Formatter, typename String>
-    BasicLogger<Target, Formatter> get(String&& name, Formatter&& formatter)
+    BasicLogger<Formatter> get(String&& name, Formatter&& formatter)
     {
+        using namespace std::placeholders;
         LoggerInfo info = { loggerCount++, std::forward<String>(name) };
-        return BasicLogger<Target, Formatter>(target, globalLevel, std::move(info), std::forward<Formatter>(formatter));
+        return BasicLogger<Formatter>(std::bind(target, std::ref(target), _1, _2, _3, _4), globalLevel, std::move(info), std::forward<Formatter>(formatter));
     }
 
     /// Tworzy nowy obiekt loggera z podaną nazwą, poziomem obsługi zdarzeń oraz domyślnym obiektem typu Formatter.
     template<typename Formatter, typename String>
-    BasicLogger<Target, Formatter> get(String&& name, LogConfig::Severity::LevelType level)
+    BasicLogger<Formatter> get(String&& name, LogConfig::Severity::LevelType level)
     {
+        using namespace std::placeholders;
         LoggerInfo info = { loggerCount++, std::forward<String>(name) };
-        return BasicLogger<Target, Formatter>(target, level, std::move(info));
+        return BasicLogger<Formatter>(std::bind(target, std::ref(target), _1, _2, _3, _4), level, std::move(info));
     }
 
     /// Tworzy nowy obiekt loggera z podaną nazwą, poziomem obsługi zdarzeń oraz domyślnym obiektem formatującym.
     template<typename String>
-    BasicLogger<Target, StringStreamFormatter> get(String&& name, LogConfig::Severity::LevelType level)
+    BasicLogger<StringStreamFormatter> get(String&& name, LogConfig::Severity::LevelType level)
     {
         return get<StringStreamFormatter>(std::forward<String>(name), level);
     }
 
     /// Tworzy nowy obiekt loggera z podaną nazwą, poziomem obsługi zdarzeń równym podanemu w konstruktorze obiektu oraz domyślnym obiektem typu Formatter.
     template<typename Formatter, typename String>
-    BasicLogger<Target, Formatter> get(String&& name)
+    BasicLogger<Formatter> get(String&& name)
     {
+        using namespace std::placeholders;
         LoggerInfo info = { loggerCount++, std::forward<String>(name) };
-        return BasicLogger<Target, Formatter>(target, globalLevel, std::move(info));
+        return BasicLogger<Formatter>(std::bind(&Target::operator(), std::ref(target), _1, _2, _3, _4), globalLevel, std::move(info));
     }
 
     /// Tworzy nowy obiekt loggera z podaną nazwą, poziomem obsługi zdarzeń równym podanemu w konstruktorze obiektu oraz domyślnym obiektem formatującym.
     template<typename String>
-    BasicLogger<Target, StringStreamFormatter> get(String&& name)
+    BasicLogger<StringStreamFormatter> get(String&& name)
     {
         return get<StringStreamFormatter>(std::forward<String>(name));
     }
