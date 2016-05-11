@@ -154,7 +154,7 @@ public:
 
     /// Tworzy nowy obiekt loggera z podaną nazwą, poziomem obsługi zdarzeń oraz funkcją formatującą.
     template<typename Formatter, typename String>
-    BasicLogger<Formatter> get(String&& name, LogConfig::Severity level, Formatter&& formatter)
+    BasicLogger<Formatter> get(String&& name, LogConfig::Severity::LevelType level, Formatter&& formatter)
     {
         using namespace std::placeholders;
         LoggerInfo info = { loggerCount++, std::forward<String>(name) };
