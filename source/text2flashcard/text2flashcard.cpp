@@ -27,3 +27,44 @@ Json::Array textToMarkersJson(const std::string& txt)
 
     return array;
 }
+
+Json::Array textToFlashcardJson(const std::string& txt)
+{
+    const std::string question = "question";
+    const std::string answer = "answer";
+
+    //uzywam funkcji analizy tekstu
+    std::vector<Markers> markers = findQA(txt);
+
+    Json array = Json::Array();
+    
+    for (size_t i = 0; i < markers.size(); ++i)
+    {
+        Json obj;
+        //"jedź" do przodu aż znajdziesz pytanie albo koniec wektora
+        if (markers[i].getType() != TextType::question)
+            continue;
+        std::string q = txt.substr(markers[i].getStart(), (markers[i].getEnd() - markers[i].getStart() + 1));
+        if (i == markers.size() - 1 )
+        {
+            continue;
+        }
+        //jezeli następne zdanie po pytaniu to nie odpowiedz to pomin markers[i] szukaj nastepnego pytania
+        if ((markers[++i]).getType() != TextType::answer)
+        {
+            continue;
+        }
+        
+        std::string a = txt.substr(markers[i].getStart(), (markers[i].getEnd() - markers[i].getStart() + 1));
+
+        obj = {
+            { question, q },
+            { answer, a }
+        };
+        
+        
+        array.push_back(obj);
+    }
+
+    return array;
+}
