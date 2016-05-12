@@ -168,6 +168,8 @@ BOOST_AUTO_TEST_CASE(Output)
     {
         std::stringstream ss;
         ss << file.rdbuf();
+        file.close();
+        std::remove("test.json");
         BOOST_TEST(ss.str() == testBatchExpect);
     }
     BOOST_TEST(oss1.str() == testBatchExpect);
@@ -182,7 +184,7 @@ BOOST_AUTO_TEST_CASE(Iterators)
     std::string testBatchArrayExpect = "[1,2,3,5,8]";
     std::string testBatchObjectExpect = R"({"testValue1":1,"testValue2":2,"testValue3":3,"testValue4":5,"testValue5":8})";
 
-    //Skoro s¹ null to mo¿e powinny zwróciæ true zamiast wyrzucaæ b³¹d?
+    //Skoro sÄ… null to moÅ¼e powinny zwrÃ³ciÄ‡ true zamiast wyrzucaÄ‡ bÅ‚Ä…d?
     BOOST_REQUIRE_THROW(testBatchArray.empty(), std::domain_error);
     BOOST_REQUIRE_THROW(testBatchObject.empty(), std::domain_error);
 
