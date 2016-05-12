@@ -7,6 +7,7 @@ namespace Rest {
 
     constexpr auto SEGMENTATION_ENDPOINT = "/api/segment";
     constexpr auto TEXT_ANALYSIS_ENDPOINT = "/api/analysis";
+    constexpr auto FLASHCARDS_ENDPOINT = "/api/flashcards";
 
     } // namespace Endpoint
 
@@ -18,6 +19,8 @@ namespace Rest {
     constexpr auto TEXT_ANALYSIS_RESULTS = "results";
 
     constexpr auto SEGMENTATION_COORDINATES = "coordinates";
+
+    constexpr auto FLASHCARDS = "flashcards";
 
         namespace ErrorStrings {
 
@@ -40,6 +43,8 @@ namespace Rest {
 
         constexpr auto TEXT_ANALYSIS_TEXT_FOR_ANALYSIS = "text_for_analysis";
         constexpr auto SEGMENTATION_ACTION = "Segmentation";
+        constexpr auto TEXT_TO_FLASHCARD = "TextToFlashcard";
+        constexpr auto IMG_TO_FLASHCARD = "ImageToFlashcard";
 
     } // namespace Request
 
