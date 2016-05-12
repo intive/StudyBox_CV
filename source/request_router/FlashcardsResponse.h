@@ -1,4 +1,4 @@
-#ifndef FLASHCARD_RESPONSE_H
+ï»¿#ifndef FLASHCARD_RESPONSE_H
 #define FLASHCARD_RESPONSE_H
 
 #include <string>
@@ -10,10 +10,10 @@ namespace Router
 }
 
 
-// Tworzy odpowiedŸ na zapytanie zamiany obrazka / pliku tekstowego na fiszki
+// Tworzy odpowiedÅº na zapytanie zamiany obrazka / pliku tekstowego na fiszki
 std::pair<std::string, int> FlashcardsResponse(const std::string& body, std::string(*textFetcher)(const std::string&));
 
-// Dodaje obs³ugê ¿¹dania przetwarzania obrazka / pliku tekstowego na fiszki do RequestRouter
+// Dodaje obsÅ‚ugÄ™ Å¼Ä…dania przetwarzania obrazka / pliku tekstowego na fiszki do RequestRouter
 void registerFlashcardsResponse(Router::RequestRouter& router);
 
 
