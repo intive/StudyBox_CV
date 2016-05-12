@@ -62,6 +62,6 @@ void registerFlashcardsResponse(Router::RequestRouter& router)
 {
     router.registerEndPointService(Rest::Endpoint::FLASHCARDS_ENDPOINT, [](const std::string& body)
     {
-        return FlashcardsResponse(body, getTextFromDisk);
+        return FlashcardsResponse(body, getTextFromHttp);
     });
 }
