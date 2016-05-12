@@ -10,7 +10,7 @@ setup.nuget = {}
 setup.linux = {}
 
 function action.os.type()
-    if string.find(_ACTION, 'vs[0-9]*') then
+    if _ACTION and string.find(_ACTION, 'vs[0-9]*') then
         return 'windows'
     elseif
         _ACTION == 'gmake' or
@@ -286,35 +286,65 @@ workspace 'StudyBox_CV'
 premake.override(premake.main, 'preAction', function(base)
     base()
 
+    io.stdout:setvbuf('no')
+
     if _OPTIONS['clean'] then
+        print('Cleaning bin and build directories...')
         os.rmdir('./build')
         os.rmdir('./bin')
+        if action.os.type() == 'windows' and _OPTIONS['build'] then
+            setup.nuget.config()
+            setup.nuget.packages()
+        end
     end
 end)
 
 premake.override(premake.main, 'postAction', function(base)
     base()
 
-    if action.os.type() == 'linux' then
-        local config = {}
-        if _OPTIONS['build'] == 'all' then
-            config = { 'release', 'debug', 'test' }
-        elseif _OPTIONS['build'] == 'app' then
-            config = { 'release' }
-        elseif _OPTIONS['build'] == 'test' or _OPTIONS['test'] then
-            config = { 'test' }
-        end
-        for k,v in pairs(config) do
-            print()
-            os.execute('cd build ; make config='..v..'_x64')
-        end
-    elseif action.os.type() == 'windows' then
-
+    local builds = {}
+    if _OPTIONS['build'] == 'all' then
+        builds = { 'release', 'debug', 'test' }
+    elseif _OPTIONS['build'] == 'app' then
+        builds = { 'release' }
+    elseif _OPTIONS['build'] == 'test' or _OPTIONS['test'] then
+        builds = { 'test' }
     end
 
-    if _OPTIONS['test'] then
-        print()
-        os.execute('"'..PROJ_ROOT..'/bin/x64/Test/StudyBox_CV"')
+    local runs = nil
+    if _OPTIONS['run'] == 'app' then
+        runs = 'Release'
+    elseif _OPTIONS['run'] == 'test' or _OPTIONS['test'] then
+        runs = 'Test'
+    end
+
+    if next(builds) then
+        if action.os.type() == 'windows' then
+            local file = io.open('build/nuget.exe')
+            if file == nil then
+                print('Downloading `nuget.exe`...')
+                os.execute('powershell wget dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile build/nuget.exe')
+                print('Resolving dependancies...')
+                os.execute('cd build & call "%VS'..action.vs.toolset()..'COMNTOOLS%VsMSBuildCmd.bat" & nuget restore /Verbosity quiet')
+            else
+                file:close()
+            end
+        end
+
+        for k,v in pairs(builds) do
+            print()
+            if action.os.type() == 'linux' then
+                os.execute('cd build ; make config='..v..'_x64')
+            elseif action.os.type() == 'windows' then
+                print('Building `'..v..'`...')
+                os.execute('cd build & call "%VS'..action.vs.toolset()..'COMNTOOLS%VsMSBuildCmd.bat" & msbuild /nologo /v:quiet /clp:ErrorsOnly /p:Configuration='..v)
+            end
+        end
+    end
+
+    if runs then
+        print('\nRunning `'..runs..'`...\n')
+        os.execute('"'..PROJ_ROOT..'/bin/x64/'..runs..'/StudyBox_CV"') 
     end
 end)
 
@@ -327,7 +357,7 @@ newoption {
 
 newoption {
     trigger = 'build',
-    value = 'build',
+    value = 'VALUE',
     description = 'Build configuration',
     allowed = {
         { 'all', 'All' },
@@ -339,6 +369,16 @@ newoption {
 newoption {
     trigger = 'clean',
     description = 'Remove build and bin directories'
+}
+
+newoption {
+    trigger = 'run',
+    value = 'default',
+    description = 'Runs specified target',
+    allowed = {
+        { 'app', 'Application' },
+        { 'test', 'Test' }
+    }
 }
 
 -- Extra actions --
