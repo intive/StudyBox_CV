@@ -49,7 +49,11 @@ std::pair<std::string, int> FlashcardsResponse(const std::string& body, std::str
             return;
         }
 
-        std::string text = (action == Rest::Request::IMG_TO_FLASHCARD) ? /* imageToText(url) */ "" : textFetcher(url);
+        std::string text;
+        if (action == Rest::Request::IMG_TO_FLASHCARD)
+            text = ""; // Miejsce na wywołanie OCR
+        else
+            text = textFetcher(url);
 
         status = Http::Response::Status::Ok;
         response[Rest::Response::FLASHCARDS] = textToFlashcardJson(text);
