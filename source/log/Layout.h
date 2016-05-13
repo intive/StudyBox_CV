@@ -35,10 +35,10 @@ private:
 };
 
 /// Zawiera informacje o poziomie zgłaszanej wiadomości.
-class ErrorLevel
+class EventLogLevel
 {
 public:
-    ErrorLevel(LogConfig::LogLevel level);
+    EventLogLevel(LogConfig::LogLevel level);
 
     const std::string& name() const;
     LogConfig::LogLevel value() const;
@@ -100,7 +100,7 @@ class Attributes
 {
 public:
     const Timestamp timestamp;
-    const ErrorLevel level;
+    const EventLogLevel level;
     const ThreadInfo thread;
     const LoggerInfo logger;
 };

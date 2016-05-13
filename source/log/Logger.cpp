@@ -15,7 +15,7 @@ void LogTargetImpl::operator ()(Message&& message)
 std::string LogTargetImpl::prepare(Message&& message)
 {
     Timestamp timestamp{ std::move(message.time) };
-    ErrorLevel level{ message.level };
+    EventLogLevel level{ message.level };
     ThreadInfo thread{ message.threadId, getThreadNumber(message.threadId) };
     LoggerInfo log{ std::move(message.logger) };
     Attributes attributes{ std::move(timestamp), std::move(level), std::move(thread), std::move(log) };

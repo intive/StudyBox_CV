@@ -31,15 +31,15 @@ std::size_t ThreadInfo::number() const
 }
 
 
-ErrorLevel::ErrorLevel(LogConfig::LogLevel level) : level(level)
+EventLogLevel::EventLogLevel(LogConfig::LogLevel level) : level(level)
 {
 }
 
-const std::string& ErrorLevel::name() const
+const std::string& EventLogLevel::name() const
 {
     return LogConfig::LogLevelStrings[LogConfig::GetIndexForLevel(level)];
 }
-LogConfig::LogLevel ErrorLevel::value() const
+LogConfig::LogLevel EventLogLevel::value() const
 {
     return level;
 }
