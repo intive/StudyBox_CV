@@ -203,7 +203,7 @@ public:
     }
 
     /// Zwraca poziom obsługi zdarzeń.
-    const LogConfig::Severity& level() const
+    const LogConfig::Severity::LevelType& level() const
     {
         return globalLevel;
     }
