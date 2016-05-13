@@ -14,7 +14,7 @@ public:
     Flashcard(const std::string& q, const std::string& a, const std::vector<std::string>& t)
         :question(q)
         , answer(a)
-    , tips(t)
+        , tips(t)
     {};
     std::string getQuestion() const;
     std::string getAnswer() const;
