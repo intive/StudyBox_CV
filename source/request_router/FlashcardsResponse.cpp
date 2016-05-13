@@ -46,7 +46,7 @@ std::pair<std::string, int> FlashcardsResponse(const std::string& body, std::str
         if (action != Rest::Request::IMG_TO_FLASHCARD && action != Rest::Request::TEXT_TO_FLASHCARD)
         {
             CreateBadRequestError(status, response, Rest::Response::ErrorStrings::BAD_ACTION);
-            response[Rest::Response::STATUS] = 0;
+            response[Rest::Response::STATUS] = Rest::Response::FLASHCARDS_STATUS_FAILURE;
             return;
         }
 

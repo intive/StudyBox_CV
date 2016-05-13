@@ -21,6 +21,7 @@ namespace Rest {
     constexpr auto SEGMENTATION_COORDINATES = "coordinates";
 
     constexpr auto FLASHCARDS = "flashcards";
+    constexpr auto FLASHCARDS_STATUS_FAILURE = 0;
 
         namespace ErrorStrings {
 
