@@ -14,7 +14,7 @@ namespace Router
 
         if (func == services.end())
         {
-            logger.info("request endpoint not found, return code ", static_cast<int>(Http::Response::Status::NotFound));
+            logger.info("request endpoint ", request.uri().raw(), " not found, return code ", static_cast<int>(Http::Response::Status::NotFound));
             return Http::Response(
                 Http::Response::Status::NotFound,
                 R"({"error":"no service for )" + request.uri().raw() + R"("})",
