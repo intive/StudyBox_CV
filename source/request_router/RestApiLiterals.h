@@ -18,6 +18,7 @@ namespace Rest {
     constexpr auto TEXT_ANALYSIS_RESULTS = "results";
 
     constexpr auto SEGMENTATION_COORDINATES = "coordinates";
+    constexpr auto SEGMENTATION_STATUS_FAILURE = 2;
 
         namespace ErrorStrings {
 
