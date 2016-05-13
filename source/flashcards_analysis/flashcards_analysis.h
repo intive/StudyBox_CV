@@ -10,7 +10,7 @@ class Flashcard
     std::string answer;
     std::vector<std::string> tips;
 public:
-    Flashcard(std::string q, std::string a, std::vector<std::string> t)
+    Flashcard(const std::string &q, const std::string &a, const std::vector<std::string> &t)
         :question(q)
         , answer(a)
     , tips(t)
@@ -20,7 +20,7 @@ public:
     std::vector<std::string> getTips() const;
 };
 
-std::vector<Flashcard> flashcardsFromImage(const cv::Mat img);
-Json::Array flashcardsToJson(const std::vector<Flashcard> flashcards);
+std::vector<Flashcard> flashcardsFromImage(const &cv::Mat img);
+Json::Array flashcardsToJson(const std::vector<Flashcard> &flashcards);
 
 #endif
