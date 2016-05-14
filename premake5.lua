@@ -292,7 +292,7 @@ end)
 premake.override(premake.main, 'postAction', function(base)
     base()
 
-    local builds = {}
+    local builds = nil
     if _OPTIONS['build'] == 'all' then
         builds = { 'release', 'debug', 'test' }
     elseif _OPTIONS['build'] == 'app' then
@@ -317,7 +317,7 @@ premake.override(premake.main, 'postAction', function(base)
         setup.linux.tesseract()
     end
 
-    if next(builds) then
+    if builds then
         if action.os.type() == 'windows' then
             local file = io.open('build/nuget.exe')
             if file == nil then
