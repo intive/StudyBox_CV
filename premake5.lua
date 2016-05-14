@@ -303,6 +303,13 @@ end)
 premake.override(premake.main, 'postAction', function(base)
     base()
 
+    local setups = nil
+    if action.os.type() == 'windows' then
+        setups = setup.nuget
+    elseif action.os.type() == 'linux' then
+        setups = setup.linux
+    end
+
     local builds = nil
     if _OPTIONS['build'] == 'all' then
         builds = { 'release', 'debug', 'test' }
@@ -319,13 +326,8 @@ premake.override(premake.main, 'postAction', function(base)
         runs = 'Test'
     end
 
-    if action.os.type() == 'windows' then
-        setup.nuget.config()
-        setup.nuget.packages()
-    elseif action.os.type() == 'linux' then
-        setup.linux.boost()
-        setup.linux.opencv()
-        setup.linux.tesseract()
+    if setups then
+        for k,v in pairs(setups) do v() end
     end
 
     if builds then
