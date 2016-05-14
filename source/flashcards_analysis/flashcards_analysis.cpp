@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <iterator>
 
 #include <opencv2/imgcodecs.hpp>
@@ -10,13 +10,15 @@
 #include "../ocr/Ocr.hpp"
 
 
+
 namespace
 {
-    // Granice kolor�w w Hue
+    // Granice kolorów w Hue
     // (OpenCV koduje H na 0 - 179)
-    constexpr auto RedGreen = 30;
-    constexpr auto GreenBlue = 90;
-    constexpr auto BlueRed = 150;
+    constexpr unsigned char RedGreen = 30;
+    constexpr unsigned char GreenBlue = 90;
+    constexpr unsigned char BlueRed = 150;
+    constexpr unsigned char SaturValueThreshold = 127;
 
     constexpr unsigned char PixelMaxValue = 255;
 
@@ -73,7 +75,7 @@ public:
     std::vector<std::string> getTips() const { return tips; };
 };
 
-
+// Zwraca strukturę z 3 macierzami, które zawierają kolejno kanały Hue, Saturation i Value przestrzeni HSV.
 V3M getHSV(const cv::Mat& img)
 {
     cv::Mat img_hsv;
@@ -89,6 +91,9 @@ V3M getHSV(const cv::Mat& img)
     return hsv;
 }
 
+// Przetwarza otrzymane fiszki, by uzyskać prostokąty z obrotem 0 stopni.
+// Dodatkowo zmniejsza obszar, tak by Rectangle nie obejmował ramki 
+// (czasem OCR nie chciał współpracować jeśli tekst był w ramce)
 Rectangle getRectangleWithoutFrame(const Rectangle& r, int width)
 {
     return Rectangle{ cv::RotatedRect(
@@ -97,7 +102,7 @@ Rectangle getRectangleWithoutFrame(const Rectangle& r, int width)
         0) };
 }
 
-
+// Wykorzystuje findContours z OpenCV do znalezienia współrzędnych ramek.
 std::vector<Rectangle> getRectangles(const cv::Mat& img)
 {
     std::vector<std::vector<cv::Point>> contours;
@@ -123,28 +128,31 @@ void sortFlashcardsInOrder(Rects& questions, Rects& tips, Rects& answers)
     std::sort(begin(answers), end(answers), sort_rectangle_by_y());
 }
 
+// Grupuje wykryte ramki w fiszki w przypadku wielu fiszek na jednym obrazku
+// Funkcjonuje wg założenia, że podpowiedzi są pod pytaniem
 std::vector<FlashcardRectangles> groupRectsIntoFlashcards(Rects& questions, Rects& tips, Rects& answers)
 {
-    size_t q_n = questions.size();
+    size_t questions_amount = questions.size();
     std::vector<FlashcardRectangles> v;
 
-    for (size_t i = 0; i < q_n; i++)
+    for (size_t i = 0; i < questions_amount; i++)
     {
         FlashcardRectangles fcr;
         fcr.Question = questions[i];
         fcr.Answer = answers[i];
 
 
-        float q_y = questions[i].center.y;
-        if (i == q_n - 1)
+        float question_Y = questions[i].center.y;
+        if (i == questions_amount - 1)
         {
-            // Ostatnia fiszka, inny predykat kopiuj�cy
-            std::copy_if(begin(tips), end(tips), std::back_inserter(fcr.Tips), [&](const Rectangle& r) -> bool { return q_y < r.center.y; });
+            // Ostatnia fiszka, kopiujemy wszystkie podpowiedzi pod obecnym pytaniem
+            std::copy_if(begin(tips), end(tips), std::back_inserter(fcr.Tips), [&](const Rectangle& r) -> bool { return question_Y < r.center.y; });
         }
         else
         {
-            float next_q_y = questions[i + 1].center.y;
-            std::copy_if(begin(tips), end(tips), std::back_inserter(fcr.Tips), [&](const Rectangle& r) -> bool { return q_y < r.center.y &&  r.center.y < next_q_y; });
+            // Wyłuskiwanie podpowiedzi leżących na osi Y między obecnie przetwarzanym pytaniem a następnym
+            float next_question_Y = questions[i + 1].center.y;
+            std::copy_if(begin(tips), end(tips), std::back_inserter(fcr.Tips), [&](const Rectangle& r) -> bool { return question_Y < r.center.y &&  r.center.y < next_question_Y; });
         }
 
         v.emplace_back(fcr);
@@ -167,15 +175,17 @@ std::vector<FlashcardRectangles> detectRectangles(const V3M& frames)
     if (questions.size() != answers.size())
         throw std::runtime_error("Amount of questions does not match amount of answers");
 
-    sortFlashcardsInOrder(questions, tips, answers);
 
     if (questions.size() == 1)
         return std::vector<FlashcardRectangles>{FlashcardRectangles(questions[0], tips, answers[0])};
+
+    sortFlashcardsInOrder(questions, tips, answers);
 
     return groupRectsIntoFlashcards(questions, tips, answers);
 }
 
 
+// Utworzenie 3 binarnych obrazów dla każdego zakresu kolorów z zaznaczonymi ramkami
 V3M getMatricesWithFrames(const cv::Mat& img)
 {
     V3M hsv = getHSV(img);
@@ -191,34 +201,35 @@ V3M getMatricesWithFrames(const cv::Mat& img)
 
     for (int i = 0; i < elements; i++)
     {
+        // Warunkiem złapania ramki są: Saturation > 0.5 i Value > 0.5
         unsigned char pixel_saturation = hsv.SG.at<unsigned char>(i);
         unsigned char pixel_value = hsv.VB.at<unsigned char>(i);
 
-        if (pixel_saturation < 50 || pixel_value < 50)
-            continue;
-
-        unsigned char pixel_hue = hsv.HR.at<unsigned char>(i);
-        if (pixel_hue < RedGreen || pixel_hue > BlueRed)
+        if (pixel_saturation > SaturValueThreshold && pixel_value > SaturValueThreshold)
         {
-            // Czerwony: 0 - 30  & 150 - 179
-            rgb.HR.at<unsigned char>(i) = PixelMaxValue;
-        }
-        else if (pixel_hue > RedGreen && pixel_hue < GreenBlue)
-        {
-            // Zielony: 30 - 90
-            rgb.SG.at<unsigned char>(i) = PixelMaxValue;
-        }
-        else
-        {
-            // Niebieski: 90 - 15
-            rgb.VB.at<unsigned char>(i) = PixelMaxValue;
+            unsigned char pixel_hue = hsv.HR.at<unsigned char>(i);
+            if (pixel_hue < RedGreen || pixel_hue > BlueRed)
+            {
+                // Czerwony: 0 - 30  & 150 - 179
+                rgb.HR.at<unsigned char>(i) = PixelMaxValue;
+            }
+            else if (pixel_hue > RedGreen && pixel_hue < GreenBlue)
+            {
+                // Zielony: 30 - 90
+                rgb.SG.at<unsigned char>(i) = PixelMaxValue;
+            }
+            else
+            {
+                // Niebieski: 90 - 150
+                rgb.VB.at<unsigned char>(i) = PixelMaxValue;
+            }
         }
     }
 
     return rgb;
 }
 
-
+// Oblicza szerokość obramowania na podstawie binarnego obrazu zawierającego tylko ramkę/i
 int calculateFrameWidth(const cv::Mat& img)
 {
     int rows = img.rows;
@@ -248,9 +259,9 @@ int calculateFrameWidth(const cv::Mat& img)
 std::vector<Flashcard> inspectImage(cv::Mat& img)
 {
     auto frames = getMatricesWithFrames(img);
-    auto result = detectRectangles(frames);
+    auto rectangles = detectRectangles(frames);
 
-    cv::Rect first_question(result[0].Question.topLeft(), result[0].Question.bottomRight());
+    cv::Rect first_question(rectangles[0].Question.topLeft(), rectangles[0].Question.bottomRight());
     cv::Mat bin_img_of_first_question(frames.HR, first_question);
     int frame_width = calculateFrameWidth(bin_img_of_first_question);
 
@@ -259,7 +270,7 @@ std::vector<Flashcard> inspectImage(cv::Mat& img)
 
     std::vector<Flashcard> flashcards;
 
-    for (const auto& fcr : result)
+    for (const auto& fcr : rectangles)
     {
         auto question = ocr.recognize(getRectangleWithoutFrame(fcr.Question, frame_width));
         auto answer = ocr.recognize(getRectangleWithoutFrame(fcr.Answer,   frame_width));
