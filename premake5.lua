@@ -160,6 +160,13 @@ function setup.linux.tesseract()
     end
 end
 
+function setup.linux.openssl()
+    if os.execute('sudo dpkg -s libssl-dev > /dev/null 2>&1') ~= 0 then
+        print('Setting up "OpenSSL"')
+        os.execute('sudo apt-get update; sudo apt-get install --yes libssl-dev')
+    end
+end
+
 -- Premake rules --
 
 workspace 'StudyBox_CV'
