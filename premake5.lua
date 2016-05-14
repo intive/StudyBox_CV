@@ -251,9 +251,6 @@ workspace 'StudyBox_CV'
                     '"$(TargetDir)\\$(TargetName).exe" --result_code=no --report_level=short'
                 }
 
-            setup.nuget.config()
-            setup.nuget.packages()
-
         elseif action.os.type() == 'linux' then
             includedirs {
                 'usr/local/include'
@@ -276,9 +273,6 @@ workspace 'StudyBox_CV'
                 links {
                     'boost_unit_test_framework'
                 }
-            setup.linux.boost()
-            setup.linux.opencv()
-            setup.linux.tesseract()
         end
 
 -- Premake overrides --
@@ -292,10 +286,6 @@ premake.override(premake.main, 'preAction', function(base)
         print('Cleaning bin and build directories...')
         os.rmdir('./build')
         os.rmdir('./bin')
-        if action.os.type() == 'windows' and _OPTIONS['build'] then
-            setup.nuget.config()
-            setup.nuget.packages()
-        end
     end
 end)
 
@@ -316,6 +306,15 @@ premake.override(premake.main, 'postAction', function(base)
         runs = 'Release'
     elseif _OPTIONS['run'] == 'test' or _OPTIONS['test'] then
         runs = 'Test'
+    end
+
+    if action.os.type() == 'windows' then
+        setup.nuget.config()
+        setup.nuget.packages()
+    elseif action.os.type() == 'linux' then
+        setup.linux.boost()
+        setup.linux.opencv()
+        setup.linux.tesseract()
     end
 
     if next(builds) then
