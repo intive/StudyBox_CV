@@ -56,6 +56,9 @@ public:
     // na podstawie wzoru: cv::max(image.cols, image.rows) / 120
     static std::vector<Rectangle> segment(const cv::Mat& image, const int elemSize = 16);
 
+    // Funkcja eliminuje krzywiznę tekstu
+    static cv::Mat deskew(const cv::Mat& source, const Rectangle& rect);
+
 protected:
     // Zwraca ciąg znaków rozpoznany przez tesseract
     std::string getText();

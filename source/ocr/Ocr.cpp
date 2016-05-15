@@ -125,3 +125,12 @@ std::vector<Rectangle> Ocr::segment(const cv::Mat& image, const int elemSize)
 
     return rects;
 }
+
+cv::Mat Ocr::deskew(const cv::Mat& source, const Rectangle& rect)
+{
+    cv::Mat image;
+    const cv::Mat tm = cv::getRotationMatrix2D(rect.center, rect.angle, 1.0);
+    cv::warpAffine(source, image, tm, source.size(), CV_INTER_CUBIC);
+    cv::getRectSubPix(image, rect.size, rect.center, image);
+    return image;
+}
