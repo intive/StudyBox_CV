@@ -59,6 +59,10 @@ public:
     // Funkcja eliminuje krzywiznę tekstu
     static cv::Mat deskew(const cv::Mat& source, const Rectangle& rect);
 
+    // Funkcja przeprowadza binaryzację obrazu
+    // Argument parts określa ilość przedziałów binaryzacji
+    static void binarize(cv::Mat& image, const int parts = 1);
+
 protected:
     // Zwraca ciąg znaków rozpoznany przez tesseract
     std::string getText();

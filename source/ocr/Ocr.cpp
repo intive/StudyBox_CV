@@ -134,3 +134,27 @@ cv::Mat Ocr::deskew(const cv::Mat& source, const Rectangle& rect)
     cv::getRectSubPix(image, rect.size, rect.center, image);
     return image;
 }
+
+void Ocr::binarize(cv::Mat& image, const int parts)
+{
+    if (image.type() != CV_8UC1)
+        cv::cvtColor(image, image, CV_BGR2GRAY);
+
+    for (int i = 0; i < parts; i++)
+    {
+        int step = image.cols / parts + image.cols % parts;
+        cv::Rect rect(i * step, 0, step, image.rows);
+
+        int off = rect.x + rect.width - image.cols;
+        if (off > 0)
+        {
+            rect.width -= off;
+        }
+
+        const cv::Mat roi(image, rect);
+        cv::threshold(roi, roi, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+    }
+
+    const cv::Mat kernel = cv::getStructuringElement(CV_SHAPE_RECT, cv::Size(2, 2));
+    cv::morphologyEx(image, image, cv::MorphTypes::MORPH_ERODE, kernel, cv::Point(-1, -1), 1);
+}
