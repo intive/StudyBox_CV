@@ -1,6 +1,9 @@
 #include "Ocr.hpp"
 
 #include <memory>
+#include <algorithm>
+
+#include "../segmentation/Segmentation.hpp"
 
 Ocr::Ocr(const std::string& datapath, const std::string& language, const std::string& dictpath)
     : dict(dictpath.empty() ? Json(nullptr) : Json::deserialize(dictpath))
@@ -90,4 +93,35 @@ void Ocr::resize(cv::Mat& image, const size_t size)
 {
     const double scale = 1.0 / cv::max((float)image.cols / size, (float)image.rows / size);
     cv::resize(image, image, cv::Size(), scale, scale, CV_INTER_CUBIC);
+}
+
+std::vector<Rectangle> Ocr::segment(const cv::Mat& image, const int elemSize)
+{
+    Segmentation segmentator;
+    segmentator.SetImage(image);
+    segmentator.SetMorphEllipseSize(cv::Size(elemSize, elemSize));
+    segmentator.SetMorphRectSize(cv::Size(2 * elemSize + 1, elemSize - 1));
+    std::vector<Rectangle> rects = segmentator.CreateRectangles();
+
+    rects.erase(std::remove_if(rects.begin(), rects.end(), [=](const Rectangle& rect)
+    {
+        int threshold = 2 * elemSize;
+        if (rect.size.width < threshold || rect.size.height < threshold)
+            return true;
+        else
+            return false;
+    }), rects.end());
+
+    for (auto& rect : rects)
+    {
+        if (rect.angle < -45.0f)
+        {
+            rect.angle = 90.0f + rect.angle;
+            rect.size = cv::Size2f(rect.size.height, rect.size.width);
+        }
+    }
+
+    std::reverse(rects.begin(), rects.end());
+
+    return rects;
 }

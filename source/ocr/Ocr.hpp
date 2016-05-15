@@ -51,6 +51,11 @@ public:
     // Funkcja skaluje obraz do określonego rozmiaru
     static void resize(cv::Mat& image, const size_t size = 1944);
 
+    // Funkcja segmentuje obraz
+    // Rozmiar elementu strukturującego dla standardowej wielkości czcionki można wyznaczyć
+    // na podstawie wzoru: cv::max(image.cols, image.rows) / 120
+    static std::vector<Rectangle> segment(const cv::Mat& image, const int elemSize = 16);
+
 protected:
     // Zwraca ciąg znaków rozpoznany przez tesseract
     std::string getText();
