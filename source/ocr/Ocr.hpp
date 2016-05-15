@@ -18,7 +18,7 @@ public:
     static constexpr auto DICT_PATH = ABSOLUTE_PATH "/res/tessdata/custom.json";
 
     // Domyślny zestaw języków
-    static constexpr auto LANGUAGES = "pol+eng";
+    static constexpr auto DEFAULT_LANGUAGE = "pol+eng";
 
     // Inicjializuje silnik zestawem argumentów domyślnych
     Ocr();
@@ -29,7 +29,7 @@ public:
     // kody języków można wywnioskować z nazw plików z danymi wyuczonymi (".traineddata")
     // Można opcjonalnie dodać słownik poprawiający zdefiniowane błędy korzystając z ustalonego formatu json,
     // czyli listy obiektów, gdzie nazwą jest tekst poprawny, a wartością jest lista z tekstami błędnymi
-    Ocr(const std::string& datapath, const std::string& language = "pol+eng", const std::string& dictpath = "");
+    Ocr(const std::string& datapath, const std::string& language = DEFAULT_LANGUAGE, const std::string& dictpath = "");
 
     // Destruktor
     ~Ocr();

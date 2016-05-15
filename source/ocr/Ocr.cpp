@@ -6,7 +6,7 @@
 #include "../segmentation/Segmentation.hpp"
 
 Ocr::Ocr()
-    : Ocr(TESSDATA_PATH, LANGUAGES, DICT_PATH)
+    : Ocr(TESSDATA_PATH, DEFAULT_LANGUAGE, DICT_PATH)
 {
 
 }
