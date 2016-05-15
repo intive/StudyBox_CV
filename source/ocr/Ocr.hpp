@@ -63,6 +63,9 @@ public:
     // Argument parts określa ilość przedziałów binaryzacji
     static void binarize(cv::Mat& image, const int parts = 1);
 
+    // Funkcja przetwarza obraz dla OCR
+    static std::vector<cv::Mat> preprocess(cv::Mat& source);
+
 protected:
     // Zwraca ciąg znaków rozpoznany przez tesseract
     std::string getText();

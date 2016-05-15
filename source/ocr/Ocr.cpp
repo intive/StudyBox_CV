@@ -158,3 +158,19 @@ void Ocr::binarize(cv::Mat& image, const int parts)
     const cv::Mat kernel = cv::getStructuringElement(CV_SHAPE_RECT, cv::Size(2, 2));
     cv::morphologyEx(image, image, cv::MorphTypes::MORPH_ERODE, kernel, cv::Point(-1, -1), 1);
 }
+
+std::vector<cv::Mat> Ocr::preprocess(cv::Mat& source)
+{
+    denoise(source);
+    resize(source);
+    const auto rects = segment(source);
+    std::vector<cv::Mat> images;
+    for (const auto& rect : rects)
+    {
+        cv::Mat image = deskew(source, rect);
+        const int parts = 1 + 9 * image.cols / source.cols;
+        binarize(image, parts);
+        images.push_back(image);
+    }
+    return images;
+}
