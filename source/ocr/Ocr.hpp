@@ -45,6 +45,9 @@ public:
     // Zwraca rozpoznany ciąg znaków z określonego obszaru danego obrazu
     std::string recognize(const cv::Mat& image, const Rectangle& rect);
 
+    // Funkcja usuwa szum z obrazu
+    static void denoise(cv::Mat& image, const float strength = 3.0f);
+
 protected:
     // Zwraca ciąg znaków rozpoznany przez tesseract
     std::string getText();

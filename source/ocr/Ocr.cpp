@@ -80,3 +80,8 @@ void Ocr::fixErrors(std::string& text) const
         }
     }
 }
+
+void Ocr::denoise(cv::Mat& image, const float strength)
+{
+    cv::fastNlMeansDenoisingColored(image, image, strength, strength, 7, 21);
+}
