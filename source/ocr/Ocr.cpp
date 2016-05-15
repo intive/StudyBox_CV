@@ -5,6 +5,12 @@
 
 #include "../segmentation/Segmentation.hpp"
 
+Ocr::Ocr()
+    : Ocr(TESSDATA_PATH, LANGUAGES, DICT_PATH)
+{
+
+}
+
 Ocr::Ocr(const std::string& datapath, const std::string& language, const std::string& dictpath)
     : dict(dictpath.empty() ? Json(nullptr) : Json::deserialize(dictpath))
 {

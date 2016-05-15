@@ -11,6 +11,18 @@
 class Ocr
 {
 public:
+    // Ścieżka wskazująca na standardowe miejsce przechowywania danych wyuczonych
+    static constexpr auto TESSDATA_PATH = ABSOLUTE_PATH "/res/tessdata";
+
+    // Ścieżka wskazująca na standardowe miejsce przechowywania danych wyuczonych
+    static constexpr auto DICT_PATH = ABSOLUTE_PATH "/res/tessdata/custom.json";
+
+    // Domyślny zestaw języków
+    static constexpr auto LANGUAGES = "pol+eng";
+
+    // Inicjializuje silnik zestawem argumentów domyślnych
+    Ocr();
+
     // Inicjalizuje silnik przy użyciu podanych wyuczonych danych i językach
     // Zmienna datapath powinna wskazywać na KATALOG (najczęściej "tessdata") z danymi wyuczonymi (".traineddata")
     // Można wybrać kilka języków łącząc je znakiem plusa np. "pol+eng" (domyślnie),
