@@ -85,3 +85,9 @@ void Ocr::denoise(cv::Mat& image, const float strength)
 {
     cv::fastNlMeansDenoisingColored(image, image, strength, strength, 7, 21);
 }
+
+void Ocr::resize(cv::Mat& image, const size_t size)
+{
+    const double scale = 1.0 / cv::max((float)image.cols / size, (float)image.rows / size);
+    cv::resize(image, image, cv::Size(), scale, scale, CV_INTER_CUBIC);
+}
