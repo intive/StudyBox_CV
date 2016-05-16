@@ -21,6 +21,6 @@ public:
     const std::vector<std::string>& getTips() const;
 };
 
-Json::Array flashcardsToJson(const cv::Mat& img);
+const Json::Array& flashcardsToJson(const cv::Mat& img);
 
 #endif
