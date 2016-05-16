@@ -78,14 +78,14 @@ namespace
         Flashcard(const std::string& q, const std::string& a, const std::vector<std::string>& t)
             : question(q), answer(a), tips(t) { };
 
-
+        
         Json::Object getJson() const
         {
             Json::Object flashcard;
             flashcard[QuestionJsonField] = question;
             flashcard[AnswerJsonField] = answer;
             flashcard[TipsJsonField] = Json::Array{};
-            std::for_each(begin(tips), end(tips), [&](const std::string& s) {flashcard["tips"].push_back(s); });
+            std::for_each(begin(tips), end(tips), [&](const std::string& s) {flashcard[TipsJsonField].push_back(s); });
             return flashcard;
         }
     };
