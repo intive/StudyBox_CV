@@ -354,3 +354,14 @@ namespace
     }
 
 }
+
+Json::Array framedFlashcardsToJson(const cv::Mat& img)
+{
+    auto copy = img.clone();
+    auto flashcards = inspectImage(copy);
+    Json::Array result;
+    for (const auto& f : flashcards)
+        result.emplace_back(f.getJson());
+
+    return result;
+}
