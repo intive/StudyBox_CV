@@ -8,7 +8,7 @@
 #include "../segmentation/Rectangle.hpp"
 #include "../request_router/SegmentationResponse.h"
 #include "../ocr/Ocr.hpp"
-
+#include "../json/Json.hpp"
 
 
 namespace
@@ -59,20 +59,25 @@ namespace
     };
 }
 
-class Flashcard
+struct Flashcard
 {
     std::string question;
     std::string answer;
     std::vector<std::string> tips;
-public:
+
     Flashcard(const std::string& q, const std::string& a, const std::vector<std::string>& t)
-        :question(q)
-        , answer(a)
-        , tips(t)
-    {};
-    std::string getQuestion() const { return question; };
-    std::string getAnswer() const { return answer; };
-    std::vector<std::string> getTips() const { return tips; };
+        : question(q), answer(a), tips(t) { };
+
+
+    Json::Object getJson() const
+    {
+        Json::Object flashcard;
+        flashcard["question"] = question;
+        flashcard["answer"] = answer;
+        flashcard["tips"] = Json::Array{};
+        std::for_each(begin(tips), end(tips), [&](const std::string& s) {flashcard["tips"].push_back(s); });
+        return flashcard;
+    }
 };
 
 
