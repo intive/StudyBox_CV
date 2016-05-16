@@ -30,6 +30,8 @@ namespace
     constexpr auto NoAnswersError = "No answer frames were detected";
     constexpr auto QuestionAnswerAmountMismatch = "Amount of questions does not match amount of answers";
 
+    constexpr auto NewLine = '\n';
+
     const std::string language = "pol+eng";
     const std::string datapath = std::string(ABSOLUTE_PATH) + "/res/tessdata";
     const std::string dictpath = datapath + "/custom.json";
@@ -127,6 +129,8 @@ namespace
     int calculateFrameWidth(const cv::Mat& img);
 
 
+    // Usuwa znaki nowej linii z końca stringa zwróconego przez OCR
+    void removeNewLineChar(std::string& s);
 
 
 
@@ -152,6 +156,10 @@ namespace
             std::vector<std::string> tips;
             for (const auto& tip : fcr.Tips)
                 tips.emplace_back(ocr.recognize(getRectangleWithoutFrame(tip, frame_width)));
+
+            removeNewLineChar(question);
+            removeNewLineChar(answer);
+            for_each(begin(tips), end(tips), [&](std::string& s) { removeNewLineChar(s); });
 
             flashcards.emplace_back(Flashcard{ question, answer, tips });
         }
@@ -338,5 +346,11 @@ namespace
         return edge_width;
     }
 
-}
 
+    void removeNewLineChar(std::string& s)
+    {
+        if (*std::prev(end(s)) == NewLine)
+            s.pop_back();
+    }
+
+}
