@@ -6,19 +6,18 @@
 
 #include "SegmentationResponse.h"
 
+#include "../flashcards_analysis/flashcards_analysis.h"
+
 #include "../json/Json.hpp"
 
 #include <opencv2/opencv.hpp>
-
-static Json::Array ImageToFlashcardJson(const cv::Mat& image)
-{
-    return Json::Array();
-}
 
 std::pair<std::string, int> FlashcardAnalysisResponse(const std::string& body, cv::Mat(*ImageSource)(const std::string&))
 {
     return GenericRequestErrorHandler([&](Http::ResponseStatus& status, Json& response)
     {
+        response[Rest::Response::STATUS] = Rest::Response::FLASHCARD_ANALYSIS_STATUS_FAILURE;
+
         try
         {
             Json request = Json::deserialize(body);
@@ -29,13 +28,12 @@ std::pair<std::string, int> FlashcardAnalysisResponse(const std::string& body, c
             if (action != Rest::Request::FLASHCARD_ANALYSIS_ACTION) // "action" jest niezgodne z api.
             {
                 CreateBadRequestError(status, response, Rest::Response::ErrorStrings::BAD_ACTION);
-                response[Rest::Response::STATUS] = Rest::Response::FLASHCARD_RESPONSE_STATUS_FAILURE;
             }
             else
             {
                 auto image = ImageSource(url);
-                response[Rest::Response::FLASHCARD_ANALYSIS_FLASHCARDS] = ImageToFlashcardJson(image);
-                response[Rest::Response::STATUS] = Rest::Response::FLASHCARD_RESPONSE_STATUS_SUCCESS;
+                response[Rest::Response::FLASHCARD_ANALYSIS_FLASHCARDS] = framedFlashcardsToJson(image);
+                response[Rest::Response::STATUS] = Rest::Response::FLASHCARD_ANALYSIS_STATUS_SUCCESS;
                 status = Http::Response::Status::Ok;
             }
 

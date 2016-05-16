@@ -26,8 +26,8 @@ namespace Rest {
     constexpr auto FLASHCARDS_STATUS_FAILURE = 0;
 
     constexpr auto FLASHCARD_ANALYSIS_FLASHCARDS = "flashcards";
-    constexpr auto FLASHCARD_RESPONSE_STATUS_SUCCESS = 1;
-    constexpr auto FLASHCARD_RESPONSE_STATUS_FAILURE = 0;
+    constexpr auto FLASHCARD_ANALYSIS_STATUS_SUCCESS = 1;
+    constexpr auto FLASHCARD_ANALYSIS_STATUS_FAILURE = 0;
 
         namespace ErrorStrings {
 
