@@ -22,6 +22,14 @@ namespace
 
     constexpr unsigned char PixelMaxValue = 255;
 
+    constexpr auto QuestionJsonField = "question";
+    constexpr auto AnswerJsonField = "answer";
+    constexpr auto TipsJsonField = "tips";
+
+    constexpr auto NoQuestionsError = "No question frames were detected";
+    constexpr auto NoAnswersError = "No answer frames were detected";
+    constexpr auto QuestionAnswerAmountMismatch = "Amount of questions does not match amount of answers";
+
     const std::string language = "pol+eng";
     const std::string datapath = std::string(ABSOLUTE_PATH) + "/res/tessdata";
     const std::string dictpath = datapath + "/custom.json";
@@ -72,9 +80,9 @@ struct Flashcard
     Json::Object getJson() const
     {
         Json::Object flashcard;
-        flashcard["question"] = question;
-        flashcard["answer"] = answer;
-        flashcard["tips"] = Json::Array{};
+        flashcard[QuestionJsonField] = question;
+        flashcard[AnswerJsonField] = answer;
+        flashcard[TipsJsonField] = Json::Array{};
         std::for_each(begin(tips), end(tips), [&](const std::string& s) {flashcard["tips"].push_back(s); });
         return flashcard;
     }
@@ -223,11 +231,11 @@ std::vector<FlashcardRectangles> detectRectangles(const V3M& frames)
     auto answers = getRectangles(frames.VB);
 
     if (questions.size() == 0)
-        throw std::runtime_error("No question frames were detected");
+        throw std::runtime_error(NoQuestionsError);
     if (answers.size() == 0)
-        throw std::runtime_error("No answer frames were detected");
+        throw std::runtime_error(NoAnswersError);
     if (questions.size() != answers.size())
-        throw std::runtime_error("Amount of questions does not match amount of answers");
+        throw std::runtime_error(QuestionAnswerAmountMismatch);
 
 
     if (questions.size() == 1)
