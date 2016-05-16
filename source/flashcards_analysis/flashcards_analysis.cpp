@@ -114,27 +114,7 @@ void sortFlashcardsInOrder(Rects& questions, Rects& tips, Rects& answers);
 int calculateFrameWidth(const cv::Mat& img);
 
 
-void testFunc()
-{
-    try
-    {
-        cv::Mat img = GetImageLocal("lat_5_skewed.jpg");
-        auto fsc = inspectImage(img);
 
-        for (const auto& fc : fsc)
-        {
-            std::cout << "Pyt: " << fc.getQuestion() << std::endl
-                << "Odp: " << fc.getAnswer() << std::endl;
-
-            for (const auto& t : fc.getTips())
-                std::cout << "Tip: " << t << std::endl;
-        }
-    }
-    catch (const std::exception& e)
-    {
-        std::cout << e.what() << std::endl;
-    }
-}
 
 
 std::vector<Flashcard> inspectImage(cv::Mat& img)
