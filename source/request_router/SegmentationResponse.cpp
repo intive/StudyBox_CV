@@ -67,6 +67,7 @@ std::pair<std::string, int> SegmentationResponse(const std::string& body, cv::Ma
             if (action != Rest::Request::SEGMENTATION_ACTION) // "action" jest niezgodne z api.
             {
                 CreateBadRequestError(status, response, Rest::Response::ErrorStrings::BAD_ACTION);
+                response[Rest::Response::STATUS] = Rest::Response::SEGMENTATION_STATUS_FAILURE;
             }
             else
             {

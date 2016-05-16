@@ -10,8 +10,11 @@ namespace Router
     {
         auto func = services.find(request.uri().raw());
 
+        logger.trace("received request");
+
         if (func == services.end())
         {
+            logger.info("request endpoint ", request.uri().raw(), " not found, return code ", static_cast<int>(Http::Response::Status::NotFound));
             return Http::Response(
                 Http::Response::Status::NotFound,
                 R"({"error":"no service for )" + request.uri().raw() + R"("})",
@@ -25,6 +28,8 @@ namespace Router
             int response_code;
             std::tie(body, response_code) = func->second(request.body());
            
+            logger.info("endpoint ", func->first, " success, return code ", response_code);
+
             return Http::Response(
                 static_cast<Http::Response::Status>(response_code),
                 body,
@@ -32,6 +37,8 @@ namespace Router
         }
         catch (const std::exception& e)
         {
+            logger.warn("endpoint ", func->first, " failed, return code ", static_cast<int>(Http::Response::Status::InternalServerError), ", error message: ", e.what());
+
             if (emitExceptionsToStdcerr)
                 std::cerr << "REQUEST ROUTER: Caught exception in execution handler for " + request.uri().raw() + " endpoint: "
                           << e.what()
@@ -44,6 +51,13 @@ namespace Router
         }
     }
 
+    RequestRouter::RequestRouter() : logger([](LogConfig::LogLevel, std::string, LoggerInfo, bool){}, LogConfig::Severity::all, LoggerInfo(0, "RequestRouter"))
+    {
+    }
+
+    RequestRouter::RequestRouter(LogManager& logManager) : logger(logManager.get("Request Router"))
+    {
+    }
 
     void RequestRouter::registerEndPointService(const std::string& endPoint, EndpointHandler func)
     {
