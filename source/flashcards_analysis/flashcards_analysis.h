@@ -16,12 +16,11 @@ public:
         , answer(a)
         , tips(t)
     {};
-    std::string getQuestion() const;
-    std::string getAnswer() const;
-    std::vector<std::string> getTips() const;
+    const std::string& getQuestion() const;
+    const std::string& getAnswer() const;
+    const std::vector<std::string>& getTips() const;
 };
 
-std::vector<Flashcard> flashcardsFromImage(const cv::Mat& img);
-Json::Array flashcardsToJson(const std::vector<Flashcard>& flashcards);
+Json::Array flashcardsToJson(const cv::Mat& img);
 
 #endif
