@@ -48,24 +48,15 @@ namespace
 
     struct FlashcardRectangles
     {
+        Rectangle question;
+        std::vector<Rectangle> tips;
+        Rectangle answer;
+
         FlashcardRectangles() :
-            Question({}), Answer({}) { }
+            question({}), answer({}) { }
 
-        FlashcardRectangles(const Rectangle& Q, const std::vector<Rectangle>& T, const Rectangle& A) :
-            Question(Q), Answer(A), Tips(T) { }
-
-        Rectangle Question;
-        Rectangle Answer;
-        std::vector<Rectangle> Tips;
-    };
-
-
-    struct sort_rectangle_by_y
-    {
-        inline bool operator() (const Rectangle& r1, const Rectangle& r2)
-        {
-            return (r1.topLeft().y < r2.topLeft().y);
-        }
+        FlashcardRectangles(const Rectangle& q, std::vector<Rectangle> t, const Rectangle& a) :
+            question(q), tips(std::move(t)), answer(a) { }
     };
 
 
@@ -75,10 +66,11 @@ namespace
         std::string answer;
         std::vector<std::string> tips;
 
-        Flashcard(const std::string& q, const std::string& a, const std::vector<std::string>& t)
-            : question(q), answer(a), tips(t) { };
+        template<typename Str, typename StrVec>
+        Flashcard(Str&& q, Str&& a, StrVec&& t)
+            : question(std::forward<Str>(q)), answer(std::forward<Str>(a)), tips(std::forward<StrVec>(t)) { }
 
-        
+
         Json::Object getJson() const
         {
             Json::Object flashcard;
@@ -113,11 +105,6 @@ namespace
     // Funkcjonuje wg założenia, że podpowiedzi są pod pytaniem
     std::vector<FlashcardRectangles> groupRectsIntoFlashcards(Rects& questions, Rects& tips, Rects& answers);
 
-    // Przetwarza otrzymane fiszki, by uzyskać prostokąty z obrotem 0 stopni.
-    // Dodatkowo zmniejsza obszar, tak by Rectangle nie obejmował ramki 
-    // (czasem OCR nie chciał współpracować jeśli tekst był w ramce)
-    Rectangle getRectangleWithoutFrame(const Rectangle& r, int width);
-
 
 
     // Funkcje pomocniczne
@@ -129,17 +116,30 @@ namespace
     int calculateFrameWidth(const cv::Mat& img);
 
 
-    // Usuwa znaki nowej linii z końca stringa zwróconego przez OCR
-    void removeNewLineChar(std::string& s);
-
-
 
     std::vector<Flashcard> inspectImage(cv::Mat& img)
     {
+        auto removeNewLineChar = [](std::string& s)
+        {
+            if (*std::prev(end(s)) == NewLine)
+                s.pop_back();
+        };
+
+        // Przetwarza otrzymane fiszki, by uzyskać prostokąty z obrotem 0 stopni.
+        // Dodatkowo zmniejsza obszar, tak by Rectangle nie obejmował ramki 
+        // (czasem OCR nie chciał współpracować jeśli tekst był w ramce)
+        auto getRectangleWithoutFrame = [](const Rectangle& r, int width) -> Rectangle
+        {
+            return Rectangle{ cv::RotatedRect(
+                r.center,
+                cv::Size2f((float)(r.bottomRight().x - r.topLeft().x - 3 * width), (float)(r.bottomRight().y - r.topLeft().y - 3 * width)),
+                0) };
+        };
+
         auto frames = getMatricesWithFrames(img);
         auto rectangles = detectRectangles(frames);
 
-        cv::Rect first_question(rectangles[0].Question.topLeft(), rectangles[0].Question.bottomRight());
+        cv::Rect first_question(rectangles[0].question.topLeft(), rectangles[0].question.bottomRight());
         cv::Mat bin_img_of_first_question(frames.HR, first_question);
         int frame_width = calculateFrameWidth(bin_img_of_first_question);
 
@@ -150,18 +150,18 @@ namespace
 
         for (const auto& fcr : rectangles)
         {
-            auto question = ocr.recognize(getRectangleWithoutFrame(fcr.Question, frame_width));
-            auto answer = ocr.recognize(getRectangleWithoutFrame(fcr.Answer, frame_width));
+            auto question = ocr.recognize(getRectangleWithoutFrame(fcr.question, frame_width));
+            auto answer = ocr.recognize(getRectangleWithoutFrame(fcr.answer, frame_width));
 
             std::vector<std::string> tips;
-            for (const auto& tip : fcr.Tips)
+            for (const auto& tip : fcr.tips)
                 tips.emplace_back(ocr.recognize(getRectangleWithoutFrame(tip, frame_width)));
 
             removeNewLineChar(question);
             removeNewLineChar(answer);
             for_each(begin(tips), end(tips), [&](std::string& s) { removeNewLineChar(s); });
 
-            flashcards.emplace_back(Flashcard{ question, answer, tips });
+            flashcards.emplace_back( std::move(question), std::move(answer), std::move(tips) );
         }
 
         return flashcards;
@@ -246,7 +246,7 @@ namespace
 
 
         if (questions.size() == 1)
-            return std::vector<FlashcardRectangles>{FlashcardRectangles(questions[0], tips, answers[0])};
+            return std::vector<FlashcardRectangles>{FlashcardRectangles(std::move(questions[0]), std::move(tips), std::move(answers[0]))};
 
         sortFlashcardsInOrder(questions, tips, answers);
 
@@ -267,26 +267,25 @@ namespace
         if (contours.size() < 1) return rects;
 
         for (int idx = 0; idx >= 0; idx = hierarchy[idx][0])
-            rects.emplace_back(Rectangle(minAreaRect(contours[idx])));
+            rects.emplace_back(minAreaRect(contours[idx]));
 
         return rects;
     }
 
 
-    Rectangle getRectangleWithoutFrame(const Rectangle& r, int width)
-    {
-        return Rectangle{ cv::RotatedRect(
-            r.center,
-            cv::Size2f((float)(r.bottomRight().x - r.topLeft().x - 3 * width), (float)(r.bottomRight().y - r.topLeft().y - 3 * width)),
-            0) };
-    }
+
 
 
     void sortFlashcardsInOrder(Rects& questions, Rects& tips, Rects& answers)
     {
-        std::sort(begin(questions), end(questions), sort_rectangle_by_y());
-        std::sort(begin(tips), end(tips), sort_rectangle_by_y());
-        std::sort(begin(answers), end(answers), sort_rectangle_by_y());
+        auto sort = [](const Rectangle& r1, const Rectangle& r2) -> bool
+        {
+                return r1.topLeft().y < r2.topLeft().y;
+        };
+        
+        std::sort(begin(questions), end(questions), sort);
+        std::sort(begin(tips), end(tips), sort);
+        std::sort(begin(answers), end(answers), sort);
     }
 
 
@@ -298,21 +297,21 @@ namespace
         for (size_t i = 0; i < questions_amount; i++)
         {
             FlashcardRectangles fcr;
-            fcr.Question = questions[i];
-            fcr.Answer = answers[i];
+            fcr.question = questions[i];
+            fcr.answer = answers[i];
 
 
             float question_Y = questions[i].center.y;
             if (i == questions_amount - 1)
             {
                 // Ostatnia fiszka, kopiujemy wszystkie podpowiedzi pod obecnym pytaniem
-                std::copy_if(begin(tips), end(tips), std::back_inserter(fcr.Tips), [&](const Rectangle& r) -> bool { return question_Y < r.center.y; });
+                std::copy_if(begin(tips), end(tips), std::back_inserter(fcr.tips), [&](const Rectangle& r) -> bool { return question_Y < r.center.y; });
             }
             else
             {
                 // Wyłuskiwanie podpowiedzi leżących na osi Y między obecnie przetwarzanym pytaniem a następnym
                 float next_question_Y = questions[i + 1].center.y;
-                std::copy_if(begin(tips), end(tips), std::back_inserter(fcr.Tips), [&](const Rectangle& r) -> bool { return question_Y < r.center.y &&  r.center.y < next_question_Y; });
+                std::copy_if(begin(tips), end(tips), std::back_inserter(fcr.tips), [&](const Rectangle& r) -> bool { return question_Y < r.center.y &&  r.center.y < next_question_Y; });
             }
 
             v.emplace_back(fcr);
@@ -346,12 +345,6 @@ namespace
         return edge_width;
     }
 
-
-    void removeNewLineChar(std::string& s)
-    {
-        if (*std::prev(end(s)) == NewLine)
-            s.pop_back();
-    }
 
 }
 
