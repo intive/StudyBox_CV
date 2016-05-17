@@ -267,7 +267,11 @@ namespace
         if (contours.size() < 1) return rects;
 
         for (int idx = 0; idx >= 0; idx = hierarchy[idx][0])
-            rects.emplace_back(minAreaRect(contours[idx]));
+        {
+            auto r = minAreaRect(contours[idx]);
+            if (r.size.width > 0 && r.size.height > 0)
+                rects.emplace_back(r);
+        }
 
         return rects;
     }
