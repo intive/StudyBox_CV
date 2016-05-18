@@ -101,7 +101,7 @@ std::vector<Rectangle> Ocr::segment(const cv::Mat& image, const int elemSize)
     Segmentation segmentator;
     segmentator.SetImage(image);
     segmentator.SetMorphEllipseSize(cv::Size(elemSize, elemSize));
-    segmentator.SetMorphRectSize(cv::Size(2 * elemSize + 1, elemSize - 1));
+    segmentator.SetMorphRectSize(cv::Size(2 * elemSize + 1, elemSize / 2));
     std::vector<Rectangle> rects = segmentator.CreateRectangles();
 
     rects.erase(std::remove_if(rects.begin(), rects.end(), [=](const Rectangle& rect)
