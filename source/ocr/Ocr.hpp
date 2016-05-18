@@ -57,9 +57,6 @@ public:
     // Zwraca rozpoznany ciąg znaków z określonego obszaru danego obrazu
     std::string recognize(const cv::Mat& image, const Rectangle& rect);
 
-    // Funkcja usuwa szum z obrazu
-    static void denoise(cv::Mat& image, const float strength = 3.0f);
-
     // Funkcja skaluje obraz do określonego rozmiaru
     static void resize(cv::Mat& image, const size_t size = 1944);
 

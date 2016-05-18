@@ -90,11 +90,6 @@ void Ocr::fixErrors(std::string& text) const
     }
 }
 
-void Ocr::denoise(cv::Mat& image, const float strength)
-{
-    cv::fastNlMeansDenoisingColored(image, image, strength, strength, 7, 21);
-}
-
 void Ocr::resize(cv::Mat& image, const size_t size)
 {
     const double scale = 1.0 / cv::max((float)image.cols / size, (float)image.rows / size);
@@ -167,7 +162,6 @@ void Ocr::binarize(cv::Mat& image, const int parts)
 
 std::vector<cv::Mat> Ocr::preprocess(cv::Mat& source)
 {
-    denoise(source);
     resize(source);
     const auto rects = segment(source);
     std::vector<cv::Mat> images;
