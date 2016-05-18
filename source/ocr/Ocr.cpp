@@ -107,10 +107,7 @@ std::vector<Rectangle> Ocr::segment(const cv::Mat& image, const int elemSize)
     rects.erase(std::remove_if(rects.begin(), rects.end(), [=](const Rectangle& rect)
     {
         int threshold = 2 * elemSize;
-        if (rect.size.width < threshold || rect.size.height < threshold)
-            return true;
-        else
-            return false;
+        return rect.size.width < threshold || rect.size.height < threshold;
     }), rects.end());
 
     for (auto& rect : rects)
