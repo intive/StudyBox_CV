@@ -6,6 +6,7 @@
 #include "request_router/SegmentationResponse.h"
 #include "request_router/TextAnalysisResponse.h"
 #include "request_router/FlashcardsResponse.h"
+#include "request_router/FlashcardAnalysisResponse.h"
 
 #include "log/Logger.h"
 
@@ -14,6 +15,7 @@ void registerServices(Router::RequestRouter& router)
     registerSegmentationResponse(router);
     registerTextAnalysisResponse(router);
     registerFlashcardsResponse(router);
+    registerFlashcardAnalysisResponse(router);
 }
 
 
@@ -33,7 +35,7 @@ int main()
 
     try
     {
-        Http::Server server("0.0.0.0", "80", [&router](const Http::Request& r)
+        Http::Server server("0.0.0.0", "9000", [&router](const Http::Request& r)
         {
             return router.routeRequest(r);
         });

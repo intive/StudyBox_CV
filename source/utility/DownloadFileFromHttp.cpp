@@ -166,7 +166,7 @@ namespace Utility
                 }
 
                 auto body_start = search(begin(header), end(header), begin(header_separator), end(header_separator));
-                buffer.insert(end(buffer), body_start + 4, begin(header) + recvd);
+                buffer.insert(end(buffer), body_start + 4, end(header));
             }
             else
             {
