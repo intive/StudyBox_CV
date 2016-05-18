@@ -9,7 +9,10 @@ Segmentation::Segmentation()
 
 void Segmentation::SetImage(const cv::Mat& image)
 {
-    cv::cvtColor(image, grayImage, CV_BGR2GRAY);
+    if (image.type() != CV_8UC1)
+        cv::cvtColor(image, grayImage, CV_BGR2GRAY);
+    else
+        grayImage = image;
 }
 
 void Segmentation::ScaleImage(size_t scale)
@@ -38,6 +41,9 @@ std::vector<Rectangle> Segmentation::CreateRectangles()
     size_t s = usedScale > 1 ? 1 << (usedScale - 1) : 1;
     std::vector<Rectangle> rectnagles;
 
+    if (contours.empty())
+        return rectnagles;
+
     for (int idx = 0; idx >= 0; idx = hierarchy[idx][0])
     {
         Rectangle rect = Rectangle(minAreaRect(contours[idx]));
@@ -52,6 +58,9 @@ std::vector<RotatedRectangle> Segmentation::CreateRotatedRectangles()
     Algorithm();
     size_t s = usedScale > 1 ? 1 << (usedScale - 1) : 1;
     std::vector<RotatedRectangle> rotatedRectangles;
+
+    if (contours.empty())
+        return rotatedRectangles;
 
     for (int idx = 0; idx >= 0; idx = hierarchy[idx][0])
     {
