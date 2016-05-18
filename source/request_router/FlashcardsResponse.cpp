@@ -1,5 +1,6 @@
 ﻿#include <fstream>
 #include <iterator>
+#include <opencv2/opencv.hpp>
 
 #include "FlashcardsResponse.h"
 #include "RestApiLiterals.h"
@@ -9,6 +10,8 @@
 #include "../text2flashcard/text2flashcard.h"
 #include "../utility/DownloadFileFromHttp.h"
 #include "../utility/GetExePath.h"
+#include "SegmentationResponse.h"
+#include "../ocr/Ocr.hpp"
 
 
 std::string getTextFromDisk(const std::string& filename)
@@ -52,7 +55,16 @@ std::pair<std::string, int> FlashcardsResponse(const std::string& body, std::str
 
         std::string text;
         if (action == Rest::Request::IMG_TO_FLASHCARD)
-            text = ""; // Miejsce na wywołanie OCR
+        {
+            cv::Mat source = GetImageFromUrl(url);
+            const std::vector<cv::Mat> images = Ocr::preprocess(source);
+
+            Ocr ocr;
+            for (auto& image : images)
+            {
+                text += ocr.recognize(image);
+            }
+        }
         else
             text = textFetcher(url);
 

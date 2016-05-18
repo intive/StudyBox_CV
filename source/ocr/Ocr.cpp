@@ -1,6 +1,15 @@
 #include "Ocr.hpp"
 
 #include <memory>
+#include <algorithm>
+
+#include "../segmentation/Segmentation.hpp"
+
+Ocr::Ocr()
+    : Ocr(TESSDATA_PATH, DEFAULT_LANGUAGE, DICT_PATH)
+{
+
+}
 
 Ocr::Ocr(const std::string& datapath, const std::string& language, const std::string& dictpath)
     : dict(dictpath.empty() ? Json(nullptr) : Json::deserialize(dictpath))
@@ -79,4 +88,88 @@ void Ocr::fixErrors(std::string& text) const
             }
         }
     }
+
+    text.erase(text.find_last_not_of(" \t\n\r\f\v") + 1);
+}
+
+void Ocr::resize(cv::Mat& image, const size_t size)
+{
+    const double scale = 1.0 / cv::max((float)image.cols / size, (float)image.rows / size);
+    cv::resize(image, image, cv::Size(), scale, scale, CV_INTER_CUBIC);
+}
+
+std::vector<Rectangle> Ocr::segment(const cv::Mat& image, const int elemSize)
+{
+    Segmentation segmentator;
+    segmentator.SetImage(image);
+    segmentator.SetMorphEllipseSize(cv::Size(elemSize, elemSize));
+    segmentator.SetMorphRectSize(cv::Size(2 * elemSize + 1, elemSize / 2));
+    std::vector<Rectangle> rects = segmentator.CreateRectangles();
+
+    rects.erase(std::remove_if(rects.begin(), rects.end(), [=](const Rectangle& rect)
+    {
+        int threshold = 2 * elemSize;
+        return rect.size.width < threshold || rect.size.height < threshold;
+    }), rects.end());
+
+    for (auto& rect : rects)
+    {
+        if (rect.angle < -45.0f)
+        {
+            rect.angle = 90.0f + rect.angle;
+            rect.size = cv::Size2f(rect.size.height, rect.size.width);
+        }
+    }
+
+    std::reverse(rects.begin(), rects.end());
+
+    return rects;
+}
+
+cv::Mat Ocr::deskew(const cv::Mat& source, const Rectangle& rect)
+{
+    cv::Mat image;
+    const cv::Mat tm = cv::getRotationMatrix2D(rect.center, rect.angle, 1.0);
+    cv::warpAffine(source, image, tm, source.size(), CV_INTER_CUBIC);
+    cv::getRectSubPix(image, rect.size, rect.center, image);
+    return image;
+}
+
+void Ocr::binarize(cv::Mat& image, const int parts)
+{
+    if (image.type() != CV_8UC1)
+        cv::cvtColor(image, image, CV_BGR2GRAY);
+
+    for (int i = 0; i < parts; i++)
+    {
+        int step = image.cols / parts + image.cols % parts;
+        cv::Rect rect(i * step, 0, step, image.rows);
+
+        int off = rect.x + rect.width - image.cols;
+        if (off > 0)
+        {
+            rect.width -= off;
+        }
+
+        const cv::Mat roi(image, rect);
+        cv::threshold(roi, roi, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+    }
+
+    const cv::Mat kernel = cv::getStructuringElement(CV_SHAPE_RECT, cv::Size(2, 2));
+    cv::morphologyEx(image, image, cv::MorphTypes::MORPH_ERODE, kernel, cv::Point(-1, -1), 1);
+}
+
+std::vector<cv::Mat> Ocr::preprocess(cv::Mat& source)
+{
+    resize(source);
+    const auto rects = segment(source);
+    std::vector<cv::Mat> images;
+    for (const auto& rect : rects)
+    {
+        cv::Mat image = deskew(source, rect);
+        const int parts = 1 + 9 * image.cols / source.cols;
+        binarize(image, parts);
+        images.push_back(image);
+    }
+    return images;
 }

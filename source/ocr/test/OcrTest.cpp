@@ -22,8 +22,8 @@ const std::string datapath = std::string(ABSOLUTE_PATH) + "/res/tessdata";
 const std::string dictpath = datapath + "/custom.json";
 
 const std::string imagepath = std::string(ABSOLUTE_PATH) + "/res/test/ocr_test.png";
-const std::string imagetext = "This sentence is quite long\nand moderately complex.\n";
-const std::string regiontext = imagetext.substr(0, imagetext.find_first_of("\n") + 1);
+const std::string imagetext = "This sentence is quite long and moderately complex.";
+const std::string regiontext = "This sentence is quite long";
 
 // Klasa przekierowująca strumień,
 // wykorzystuje wzorzec RAII do zarządzania zasobami
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(RecognizeSetImageRegions)
     const Rectangle rect2 = cv::RotatedRect(cv::Point2f(0.f, image.rows / 2.f),
         cv::Point2f((float)image.cols, image.rows / 2.f),
         cv::Point2f((float)image.cols, (float)image.rows));
-    BOOST_CHECK_EQUAL(ocr.recognize(rect1) + ocr.recognize(rect2), imagetext);
+    BOOST_CHECK_EQUAL(ocr.recognize(rect1) + " " + ocr.recognize(rect2), imagetext);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
