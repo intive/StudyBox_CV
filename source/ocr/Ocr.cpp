@@ -88,6 +88,8 @@ void Ocr::fixErrors(std::string& text) const
             }
         }
     }
+
+    text.erase(text.find_last_not_of(" \t\n\r\f\v") + 1);
 }
 
 void Ocr::resize(cv::Mat& image, const size_t size)
