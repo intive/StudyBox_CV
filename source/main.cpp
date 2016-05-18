@@ -6,6 +6,7 @@
 #include "request_router/SegmentationResponse.h"
 #include "request_router/TextAnalysisResponse.h"
 #include "request_router/FlashcardsResponse.h"
+#include "request_router/FlashcardAnalysisResponse.h"
 
 #include "log/Logger.h"
 
@@ -14,6 +15,7 @@ void registerServices(Router::RequestRouter& router)
     registerSegmentationResponse(router);
     registerTextAnalysisResponse(router);
     registerFlashcardsResponse(router);
+    registerFlashcardAnalysisResponse(router);
 }
 
 
