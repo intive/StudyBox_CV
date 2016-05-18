@@ -115,47 +115,67 @@ namespace
     // Oblicza szerokość obramowania na podstawie binarnego obrazu zawierającego tylko ramkę/i
     int calculateFrameWidth(const cv::Mat& img);
 
+    std::vector<cv::Mat> preprocess(const cv::Mat& source, const int cols)
+    {
+        const auto rects = Ocr::segment(source);
+        std::vector<cv::Mat> images;
+        for (const auto& rect : rects)
+        {
+            cv::Mat image = Ocr::deskew(source, rect);
+            const int parts = 1 + 9 * image.cols / cols;
+            Ocr::binarize(image, parts);
+            images.push_back(image);
+        }
+        return images;
+    }
 
+    std::string recognize(Ocr& ocr, const cv::Mat& source, const cv::Mat& filter, const Rectangle& rectangle)
+    {
+        cv::Mat mask;
+        mask = cv::Mat(filter, rectangle.boundingRect());
+        cv::floodFill(mask, cv::Point{}, cv::Scalar(255));
+        mask = 255 - mask;
+
+        cv::Mat image;
+        cv::Mat(source, rectangle.boundingRect()).copyTo(image, mask);
+        cv::floodFill(image, cv::Point(), cv::mean(image, mask));
+
+        std::string text;
+        for (auto& x : preprocess(image, source.cols))
+        {
+            text += ocr.recognize(x);
+        }
+
+        return text;
+    }
 
     std::vector<Flashcard> inspectImage(cv::Mat& img)
     {
         auto removeNewLineChar = [](std::string& s)
         {
-            if (*std::prev(end(s)) == NewLine)
+            if (!s.empty() && *std::prev(end(s)) == NewLine)
                 s.pop_back();
         };
 
-        // Przetwarza otrzymane fiszki, by uzyskać prostokąty z obrotem 0 stopni.
-        // Dodatkowo zmniejsza obszar, tak by Rectangle nie obejmował ramki 
-        // (czasem OCR nie chciał współpracować jeśli tekst był w ramce)
-        auto getRectangleWithoutFrame = [](const Rectangle& r, int width) -> Rectangle
-        {
-            return Rectangle{ cv::RotatedRect(
-                r.center,
-                cv::Size2f((float)(r.bottomRight().x - r.topLeft().x - 3 * width), (float)(r.bottomRight().y - r.topLeft().y - 3 * width)),
-                0) };
-        };
+        Ocr::resize(img);
 
         auto frames = getMatricesWithFrames(img);
         auto rectangles = detectRectangles(frames);
 
-        cv::Rect first_question(rectangles[0].question.topLeft(), rectangles[0].question.bottomRight());
-        cv::Mat bin_img_of_first_question(frames.HR, first_question);
-        int frame_width = calculateFrameWidth(bin_img_of_first_question);
-
-        Ocr ocr{ datapath, language, dictpath };
-        ocr.setImage(img);
+        Ocr ocr;
 
         std::vector<Flashcard> flashcards;
 
         for (const auto& fcr : rectangles)
         {
-            auto question = ocr.recognize(getRectangleWithoutFrame(fcr.question, frame_width));
-            auto answer = ocr.recognize(getRectangleWithoutFrame(fcr.answer, frame_width));
+            auto question = recognize(ocr, img, frames.HR, fcr.question);
+            auto answer = recognize(ocr, img, frames.VB, fcr.answer);
 
             std::vector<std::string> tips;
             for (const auto& tip : fcr.tips)
-                tips.emplace_back(ocr.recognize(getRectangleWithoutFrame(tip, frame_width)));
+            {
+                tips.emplace_back(recognize(ocr, img, frames.SG, tip));
+            }
 
             removeNewLineChar(question);
             removeNewLineChar(answer);
