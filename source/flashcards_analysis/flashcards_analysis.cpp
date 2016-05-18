@@ -151,12 +151,6 @@ namespace
 
     std::vector<Flashcard> inspectImage(cv::Mat& img)
     {
-        auto removeNewLineChar = [](std::string& s)
-        {
-            if (!s.empty() && *std::prev(end(s)) == NewLine)
-                s.pop_back();
-        };
-
         Ocr::resize(img);
 
         auto frames = getMatricesWithFrames(img);
@@ -176,10 +170,6 @@ namespace
             {
                 tips.emplace_back(recognize(ocr, img, frames.SG, tip));
             }
-
-            removeNewLineChar(question);
-            removeNewLineChar(answer);
-            for_each(begin(tips), end(tips), [&](std::string& s) { removeNewLineChar(s); });
 
             flashcards.emplace_back( std::move(question), std::move(answer), std::move(tips) );
         }
