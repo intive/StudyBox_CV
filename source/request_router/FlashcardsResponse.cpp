@@ -41,6 +41,8 @@ std::pair<std::string, int> FlashcardsResponse(const std::string& body, std::str
 {
     return GenericRequestErrorHandler([&](Http::ResponseStatus& status, Json& response)
     {
+        response[Rest::Response::STATUS] = Rest::Response::FLASHCARDS_STATUS_FAILURE;
+
         Json request = Json::deserialize(body);
 
         std::string url = request[Rest::Request::URL];
